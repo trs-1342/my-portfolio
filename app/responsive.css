@@ -286,3 +286,248 @@ footer,
   transition: background-color 0.22s ease, color 0.22s ease,
     border-color 0.22s ease;
 }
+/* !!! */
+
+/* ===================== GitHub Tablosu: Mobil/Tablet ===================== */
+
+/* Tablet için biraz sıkılaştırma */
+@media (max-width: 900px) {
+  .gh-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+  .gh-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    justify-content: center;
+  }
+  .projects-table th,
+  .projects-table td {
+    padding: 0.55rem 0.7rem;
+  }
+  .projects-table {
+    min-width: 980px;
+  } /* tablet scroll varsa sadece wrap içinde */
+  .gh-table-wrap {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+}
+
+/* ================= 560px ↓ — Tam mobil düzen (kart görünümü) ================ */
+@media (max-width: 560px) {
+  /* Sayfa değil, sadece tablo alanı değişiyor */
+  .gh-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow: visible; /* yatay scroll yok */
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  /* Tabloyu blok-kart yap */
+  .projects-table {
+    width: 100%;
+    min-width: 0 !important; /* genişlik zorlamasını kaldır */
+    table-layout: auto;
+    border-collapse: separate;
+    border-spacing: 0 10px; /* satırlar arası boşluk */
+    font-size: 0.95rem;
+  }
+  .projects-table thead {
+    display: none;
+  }
+
+  .projects-table,
+  .projects-table tbody,
+  .projects-table tr,
+  .projects-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .projects-table tr {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Hücre: solda etiket, sağda değer — tek satıra sığmazsa alt satıra iner */
+  .projects-table td {
+    border: 0;
+    padding: 0.45rem 0;
+    overflow: visible;
+    display: grid;
+    grid-template-columns: 42% 1fr; /* etiket / değer */
+    column-gap: 0.6rem;
+    align-items: flex-start;
+  }
+  .projects-table td::before {
+    content: attr(data-th);
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* Link hücresi: etiketi gizle, butonu sağa hizala */
+  .projects-table td:last-child {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.4rem;
+    padding-top: 0.6rem;
+  }
+  .projects-table td:last-child::before {
+    content: "";
+    display: none;
+  }
+
+  /* Commit/Açıklama metinleri 2 satırda kesilsin */
+  .ellipsis {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: normal; /* mobilde satır sar */
+  }
+
+  /* Yıldız & fork daha kompakt */
+  .projects-table td:nth-child(5),
+  .projects-table td:nth-child(6) {
+    justify-content: flex-start;
+  }
+
+  /* Rozetler, başlıklar, butonlar mobilde taşmadan ortalansın */
+  .gh-header {
+    gap: 0.5rem;
+  }
+  .gh-left {
+    justify-content: center;
+  }
+  .gh-right {
+    justify-content: center;
+  }
+  .badge {
+    font-size: 0.82rem;
+    padding: 0.18rem 0.5rem;
+  }
+}
+/* ! */
+/* ======================= GITHUB TABLO — EK KÜÇÜLTME ======================= */
+@media (max-width: 560px) {
+  .projects-table {
+    font-size: 0.92rem;
+    border-spacing: 0 8px;
+  }
+  .projects-table tr {
+    padding: 0.4rem 0.6rem;
+    border-radius: 10px;
+  }
+  .projects-table td {
+    padding: 0.35rem 0;
+    grid-template-columns: 40% 1fr;
+  }
+  .projects-table td:last-child {
+    padding-top: 0.5rem;
+  }
+  .badge {
+    font-size: 0.8rem;
+    padding: 0.15rem 0.45rem;
+  }
+  /* metinleri 2 satırda kes */
+  .ellipsis {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: normal;
+  }
+}
+
+/* ======================= PROJELER — KOMPAKT KARTLAR ======================= */
+/* Masaüstü/Tablet genel sıkılaştırma */
+.projects-grid {
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.card {
+  padding: 0.9rem;
+  min-height: 150px;
+  border-left-width: 3px;
+  border-radius: 10px;
+  transition: transform 0.18s ease, background 0.18s ease,
+    border-left-color 0.18s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+}
+.card header h3 {
+  font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+  margin: 0 0.5rem 0.25rem 0;
+  /* başlık tek satır; uzun olursa '…' */
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card .meta {
+  gap: 0.45rem;
+}
+.card .meta span {
+  font-size: 0.82rem;
+  padding: 0.2rem 0.5rem;
+}
+
+/* Overlay içerik: sınırlı yükseklik + kaydırma (komşuları etkilemez) */
+.card-content {
+  padding: 0.9rem;
+  max-height: min(68vh, 560px);
+  overflow: auto;
+}
+.card-content .btn {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .projects-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .card {
+    min-height: 140px;
+    padding: 0.8rem;
+  }
+  .card-content {
+    max-height: min(60vh, 480px);
+  }
+}
+
+/* Telefon */
+@media (max-width: 560px) {
+  .projects-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .card {
+    min-height: 10px;
+    padding: 0.75rem;
+  }
+  .card header h3 {
+    font-size: 0.95rem;
+  }
+  .card-content {
+    max-height: 70vh;
+  }
+}
+
+/* Çok küçük telefonlar */
+@media (max-width: 380px) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+}
