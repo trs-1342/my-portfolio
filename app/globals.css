@@ -1,26 +1,536 @@
-@import "tailwindcss";
-
+/* ================= RESET & THEME (varsayılan siyah) ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #000;
+  --muted: #0f0f0f;
+  --panel: #111;
+  --panel-2: #181818;
+  --text: #f4f4f4;
+  --text-2: #cfcfcf;
+  --line: #2b2b2b;
+  --accent: #fff;
+}
+html.light {
+  --bg: #fff;
+  --muted: #f4f4f4;
+  --panel: #fcfcfc;
+  --panel-2: #f3f3f3;
+  --text: #121212;
+  --text-2: #2b2b2b;
+  --line: #e5e5e5;
+  --accent: #000;
+}
+html {
+  font-family: "JetBrains Mono", "Fira Code", "Segoe UI", "Inter", monospace;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.55;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ================= UI: cursor & theme toggle ================= */
+.custom-cursor {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+  z-index: 9999;
+  transition: transform 0.06s linear;
+}
+.theme-toggle {
+  position: fixed;
+  right: 18px;
+  top: 18px;
+  z-index: 10000;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.theme-toggle:hover {
+  transform: translateY(-2px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ================= LAYOUT =================
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 100vh;
+}
+.left {
+  width: 50%;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.left img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.25s ease;
+  cursor: pointer;
+}
+.right {
+  width: 50%;
+  padding: 3rem 4rem;
+} */
+
+/* ================= TYPOGRAPHY ================= */
+h1,
+h2,
+h3 {
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+h1 {
+  font-size: 3rem;
+  margin: 0 0 0.4rem;
+}
+h2 {
+  font-size: 1.25rem;
+  margin: 1.4rem 0 0.8rem;
+}
+h3 {
+  font-size: 1.05rem;
+  margin: 0.4rem 0;
+}
+p {
+  margin: 0.35rem 0;
+}
+a {
+  color: #9ad1ff;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* ================= INTRO ================= */
+.intro h2 {
+  color: #a9a9a9;
+  font-weight: 600;
+}
+.stack {
+  color: #c7c7c7;
+  margin: 0.6rem 0 1.2rem;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+.chip a {
+  color: var(--text-2);
+}
+
+/* ================= GITHUB HEADER ================= */
+.gh-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  margin: 1rem 0 0.8rem;
+}
+.gh-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.gh-left i {
+  font-size: 1.2rem;
+}
+.gh-left small {
+  opacity: 0.8;
+}
+.gh-right {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  background: var(--panel-2);
+  color: var(--text-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+}
+
+/* ================== GITHUB TABLE ================== */
+.gh-table-wrap {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  overflow-x: auto;
+  margin-bottom: 2rem;
+  background: var(--panel);
+}
+.projects-table {
+  width: 100%;
+  min-width: 1150px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  color: var(--text-2);
+}
+.projects-table col:nth-child(8) {
+  width: 110px !important;
+} /* Repo kolonu */
+
+.projects-table th,
+.projects-table td {
+  padding: 0.7rem 0.8rem;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  overflow: hidden;
+}
+.projects-table th:last-child,
+.projects-table td:last-child {
+  border-right: none;
+  overflow: visible;
+  white-space: nowrap;
+}
+.projects-table thead th {
+  text-align: left;
+  background: var(--muted);
+  color: var(--text);
+}
+.projects-table tbody td {
+  background: var(--panel);
+}
+.loading {
+  text-align: center;
+  color: #9a9a9a;
+}
+
+/* tek satır + … */
+.ellipsis {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* simge kolonları ortalı */
+.projects-table th:nth-child(5),
+.projects-table th:nth-child(6),
+.projects-table td:nth-child(5),
+.projects-table td:nth-child(6) {
+  text-align: center;
+}
+
+/* ================= PROJECT CARDS ================= */
+#projelerim {
+  margin-top: 2rem;
+}
+.projects-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.card {
+  background: var(--panel);
+  border-left: 4px solid var(--accent);
+  border-radius: 12px;
+  padding: 1rem;
+  transition: transform 0.25s ease, background 0.25s ease,
+    border-left-color 0.25s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+.card:hover {
+  transform: translateY(-4px);
+  background: var(--panel-2);
+  border-left-color: #cfcfcf;
+}
+.card header h3 {
+  margin-bottom: 0.35rem;
+}
+.card-content {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.35s ease;
+}
+.card.open .card-content {
+  opacity: 1;
+  max-height: 240px;
+}
+.card-content p {
+  color: #cfcfcf;
+  line-height: 1.6;
+  margin: 0.35rem 0 0.6rem;
+}
+.meta {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  background: var(--muted);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+}
+
+/* ================= LIST & FOOTER ================= */
+ul.skills {
+  list-style: none;
+  padding-left: 1rem;
+}
+ul.skills li {
+  position: relative;
+  padding-left: 0.8rem;
+  margin: 0.3rem 0;
+  color: #d9d9d9;
+}
+ul.skills li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+footer {
+  text-align: center;
+  color: #8a8a8a;
+  margin-top: 3rem;
+  padding: 2rem 0 1rem;
+  border-top: 1px solid var(--line);
+}
+footer .motto {
+  font-style: italic;
+  margin-bottom: 0.6rem;
+  color: #bcbcbc;
+}
+.footer-socials {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  margin: 0.4rem 0 1rem;
+}
+.footer-socials a {
+  color: #8a8a8a;
+  font-size: 1.25rem;
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.footer-socials a:hover {
+  color: var(--text);
+  transform: translateY(-2px);
+}
+.copy {
+  font-size: 0.9rem;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1024px) {
+  .right {
+    padding: 2rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  .left,
+  .right {
+    width: 100%;
+  }
+  .left {
+    height: 320px;
+    position: relative;
+  }
+  h1 {
+    font-size: 2.4rem;
+  }
+  h2 {
+    font-size: 1.1rem;
+  }
+}
+
+/* 560px ve altı: tablo kart görünümü */
+@media (max-width: 560px) {
+  .projects-table {
+    min-width: 0;
+    table-layout: auto;
+  }
+  .projects-table thead {
+    display: none;
+  }
+  .projects-table,
+  .projects-table tbody,
+  .projects-table tr,
+  .projects-table td {
+    display: block;
+    width: 100%;
+  }
+  .projects-table tr {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin: 0.8rem 0;
+    padding: 0.25rem 0;
+  }
+  .projects-table td {
+    border: none;
+    border-right: none;
+    overflow: visible;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.55rem 0.8rem;
+  }
+  .projects-table td::before {
+    content: attr(data-th);
+    font-weight: 700;
+    color: var(--text);
+    min-width: 42%;
+    max-width: 46%;
+  }
+  .projects-table td:last-child {
+    white-space: normal;
+  }
+  .gh-header {
+    padding: 0.65rem 0.8rem;
+  }
+  .badge {
+    font-size: 0.8rem;
+    padding: 0.15rem 0.45rem;
+  }
+  .theme-toggle {
+    right: 14px;
+    top: 14px;
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 400px) {
+  h1 {
+    font-size: 2rem;
+  }
+  h2 {
+    font-size: 1rem;
+  }
+}
+/*  */
+
+/* === 2 KOLON (foto sol TAM KAPLA, arka plan ile) === */
+.container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 100svh;
+  gap: 0;
+}
+
+/* Sol panel: sticky ve arka planı CSS değişkeninden oku */
+.left {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--bg);
+  /* JS yoksa halil.png ile başla */
+  --left-bg: url("/halil.png");
+}
+/* Panelin tamamını kaplayan arka plan */
+.left::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--left-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: block;
+}
+/* <img> sadece preload/klik için dursun, görünmesin */
+.left > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0; /* görünmez */
+  pointer-events: auto; /* tıklama ile değiştirmek için açık */
+  object-fit: cover;
+}
+
+/* Sağ panel */
+.right {
+  min-height: 100svh;
+  padding: 3rem clamp(1.25rem, 2.5vw, 3rem);
+}
+
+/* 1200px altı: oranı 45/55 yap */
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: 45% 55%;
+  }
+}
+
+/* 900px ve altı: tek sütun; üstte resim, altta içerik */
+@media (max-width: 900px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+  .left {
+    position: relative;
+    height: 42svh;
+  }
+  .right {
+    padding: 2rem 1.25rem;
+    min-height: auto;
+  }
+}
+
+/* 540px ve altı: daha sıkı */
+@media (max-width: 540px) {
+  .left {
+    height: 300px;
+  }
+  .right {
+    padding: 1.5rem 1rem;
+  }
 }
