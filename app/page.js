@@ -57,15 +57,15 @@ export default function Page() {
           <div className="about-right">
             <ul className="about-meta">
               <li>
-                <i className="fa-solid fa-graduation-cap"></i> 1. sınıf • İstanbul
-                Gelişim Üniversitesi
+                <i className="fa-solid fa-graduation-cap"></i> 1. sınıf •
+                İstanbul Gelişim Üniversitesi
               </li>
               <li>
                 <i className="fa-solid fa-school"></i> ŞBBKMTAL • Bilişim
               </li>
               <li>
-                <i className="fa-solid fa-heart"></i> İlgi: Full-Stack, Güvenlik,
-                Üretkenlik
+                <i className="fa-solid fa-heart"></i> İlgi: Full-Stack,
+                Güvenlik, Üretkenlik
               </li>
               <li>
                 <i className="fa-solid fa-flag-checkered"></i> Hedef: etik
@@ -105,38 +105,26 @@ export default function Page() {
           </div>
         </section>
 
-        {/* Buy Me a Coffee */}
-        <section style={{ margin: "24px 0" }}>
+        <section className="support-section">
+          <div className="support-title">
+            ☕ Bana bir kahve ısmarlayarak destek olabilirsin!
+          </div>
           <a
+            className="bmc-btn"
             href="https://www.buymeacoffee.com/trs1342"
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              background: "#FFDD00",
-              color: "#000",
-              borderRadius: "8px",
-              padding: "8px 16px",
-              fontWeight: "bold",
-              textDecoration: "none",
-              fontFamily: "inherit",
-              fontSize: "1.1em",
-              gap: "10px",
-            }}
           >
             <Image
               src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
               alt="Buy Me A Coffee"
-              width={120}
-              height={42}
-              style={{ height: "32px", width: "auto", marginRight: "8px" }}
+              width={124}
+              height={32}
               unoptimized
             />
           </a>
         </section>
 
-        {/* Footer */}
         <footer>
           <p className="motto">“I defend the moral concept in software.”</p>
           <div className="footer-socials">

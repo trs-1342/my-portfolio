@@ -752,3 +752,43 @@ footer .motto {
     grid-template-columns: 1fr;
   }
 }
+
+/*  */
+
+.support-section {
+  margin: 32px 0;
+  text-align: center;
+}
+.support-title {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin-bottom: 12px;
+  letter-spacing: 0.01em;
+}
+.bmc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffdd00;
+  color: #000;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 700;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: 1.1em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transform: translateZ(0);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.bmc-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+.bmc-btn:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 3px;
+}
+html.light .bmc-btn:focus-visible {
+  outline-color: #111;
+}
