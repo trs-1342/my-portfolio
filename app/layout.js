@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./responsive.css";
 
 export const metadata = {
   title: "Halil Hattab | Full-Stack Developer",

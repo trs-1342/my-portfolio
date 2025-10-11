@@ -1,0 +1,288 @@
+/* ======================= RESPONSIVE MASTER ======================= */
+/* Sayfa genelinde taşmayı engelle, her şeyin sığmasını garanti et */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden; /* asla yatay taşma yok */
+  -webkit-text-size-adjust: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* Medya elementleri asla taşıp sayfayı büyütmesin */
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Dokunmatik: özel cursor kapalı, tap hedefleri rahat */
+.custom-cursor {
+  display: none !important;
+}
+@media (hover: none), (pointer: coarse) {
+  a,
+  button {
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* Metinler uzun olsa bile kır ve sığdır */
+p,
+li,
+td,
+th,
+blockquote,
+.chip,
+.badge,
+.meta span,
+.about-meta li,
+.ellipsis {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* ================================================================ */
+/* 1) LAYOUT — Masaüstünde iki kolon, tablet/telefonda üstte görsel */
+/* ================================================================ */
+
+:root {
+  --gutter: clamp(14px, 3vw, 28px);
+}
+
+/* Ana grid: iki kolon; gap’i fluid */
+.container {
+  display: grid;
+  grid-template-columns: minmax(0, 48%) minmax(0, 52%);
+  align-items: start;
+  gap: clamp(14px, 2.5vw, 24px);
+  padding-inline: var(--gutter);
+}
+
+/* Sol panel (galeri). Masaüstünde sticky, mobilde normal */
+.left {
+  position: sticky;
+  top: 0;
+  height: 100svh; /* safe viewport */
+  overflow: hidden;
+}
+.left .left-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.left .left-img {
+  width: 100%;
+  height: 100%;
+}
+
+/* Sağ panel güvenli padding; genişlik taşırmaz */
+.right {
+  min-height: 100%;
+  padding: clamp(20px, 3vw, 48px);
+  width: 100%;
+}
+
+/* 1280↓: oranı 45/55 yap */
+@media (max-width: 1280px) {
+  .container {
+    grid-template-columns: minmax(0, 45%) minmax(0, 55%);
+  }
+}
+
+/* 1024↓ (tablet): tek kolona geç — görsel üstte, içerik altta */
+@media (max-width: 1024px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+  .left {
+    position: relative; /* sticky kapat */
+    height: 42svh; /* üst bant */
+  }
+  .right {
+    min-height: auto;
+    padding: clamp(16px, 3vw, 28px);
+  }
+}
+
+/* 640↓ (telefon): daha kompakt yükseklik ve tipografi */
+@media (max-width: 640px) {
+  .left {
+    height: 300px;
+  }
+}
+
+/* ================================================================ */
+/* 2) GITHUB TABLO — Sadece kendi içinde kaydır, sayfa asla taşımasın*/
+/* ================================================================ */
+
+/* Sarmalayıcı: viewport’a kilitle, içinde yatay kaydırma serbest */
+.gh-table-wrap {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto; /* kaydırma burada */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; /* iOS pürüzsüz scroll */
+  overscroll-behavior: contain;
+  border-radius: 12px;
+}
+
+/* Tablo: min-width ile kolonlar sıkışmasın; taşma wrap içinde kalır */
+.projects-table {
+  width: 100%;
+  min-width: 1120px; /* geniş ekran düzeni bozulmaz */
+  table-layout: fixed; /* ellipsis düzgün çalışır */
+  border-collapse: collapse;
+}
+
+/* Hücreler: tek satır + ellipsis; commit/açıklama özellikle kısıtlı */
+.projects-table th,
+.projects-table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Commit ve Açıklama sütunları daha geniş — yine de taşarsa … */
+.projects-table col:nth-child(3) {
+  width: 34%;
+}
+.projects-table col:nth-child(4) {
+  width: 22%;
+}
+.projects-table col:nth-child(1) {
+  width: 20%;
+} /* Proje */
+.projects-table col:nth-child(2) {
+  width: 10%;
+} /* Dil   */
+.projects-table col:nth-child(5) {
+  width: 6%;
+} /* ⭐    */
+.projects-table col:nth-child(6) {
+  width: 6%;
+} /* 🍴    */
+.projects-table col:nth-child(7) {
+  width: 8%;
+} /* Güncel*/
+.projects-table col:nth-child(8) {
+  width: 4%;
+} /* Repo  */
+
+/* Telefonlarda tabloyu kart yapısına çevirmiyoruz; yalnızca sarmalayıcı kayar */
+@media (max-width: 560px) {
+  .projects-table {
+    min-width: 960px;
+  } /* biraz daha sıkı */
+}
+
+/* Kaydırırken sağdaki link kolonunun görünmesini garanti et */
+.projects-table td:last-child,
+.projects-table th:last-child {
+  position: sticky;
+  right: 0;
+  background: var(--panel);
+  z-index: 1;
+  white-space: nowrap;
+}
+
+/* Daha akıcı – zebra + hover (varsa)  */
+.projects-table tbody tr:nth-child(odd) td {
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+}
+.projects-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+}
+
+/* ================================================================ */
+/* 3) BÖLÜM DÜZENLERİ — hiçbir bölüm yatay taşma yapmasın          */
+/* ================================================================ */
+
+.gh-header,
+.about-panel,
+.projects-grid,
+footer,
+.chip,
+.badge {
+  max-width: 100%;
+}
+
+/* Hakkımda paneli – tablet/telefon tek sütun */
+@media (max-width: 1024px) {
+  .about-panel {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Projeler Grid – ekran genişliğine göre otomatik */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+@media (max-width: 860px) {
+  .projects-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    min-height: 180px;
+  }
+}
+
+/* Kart overlay içerik – küçük ekranda rahat scroll */
+.card-content {
+  overflow: auto;
+}
+
+/* GitHub rozetleri dar ekranda sarılsın, taşmasın */
+.gh-right {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+/* ================================================================ */
+/* 4) TEMA GEÇİŞLERİ ve HAREKET AZALTMA                            */
+/* ================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .left .left-img,
+  .card,
+  .card-content,
+  .badge,
+  .theme-toggle {
+    transition: none !important;
+  }
+}
+
+:where(
+    .gh-header,
+    .badge,
+    .card,
+    .projects-table td,
+    .projects-table th,
+    .gh-table-wrap,
+    .left,
+    .right,
+    footer,
+    .chip,
+    .about-panel
+  ) {
+  transition: background-color 0.22s ease, color 0.22s ease,
+    border-color 0.22s ease;
+}
