@@ -1,3 +1,4 @@
+// components/GithubTable.js
 "use client";
 import { useEffect, useState } from "react";
 
@@ -8,13 +9,16 @@ const HEADERS = [
   "Açıklama",
   "⭐",
   "🍴",
-  "Güncelleme",
+  "Güncel",
   "Repo",
 ];
 
-function fmt(n) {
-  return new Intl.NumberFormat("tr-TR").format(n ?? 0);
-}
+const esc = (s) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+const fmt = (n) => new Intl.NumberFormat("tr-TR").format(n ?? 0);
 function relTime(iso) {
   if (!iso) return "—";
   const d = new Date(iso),
@@ -33,14 +37,9 @@ function relTime(iso) {
   }
   return "az önce";
 }
-const esc = (s) =>
-  String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
 
 export default function GithubTable({ user = "trs-1342", limit = 8 }) {
-  const [rows, setRows] = useState(null);
+  const [data, setData] = useState(null);
   const [err, setErr] = useState("");
 
   useEffect(() => {
@@ -50,28 +49,30 @@ export default function GithubTable({ user = "trs-1342", limit = 8 }) {
           `/api/gh?user=${encodeURIComponent(user)}&limit=${limit}`,
           { cache: "no-store" }
         );
-        if (!res.ok) throw new Error("proxy " + res.status);
-        const data = await res.json();
-        setRows(data);
+        if (!res.ok) throw new Error("api " + res.status);
+        setData(await res.json());
       } catch (e) {
         setErr(String(e));
-        setRows([]);
+        setData({ user: {}, totals: {}, repos: [] });
       }
     })();
   }, [user, limit]);
 
-  // mobil kart görünümü için td'lere etiket
+  // mobil etiketleri
   useEffect(() => {
-    if (!rows || !rows.length) return;
+    if (!data?.repos?.length) return;
     const table = document.querySelector(".projects-table");
     if (!table) return;
-    const headers = HEADERS;
     table.querySelectorAll("tbody tr").forEach((tr) => {
-      tr.querySelectorAll("td").forEach((td, i) => {
-        td.setAttribute("data-th", headers[i] || "");
-      });
+      tr.querySelectorAll("td").forEach((td, i) =>
+        td.setAttribute("data-th", HEADERS[i] || "")
+      );
     });
-  }, [rows]);
+  }, [data]);
+
+  const rows = data?.repos || [];
+  const u = data?.user || {};
+  const t = data?.totals || {};
 
   return (
     <section id="github">
@@ -79,36 +80,51 @@ export default function GithubTable({ user = "trs-1342", limit = 8 }) {
         <div className="gh-left">
           <i className="fa-brands fa-github"></i>
           <strong>GitHub Güncel</strong>
-          <small>@{user} (beta)</small>
+          <small>@{user}</small>
         </div>
-        <div className="gh-right" id="ghBadges">
-          {Array.isArray(rows) && rows.length ? (
-            <>
-              <span className="badge" title="Toplam Repo">
-                <i className="fa-regular fa-folder-open"></i>
-                {fmt(rows.length)} repos
-              </span>
-              <span className="badge" title="Toplam Star">
-                <i className="fa-regular fa-star"></i>
-                {fmt(
-                  rows.reduce((s, r) => s + (r.stargazers_count || 0), 0)
-                )}{" "}
-                stars
-              </span>
-            </>
-          ) : null}
+        <div className="gh-right">
+          <span className="badge" title="Takipçi">
+            <i className="fa-regular fa-user"></i>
+            {fmt(u.followers)} followers
+          </span>
+          <span className="badge" title="Takip">
+            <i className="fa-regular fa-user-check"></i>
+            {fmt(u.following)} following
+          </span>
+          <span className="badge" title="Repo">
+            <i className="fa-regular fa-folder-open"></i>
+            {fmt(u.public_repos || t.repos)} repos
+          </span>
+          <span className="badge" title="Gist">
+            <i className="fa-regular fa-file-code"></i>
+            {fmt(u.public_gists)} gists
+          </span>
+          <span className="badge" title="Toplam Star">
+            <i className="fa-regular fa-star"></i>
+            {fmt(t.stars)} stars
+          </span>
+          <span className="badge" title="Toplam Fork">
+            <i className="fa-solid fa-code-fork"></i>
+            {fmt(t.forks)} forks
+          </span>
+          {Array.isArray(t.top_languages) && t.top_languages.length > 0 && (
+            <span className="badge" title="Top Diller">
+              <i className="fa-solid fa-language"></i>
+              {t.top_languages.map((l) => l.name).join(", ")}
+            </span>
+          )}
         </div>
       </header>
 
       <div className="gh-table-wrap">
         <table className="projects-table" aria-label="Güncel GitHub Depoları">
           <colgroup>
-            <col style={{ width: "18%" }} />
-            <col style={{ width: "12%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "10%" }} />
             <col style={{ width: "30%" }} />
-            <col style={{ width: "18%" }} />
-            <col style={{ width: "5%" }} />
-            <col style={{ width: "5%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "6%" }} />
+            <col style={{ width: "6%" }} />
             <col style={{ width: "8%" }} />
             <col style={{ width: "4%" }} />
           </colgroup>
@@ -120,66 +136,53 @@ export default function GithubTable({ user = "trs-1342", limit = 8 }) {
             </tr>
           </thead>
           <tbody>
-            {rows === null && (
+            {!data && (
               <tr>
-                <td colSpan={8} className="loading">
+                <td className="loading" colSpan={8}>
                   Yükleniyor…
                 </td>
               </tr>
             )}
-            {rows && rows.length === 0 && (
+            {data && rows.length === 0 && (
               <tr>
                 <td colSpan={8}>
-                  GitHub verisi alınamadı.{" "}
-                  {err ? <small>({esc(err)})</small> : null}
+                  Veri bulunamadı {err ? <small>({esc(err)})</small> : null}
                 </td>
               </tr>
             )}
-            {rows &&
-              rows.map((r) => (
-                <tr key={r.html_url}>
-                  <td>
-                    <span
-                      className="ellipsis"
-                      dangerouslySetInnerHTML={{ __html: esc(r.name) }}
-                    />
-                  </td>
-                  <td title={r.language || "-"}>
-                    <span
-                      className="ellipsis"
-                      dangerouslySetInnerHTML={{
-                        __html: esc(r.language || "-"),
-                      }}
-                    />
-                  </td>
-                  <td title={r.commit_message || ""}>
-                    <span
-                      className="ellipsis"
-                      dangerouslySetInnerHTML={{
-                        __html: esc(r.commit_message || "—"),
-                      }}
-                    />
-                  </td>
-                  <td className="hide-sm" title={r.description || ""}>
-                    <span
-                      className="ellipsis"
-                      dangerouslySetInnerHTML={{
-                        __html: esc(r.description || "—"),
-                      }}
-                    />
-                  </td>
-                  <td>{fmt(r.stargazers_count ?? 0)}</td>
-                  <td>{fmt(r.forks_count ?? 0)}</td>
-                  <td title={r.pushed_at || r.commit_date || ""}>
-                    {relTime(r.pushed_at || r.commit_date)}
-                  </td>
-                  <td>
-                    <a href={r.html_url} target="_blank" rel="noopener">
-                      GitHub
-                    </a>
-                  </td>
-                </tr>
-              ))}
+            {rows.map((r) => (
+              <tr key={r.html_url}>
+                <td>
+                  <span className="ellipsis">{r.name}</span>
+                </td>
+                <td title={r.language || "-"}>
+                  <span className="ellipsis">{r.language || "-"}</span>
+                </td>
+                <td title={r.latest_commit_message || ""}>
+                  <span className="ellipsis">
+                    {r.latest_commit_message || "—"}
+                  </span>
+                </td>
+                <td className="hide-sm" title={r.description || ""}>
+                  <span className="ellipsis">{r.description || "—"}</span>
+                </td>
+                <td>{fmt(r.stargazers_count)}</td>
+                <td>{fmt(r.forks_count)}</td>
+                <td title={r.pushed_at || r.latest_commit_date || ""}>
+                  {relTime(r.pushed_at || r.latest_commit_date)}
+                </td>
+                <td>
+                  <a
+                    href={r.html_url}
+                    target="_blank"
+                    rel="noopener"
+                    aria-label="GitHub repo"
+                  >
+                    ↗︎
+                  </a>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

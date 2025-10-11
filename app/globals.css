@@ -641,3 +641,30 @@ footer .motto {
     padding: 1.5rem 1rem;
   }
 }
+/* 
+ */
+/* Zebra ve hover */
+.projects-table tbody tr:nth-child(odd) td {
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+}
+.projects-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+}
+
+/* Başlık satırı daha tok */
+.projects-table thead th {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+/* Repo linki küçük simge */
+.projects-table td:last-child a {
+  display: inline-block;
+  padding: 0.15rem 0.3rem;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+}
+.projects-table td:last-child a:hover {
+  background: var(--muted);
+  text-decoration: none;
+}

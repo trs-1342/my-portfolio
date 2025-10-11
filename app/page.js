@@ -74,7 +74,7 @@ export default function Page() {
               <i className="fa-brands fa-linkedin"></i>
             </a>
             <a
-              href="https://instagram.com/hhattabh"
+              href="https://instagram.com/42.55.29.546.0.3095.3.2307.13"
               target="_blank"
               aria-label="Instagram"
             >

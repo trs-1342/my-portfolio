@@ -1,140 +1,124 @@
+// app/api/gh/route.js
 import { NextResponse } from "next/server";
-
-// Basit XML entry parse (ilk <entry>'yi al)
-function parseFirstEntry(xml) {
-  const entry = xml.match(/<entry>[\s\S]*?<\/entry>/);
-  if (!entry) return { title: "—", updated: null };
-  const titleMatch = entry[0].match(/<title>([\s\S]*?)<\/title>/);
-  const updatedMatch = entry[0].match(/<updated>([\s\S]*?)<\/updated>/);
-  return {
-    title: titleMatch ? titleMatch[1] : "—",
-    updated: updatedMatch ? updatedMatch[1] : null,
-  };
-}
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const user = searchParams.get("user") || "trs-1342";
-  const limit = Math.min(parseInt(searchParams.get("limit") || "8", 10), 20);
+  const limit = Math.min(parseInt(searchParams.get("limit") || "8", 10), 50);
 
   const headers = {
     Accept: "application/vnd.github+json",
-    "User-Agent": "next-gh-proxy",
+    "User-Agent": "next-portfolio-gh",
   };
   if (process.env.GITHUB_TOKEN) {
-    headers["Authorization"] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
   }
 
   try {
-    // 1) Repos (API)
-    const r = await fetch(
-      `https://api.github.com/users/${user}/repos?sort=updated&per_page=${limit}`,
+    // 1) Kullanıcı bilgisi
+    const uRes = await fetch(`https://api.github.com/users/${user}`, {
+      headers,
+      cache: "no-store",
+    });
+    if (!uRes.ok) {
+      return NextResponse.json(
+        { error: "user " + uRes.status },
+        { status: uRes.status }
+      );
+    }
+    const u = await uRes.json();
+
+    // 2) Repositories (yalnızca owner)
+    const rRes = await fetch(
+      `https://api.github.com/users/${user}/repos?type=owner&sort=updated&direction=desc&per_page=${limit}`,
       { headers, cache: "no-store" }
     );
-    let repos = [];
-    if (r.ok) {
-      repos = await r.json();
-    } else {
-      // API olmadı → user Atom feed (server tarafında CORS yok)
-      const ra = await fetch(`https://github.com/${user}.atom`, {
-        headers: { "User-Agent": "next-gh-proxy" },
-      });
-      if (!ra.ok) throw new Error("user atom " + ra.status);
-
-      const xml = await ra.text();
-      // Repo isimlerini feed linklerinden topla
-      const entries = [
-        ...xml.matchAll(
-          /<link[^>]+href="https:\/\/github\.com\/([^/]+)\/([^/]+)\/[^"]*"/g
-        ),
-      ];
-      const names = [];
-      for (const m of entries) {
-        const owner = m[1],
-          repo = m[2];
-        const full = `${owner}/${repo}`;
-        if (!names.includes(full)) names.push(full);
-        if (names.length >= limit) break;
-      }
-      repos = names.map((full) => {
-        const [owner, name] = full.split("/");
-        return {
-          name,
-          html_url: `https://github.com/${owner}/${name}`,
-          language: null,
-          description: null,
-          stargazers_count: 0,
-          forks_count: 0,
-          pushed_at: null,
-          owner: { login: owner },
-          default_branch: "main",
-        };
-      });
+    if (!rRes.ok) {
+      return NextResponse.json(
+        { error: "repos " + rRes.status },
+        { status: rRes.status }
+      );
     }
+    const repos = await rRes.json();
 
-    // 2) Commit (API -> Atom)
-    const rows = [];
-    for (const repo of repos) {
-      const ownerRepo = `${repo.owner.login}/${repo.name}`;
-      let commit_message = "—",
-        commit_date = null;
-
-      // API dene
-      try {
-        const rc = await fetch(
-          `https://api.github.com/repos/${ownerRepo}/commits?sha=${
-            repo.default_branch || "main"
-          }&per_page=1`,
-          { headers, cache: "no-store" }
-        );
-        if (rc.ok) {
-          const data = await rc.json();
-          const c = Array.isArray(data) ? data[0] : null;
-          commit_message = c?.commit?.message || "—";
-          commit_date =
-            c?.commit?.committer?.date || c?.commit?.author?.date || null;
-        } else {
-          throw new Error("commit api " + rc.status);
-        }
-      } catch {
-        // Atom fallback
+    // 3) Son commit mesajı/tarihi
+    const rows = await Promise.all(
+      repos.map(async (repo) => {
+        let msg = "—";
+        let date = null;
         try {
-          const ra = await fetch(
-            `https://github.com/${ownerRepo}/commits.atom`,
-            { headers: { "User-Agent": "next-gh-proxy" } }
+          const cRes = await fetch(
+            `https://api.github.com/repos/${user}/${repo.name}/commits?sha=${
+              repo.default_branch || "main"
+            }&per_page=1`,
+            { headers, cache: "no-store" }
           );
-          if (ra.ok) {
-            const xml = await ra.text();
-            const first = parseFirstEntry(xml);
-            commit_message = first.title || "—";
-            commit_date = first.updated || null;
+          if (cRes.ok) {
+            const arr = await cRes.json();
+            const c = Array.isArray(arr) ? arr[0] : null;
+            msg = c?.commit?.message || "—";
+            date =
+              c?.commit?.committer?.date || c?.commit?.author?.date || null;
           }
-        } catch {}
-      }
+        } catch {
+          /* yoksay */
+        }
+        return {
+          name: repo.name,
+          html_url: repo.html_url,
+          description: repo.description,
+          language: repo.language,
+          stargazers_count: repo.stargazers_count,
+          forks_count: repo.forks_count,
+          open_issues_count: repo.open_issues_count,
+          watchers_count: repo.watchers_count,
+          default_branch: repo.default_branch,
+          pushed_at: repo.pushed_at,
+          latest_commit_message: msg,
+          latest_commit_date: date,
+        };
+      })
+    );
 
-      rows.push({
-        name: repo.name,
-        html_url: repo.html_url,
-        language: repo.language,
-        description: repo.description,
-        stargazers_count: repo.stargazers_count,
-        forks_count: repo.forks_count,
-        pushed_at: repo.pushed_at,
-        default_branch: repo.default_branch,
-        commit_message,
-        commit_date,
-      });
-    }
+    // 4) Toplamlar + top diller
+    const totals = rows.reduce(
+      (acc, r) => {
+        acc.stars += r.stargazers_count || 0;
+        acc.forks += r.forks_count || 0;
+        if (r.language) acc.lang[r.language] = (acc.lang[r.language] || 0) + 1;
+        return acc;
+      },
+      { stars: 0, forks: 0, lang: {} }
+    );
+    const topLanguages = Object.entries(totals.lang)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([k, v]) => ({ name: k, count: v }));
 
-    // Tarihe göre sırala
-    rows.sort((a, b) => {
-      const A = new Date(a.pushed_at || a.commit_date || 0).getTime();
-      const B = new Date(b.pushed_at || b.commit_date || 0).getTime();
-      return B - A;
-    });
+    // 5) Sıralı sonuç
+    rows.sort(
+      (a, b) =>
+        new Date(b.pushed_at || b.latest_commit_date || 0) -
+        new Date(a.pushed_at || a.latest_commit_date || 0)
+    );
 
-    return NextResponse.json(rows, {
-      headers: { "Cache-Control": "no-store" },
+    return NextResponse.json({
+      user: {
+        login: u.login,
+        html_url: u.html_url,
+        avatar_url: u.avatar_url,
+        followers: u.followers,
+        following: u.following,
+        public_repos: u.public_repos,
+        public_gists: u.public_gists,
+      },
+      totals: {
+        repos: rows.length,
+        stars: totals.stars,
+        forks: totals.forks,
+        top_languages: topLanguages,
+      },
+      repos: rows,
     });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
