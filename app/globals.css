@@ -533,15 +533,55 @@ footer .motto {
 }
 
 /* Sol panel: sticky ve arka planı CSS değişkeninden oku */
+/* .left {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--bg);
+  --left-bg: url("/halil.png");
+} */
+
 .left {
   position: sticky;
   top: 0;
   height: 100svh;
   overflow: hidden;
   background: var(--bg);
-  /* JS yoksa halil.png ile başla */
-  --left-bg: url("/halil.png");
 }
+.left-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.left-img.layer {
+  transition: opacity 0.45s ease;
+}
+.left-img.layer.base {
+  opacity: 1;
+  z-index: 0;
+}
+.left-img.layer.top {
+  opacity: 0;
+  z-index: 1;
+}
+.left-img.layer.top.visible {
+  opacity: 1;
+}
+
+@media (max-width: 900px) {
+  .left {
+    position: relative;
+    height: 42svh;
+  }
+}
+@media (max-width: 540px) {
+  .left {
+    height: 300px;
+  }
+}
+
 /* Panelin tamamını kaplayan arka plan */
 .left::before {
   content: "";
