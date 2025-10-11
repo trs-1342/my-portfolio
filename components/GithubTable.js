@@ -80,7 +80,11 @@ export default function GithubTable({ user = "trs-1342", limit = 8 }) {
         <div className="gh-left">
           <i className="fa-brands fa-github"></i>
           <strong>GitHub Güncel</strong>
-          <small>@{user}</small>
+          <small>
+            <a href="https://github.com/trs-1342/" target="_blank">
+              @{user}
+            </a>
+          </small>
         </div>
         <div className="gh-right">
           <span className="badge" title="Takipçi">

@@ -668,3 +668,87 @@ footer .motto {
   background: var(--muted);
   text-decoration: none;
 }
+/*  */
+
+/* ===== About panel (projelerim üstü) ===== */
+.about-panel {
+  margin: 1.5rem 0 2rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.25rem 1.25rem 1rem;
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 1rem 1.5rem;
+  position: relative;
+  transition: background-color 0.22s ease, color 0.22s ease,
+    border-color 0.22s ease;
+}
+.about-panel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 14px 0 0 14px;
+  background: var(--accent);
+}
+
+.about-left h2 {
+  margin: 0 0 0.6rem;
+}
+.about-left p {
+  color: var(--text-2);
+  margin: 0.3rem 0;
+}
+.about-left blockquote {
+  margin: 0.6rem 0 0.8rem;
+  padding-left: 0.8rem;
+  border-left: 3px solid var(--line);
+  color: var(--text);
+  font-style: italic;
+}
+
+.about-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.about-tags .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--text-2);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+}
+
+.about-right .about-meta {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0 0.2rem;
+  display: grid;
+  row-gap: 0.45rem;
+}
+.about-right .about-meta li {
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  line-height: 1.45;
+}
+.about-right i {
+  color: var(--text);
+  opacity: 0.9;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .about-panel {
+    grid-template-columns: 1fr;
+  }
+}

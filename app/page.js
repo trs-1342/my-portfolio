@@ -3,6 +3,7 @@ import CustomCursor from "@/components/CustomCursor";
 import Gallery from "@/components/Gallery";
 import GithubTable from "@/components/GithubTable";
 import ProjectsGrid from "@/components/ProjectsGrid";
+import Image from "next/image";
 
 export default function Page() {
   return (
@@ -24,6 +25,55 @@ export default function Page() {
 
         {/* GitHub */}
         <GithubTable user="trs-1342" limit={8} />
+
+        <div className="about-panel" id="hakkimda">
+          <div className="about-left">
+            <h2>Hakkımda</h2>
+            <p>
+              Selam, ben <strong>Halil Hattab</strong>. 18 yaşındayım; ŞBBKMTAL
+              Bilişim mezunuyum. Şu an İstanbul Gelişim Üniversitesi’nde 1.
+              sınıf <strong>Yazılım Mühendisliği</strong> öğrencisiyim.
+            </p>
+            <p>
+              Amacım; hızla değişen teknoloji çağında{" "}
+              <strong>ahlaki değerleri koruyarak</strong> üretmek ve yeni
+              fikirlerle insanların hayatına dokunan projeler geliştirmek.
+            </p>
+            <blockquote>I defend the moral concept in software.</blockquote>
+            <div className="about-tags">
+              <span className="tag">
+                <i className="fa-solid fa-layer-group"></i> Full-Stack
+              </span>
+              <span className="tag">
+                <i className="fa-solid fa-shield-halved"></i> Cybersecurity
+              </span>
+              <span className="tag">
+                <i className="fa-solid fa-wand-magic-sparkles"></i> Creative
+                Projects
+              </span>
+            </div>
+          </div>
+
+          <div className="about-right">
+            <ul className="about-meta">
+              <li>
+                <i className="fa-solid fa-graduation-cap"></i> 1. sınıf • İstanbul
+                Gelişim Üniversitesi
+              </li>
+              <li>
+                <i className="fa-solid fa-school"></i> ŞBBKMTAL • Bilişim
+              </li>
+              <li>
+                <i className="fa-solid fa-heart"></i> İlgi: Full-Stack, Güvenlik,
+                Üretkenlik
+              </li>
+              <li>
+                <i className="fa-solid fa-flag-checkered"></i> Hedef: etik
+                değerlerle unutulmaz yazılımlar
+              </li>
+            </ul>
+          </div>
+        </div>
 
         {/* Projeler */}
         <ProjectsGrid />
@@ -53,6 +103,37 @@ export default function Page() {
             <i className="fa-solid fa-location-dot"></i>
             <span>İstanbul</span>
           </div>
+        </section>
+
+        {/* Buy Me a Coffee */}
+        <section style={{ margin: "24px 0" }}>
+          <a
+            href="https://www.buymeacoffee.com/trs1342"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              background: "#FFDD00",
+              color: "#000",
+              borderRadius: "8px",
+              padding: "8px 16px",
+              fontWeight: "bold",
+              textDecoration: "none",
+              fontFamily: "inherit",
+              fontSize: "1.1em",
+              gap: "10px",
+            }}
+          >
+            <Image
+              src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+              alt="Buy Me A Coffee"
+              width={120}
+              height={42}
+              style={{ height: "32px", width: "auto", marginRight: "8px" }}
+              unoptimized
+            />
+          </a>
         </section>
 
         {/* Footer */}
