@@ -4,6 +4,82 @@
   padding: 0;
   box-sizing: border-box;
 }
+/* ================= THEME POLISH: Better Light Mode ================= */
+:root,
+.gh-header,
+.badge,
+.card,
+.projects-table td,
+.projects-table th,
+.gh-table-wrap,
+.left,
+.right,
+footer,
+.chip {
+  transition: background-color 0.22s ease, color 0.22s ease,
+    border-color 0.22s ease;
+}
+
+/* Yazılar light modda koyulaşsın (okunabilirlik) */
+html.light {
+  --text: #0b0b0b; /* ana metin neredeyse siyah */
+  --text-2: #151515; /* ikincil metin de koyu */
+  --accent: #000;
+  --bg: #ffffff;
+  --muted: #f2f2f2;
+  --panel: #ffffff;
+  --panel-2: #f8f8f8;
+  --line: #dedede;
+}
+
+/* Açık temada fixed gri kullanan yerleri zorla koyulaştır */
+html.light .intro h2,
+html.light .stack,
+html.light .card-content p,
+html.light ul.skills li,
+html.light footer,
+html.light footer .motto,
+html.light .footer-socials a,
+html.light .loading {
+  color: #111 !important;
+}
+
+/* Badge ve meta pill'ler daha belirgin */
+html.light .badge,
+html.light .meta span {
+  background: #efefef !important;
+  color: #151515 !important;
+  border-color: #dadada !important;
+}
+
+/* GitHub tablo light görünümü */
+html.light .gh-header,
+html.light .gh-table-wrap,
+html.light .projects-table tbody td,
+html.light .projects-table thead th {
+  background: #fff !important;
+}
+html.light .projects-table thead th {
+  color: #0b0b0b !important;
+}
+html.light .projects-table tbody td {
+  color: #161616 !important;
+}
+
+/* Kartlar: arka plan/hover */
+html.light .card {
+  background: #fff !important;
+}
+html.light .card:hover {
+  background: #f6f6f6 !important;
+  border-left-color: #111 !important;
+}
+
+/* Footer linkleri hover */
+html.light .footer-socials a:hover {
+  color: #000 !important;
+}
+
 html,
 body {
   height: 100%;
@@ -17,16 +93,6 @@ body {
   --text-2: #cfcfcf;
   --line: #2b2b2b;
   --accent: #fff;
-}
-html.light {
-  --bg: #fff;
-  --muted: #f4f4f4;
-  --panel: #fcfcfc;
-  --panel-2: #f3f3f3;
-  --text: #121212;
-  --text-2: #2b2b2b;
-  --line: #e5e5e5;
-  --accent: #000;
 }
 html {
   font-family: "JetBrains Mono", "Fira Code", "Segoe UI", "Inter", monospace;
@@ -350,7 +416,8 @@ footer .motto {
 }
 .footer-socials a {
   color: #8a8a8a;
-  font-size: 1.25rem;
+  font-size: 2rem;
+  margin-right: 20px;
   text-decoration: none;
   transition: color 0.2s ease, transform 0.2s ease;
 }
