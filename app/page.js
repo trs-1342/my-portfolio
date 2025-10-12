@@ -2,7 +2,11 @@ import ThemeToggle from "@/components/ThemeToggle";
 import CustomCursor from "@/components/CustomCursor";
 import Gallery from "@/components/Gallery";
 import GithubTable from "@/components/GithubTable";
-import ProjectsGrid from "@/components/ProjectsGrid";
+// import ProjectsGrid from "@/components/ProjectsGrid";
+import FeaturedProjects from "@/components/FeaturedProjects";
+import SkillsIcons from "@/components/SkillsIcons";
+import Nav from "@/components/Nav";
+import Link from "next/link";
 import Image from "next/image";
 
 export default function Page() {
@@ -13,6 +17,7 @@ export default function Page() {
       <Gallery />
 
       <main className="right">
+        <Nav />
         {/* Intro */}
         <section className="intro">
           <h1>Halil Hattab</h1>
@@ -73,13 +78,23 @@ export default function Page() {
               </li>
             </ul>
           </div>
+          <div style={{ marginTop: "12px" }}>
+            <Link
+              href="/about"
+              className="chip"
+              style={{ textDecoration: "none" }}
+            >
+              <span>Daha Fazla Detay</span> ↗︎
+            </Link>
+          </div>
         </div>
 
         {/* Projeler */}
-        <ProjectsGrid />
+        {/* <ProjectsGrid /> */}
+        <FeaturedProjects />
 
         {/* Yetenekler */}
-        <section>
+        {/* <section>
           <h2>💼 Yetenekler</h2>
           <ul className="skills">
             <li>HTML, CSS, JavaScript</li>
@@ -90,7 +105,9 @@ export default function Page() {
             <li>Linux, Portainer, SEO</li>
             <li>WebSocket, Git</li>
           </ul>
-        </section>
+        </section> */}
+
+        <SkillsIcons />
 
         {/* İletişim */}
         <section>

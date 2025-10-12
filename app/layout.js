@@ -22,6 +22,11 @@ export default function RootLayout({ children }) {
           crossOrigin="anonymous"
           referrerPolicy="no-referrer"
         />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css"
+        />
+
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body>{children}</body>
