@@ -1158,8 +1158,7 @@ html.light .bmc-btn:focus-visible {
 
 .site-nav__list {
   display: inline-flex;
-  gap: 8px;
-  padding: 4px;
+  /* gap: 2px; */
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 999px;

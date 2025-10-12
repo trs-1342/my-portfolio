@@ -17,7 +17,9 @@ export default function ThanksPage() {
 
       <section className="thanks-stack">
         <h1 className="page-title">Teşekkürler</h1>
-
+        <p className="thanks-intro">
+          Bu sayfada Hayatımdaki önemli insanlara teşekkür etmek istiyorum.
+        </p>
         {/* Ailem */}
         <ThanksCard
           icon={byKey.family?.icon}
@@ -30,6 +32,14 @@ export default function ThanksPage() {
           icon={byKey.friends?.icon}
           title="Değerli Arkadaşlarıma"
           people={byKey.friends?.people || []}
+          footnote="ve diğer adını yazmadıklarım"
+        />
+
+        {/* Virtual Frends */}
+        <ThanksCard
+          icon={byKey.vfrends?.icon}
+          title="Değerli Sanal Arkadaşlarıma"
+          people={byKey.vfrends?.people || []}
           footnote="ve diğer adını yazmadıklarım"
         />
 

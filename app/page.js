@@ -93,20 +93,6 @@ export default function Page() {
         {/* <ProjectsGrid /> */}
         <FeaturedProjects />
 
-        {/* Yetenekler */}
-        {/* <section>
-          <h2>💼 Yetenekler</h2>
-          <ul className="skills">
-            <li>HTML, CSS, JavaScript</li>
-            <li>Python, C#, PHP</li>
-            <li>Bootstrap, jQuery</li>
-            <li>React, React Native, Next.js, Node.js, WordPress</li>
-            <li>Firebase, MySQL, Express.js</li>
-            <li>Linux, Portainer, SEO</li>
-            <li>WebSocket, Git</li>
-          </ul>
-        </section> */}
-
         <SkillsIcons />
 
         {/* İletişim */}

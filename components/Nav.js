@@ -17,6 +17,7 @@ const items = [
     icon: "fa-solid fa-heart",
   },
   { href: "/hsounds", label: "HSound", icon: "fa-solid fa-rss" },
+  { href: "/muhattab", label: "Muhattab", icon: "fa-solid fa-comment" },
 ];
 
 export default function Nav() {
