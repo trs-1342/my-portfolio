@@ -2,7 +2,7 @@ import "./globals.css";
 import "./responsive.css";
 
 export const metadata = {
-  title: "Halil Hattab | Full-Stack Developer",
+  title: "Halil Hattab | trs-1342 |Full-Stack Developer",
   description: "Portfolio of trs-1342 — Full-Stack Developer",
 };
 

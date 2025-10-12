@@ -1199,19 +1199,118 @@ html.light .site-nav__link.is-active {
 @media (max-width: 640px) {
   .site-nav {
     padding: 8px 0;
+    justify-content: flex-start;
+    position: relative;
+  }
+  .site-nav__menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 12px;
+    top: 8px;
+    width: 38px;
+    height: 38px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    cursor: pointer;
+    z-index: 30;
+  }
+  .site-nav__menu-btn i {
+    font-size: 1.3rem;
+    color: var(--text);
   }
   .site-nav__list {
-    gap: 6px;
-    padding: 3px;
+    display: none;
+    position: absolute;
+    top: 54px;
+    left: 12px;
+    right: 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    flex-direction: column;
+    gap: 0;
+    padding: 8px 0;
+    z-index: 25;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    animation: nav-fade-in 0.18s;
+  }
+  .site-nav__list.is-open {
+    display: flex;
+  }
+  .site-nav__item {
+    width: 100%;
   }
   .site-nav__link {
-    padding: 7px 12px;
-    gap: 6px;
-    font-size: 0.95rem;
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 18px;
+    gap: 8px;
+    font-size: 1rem;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    transition: background 0.15s;
   }
-  /* En dar ekranda metinler taşıyorsa ikonları koruyup metni kısaltmak için: */
+  .site-nav__link:hover,
+  .site-nav__link.is-active {
+    background: var(--panel-2);
+    color: var(--text);
+  }
   .site-nav__link span {
     white-space: nowrap;
+  }
+}
+/* ==== Telefon: menü tepeye sabitlensin ==== */
+@media (max-width: 640px) {
+  .site-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 99999;
+    padding: 8px 0;
+    margin: 0;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--bg) 92%, transparent),
+      transparent
+    );
+  }
+
+  .site-nav__list {
+    position: fixed;
+    top: 54px;
+    left: 12px;
+    right: 12px;
+  }
+
+  .container {
+    padding-top: 62px;
+  }
+}
+/* Masaüstünde hamburger butonu gizli */
+.site-nav__menu-btn {
+  display: none;
+}
+
+/* Sadece mobilde göster */
+@media (max-width: 640px) {
+  .site-nav__menu-btn {
+    display: inline-flex;
+  }
+}
+
+@keyframes nav-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 /* Dikey tek sütun kart yığını */
