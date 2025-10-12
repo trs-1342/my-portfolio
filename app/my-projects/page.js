@@ -1,6 +1,7 @@
 // app/my-projects/page.js
 import Link from "next/link";
 import { projects } from "@/lib/projects";
+import ThemeToggle from "@/components/ThemeToggle";
 import Nav from "@/components/Nav";
 
 export const metadata = { title: "Tüm Projeler — Halil Hattab" };
@@ -10,6 +11,7 @@ export default function MyProjects() {
 
   return (
     <main className="page">
+      <ThemeToggle />
       <Nav />
       <h1 className="page-title">Tüm Projeler</h1>
 

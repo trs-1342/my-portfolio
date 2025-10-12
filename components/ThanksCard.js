@@ -1,20 +1,12 @@
-// components/ThanksCard.js
-export function PersonChip({ person }) {
-  if (!person || !person.name) return null;
-  return (
-    <li className="thanks-chip">
-      {person.url ? (
-        <a href={person.url} target="_blank" rel="noopener noreferrer">
-          {person.name}
-        </a>
-      ) : (
-        <span>{person.name}</span>
-      )}
-    </li>
-  );
-}
+import PersonChip from "./PersonChip";
 
-export default function ThanksCard({ icon, title, people = [], footnote }) {
+export default function ThanksCard({
+  icon,
+  title,
+  people = [],
+  footnote,
+  color,
+}) {
   return (
     <article className="thanks-card">
       <header className="thanks-card__header">
@@ -28,7 +20,7 @@ export default function ThanksCard({ icon, title, people = [], footnote }) {
       {people.length > 0 && (
         <ul className="thanks-list">
           {people.map((p, i) => (
-            <PersonChip key={i} person={p} />
+            <PersonChip key={i} person={p} color={p.color || color} />
           ))}
         </ul>
       )}

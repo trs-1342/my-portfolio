@@ -1,3 +1,4 @@
+import ThemeToggle from "@/components/ThemeToggle";
 import Nav from "@/components/Nav";
 
 // app/about/page.js
@@ -34,6 +35,7 @@ const tools = [
 export default function About() {
   return (
     <main className="page about-page">
+      <ThemeToggle />
       <Nav />
       {/* HERO */}
       <section className="about-hero">

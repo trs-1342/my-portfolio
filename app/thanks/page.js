@@ -1,25 +1,28 @@
 // app/thanks/page.js
 import Nav from "@/components/Nav";
-import ThanksCard, { PersonChip } from "@/components/ThanksCard";
+import ThanksCard from "@/components/ThanksCard";
+import ThemeToggle from "@/components/ThemeToggle";
 import { thanksGroups } from "@/lib/thanks";
 
 export const metadata = { title: "Teşekkürler — Halil Hattab" };
 
 export default function ThanksPage() {
-  // Hızlı erişim için key -> group map
   const byKey = Object.fromEntries(thanksGroups.map((g) => [g.key, g]));
 
   return (
     <main className="page thanks-page">
+      <ThemeToggle />
+
       <Nav />
 
       <section className="thanks-stack">
         <h1 className="page-title">Teşekkürler</h1>
-        <PersonChip
-          person={{
-            name: "Annem",
-            url: "https://instagram.com/jolanar444",
-          }}
+
+        {/* Ailem */}
+        <ThanksCard
+          icon={byKey.family?.icon}
+          title={byKey.family?.title || "Ailem"}
+          people={byKey.family?.people || []}
         />
 
         {/* Arkadaşlar */}
@@ -30,28 +33,59 @@ export default function ThanksPage() {
           footnote="ve diğer adını yazmadıklarım"
         />
 
-        {/* Lise hocaları */}
+        {/* Ortaokul */}
         <ThanksCard
-          icon={byKey.mentors?.icon}
-          title={byKey.mentors?.title || "Lise Hocalarıma"}
-          people={byKey.mentors?.people || []}
-          footnote="ve diğer adını yazmadıklarım"
+          icon={byKey.ortaokul?.icon}
+          title={byKey.ortaokul?.title || "Ortaokul Hocalarım"}
+          people={byKey.ortaokul?.people || []}
+          footnote={
+            (byKey.ortaokul?.people?.length ?? 0) > 0
+              ? "ve diğer adını yazmadıklarım"
+              : undefined
+          }
+        />
+
+        {/* Lise */}
+        <ThanksCard
+          icon={byKey.lise?.icon}
+          title={byKey.lise?.title || "Lise Hocaları"}
+          people={byKey.lise?.people || []}
+          footnote={
+            (byKey.lise?.people?.length ?? 0) > 0
+              ? "ve diğer adını yazmadıklarım"
+              : undefined
+          }
         />
 
         {/* Üniversite */}
         <ThanksCard
           icon={byKey.university?.icon}
-          title={byKey.university?.title || "Üniversite Hocalarıma"}
+          title={byKey.university?.title || "Üniversiteden"}
           people={byKey.university?.people || []}
+          footnote={
+            (byKey.university?.people?.length ?? 0) > 0
+              ? "ve diğer adını yazmadıklarım"
+              : undefined
+          }
         />
 
         {/* Katkıda bulunanlar */}
-        {/* <ThanksCard
+        <ThanksCard
           icon={byKey.community?.icon}
           title={byKey.community?.title || "Katkıda Bulunanlar"}
           people={byKey.community?.people || []}
-        /> */}
-        <p className="thanks-note">ve tekrar anneme teşekkür ederim.</p>
+        />
+
+        <p className="thanks-note">
+          ve tekrar{" "}
+          <a
+            href="https://www.linkedin.com/in/bushra-dukhan-671869107/"
+            target="_blank"
+          >
+            Anneme
+          </a>{" "}
+          teşekkür ederim.
+        </p>
       </section>
     </main>
   );

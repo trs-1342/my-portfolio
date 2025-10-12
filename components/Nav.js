@@ -5,13 +5,18 @@ import { useEffect, useRef, useState } from "react";
 
 const items = [
   { href: "/", label: "Anasayfa", icon: "fa-solid fa-house" },
-  { href: "/my-projects", label: "Projelerim", icon: "fa-solid fa-diagram-project" },
+  {
+    href: "/my-projects",
+    label: "Projelerim",
+    icon: "fa-solid fa-diagram-project",
+  },
   { href: "/about", label: "Hakkımda", icon: "fa-solid fa-user" },
   {
     href: "/thanks",
     label: "Teşekkürler",
-    icon: "fa-solid fa-heart", // Yeni ikon eklendi
+    icon: "fa-solid fa-heart",
   },
+  { href: "/hsounds", label: "HSound", icon: "fa-solid fa-rss" },
 ];
 
 export default function Nav() {
