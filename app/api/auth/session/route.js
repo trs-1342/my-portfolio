@@ -1,8 +1,6 @@
-// app/api/auth/session/route.js
 export const runtime = "nodejs";
-
 import { NextResponse } from "next/server";
-import { adminAuth, db } from "@/lib/firebaseAdmin";
+import { ensureAdmin } from "@/lib/firebaseAdmin";
 
 function maxMs() {
   const days = Math.min(
@@ -13,53 +11,35 @@ function maxMs() {
 }
 
 export async function POST(req) {
-  try {
-    const { idToken } = await req.json();
-    if (!idToken)
-      return NextResponse.json(
-        { ok: false, error: "missing idToken" },
-        { status: 400 }
-      );
-
-    const decoded = await adminAuth.verifyIdToken(idToken, true);
-    const cookie = await adminAuth.createSessionCookie(idToken, {
-      expiresIn: maxMs(),
-    });
-
-    const res = NextResponse.json({ ok: true });
-
-    const isProd = process.env.NODE_ENV === "production";
-    res.cookies.set("session", cookie, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: isProd, // 👈 DEV’de false; prod’da true
-      path: "/",
-      maxAge: Math.floor(maxMs() / 1000),
-    });
-
-    // (opsiyonel) Firestore'a yazma — hata verirse es geç
-    try {
-      await db
-        .collection("users")
-        .doc(decoded.uid)
-        .set(
-          {
-            uid: decoded.uid,
-            email: decoded.email || null,
-            name: decoded.name || null,
-            picture: decoded.picture || null,
-            provider: decoded.firebase?.sign_in_provider || "google",
-            lastLoginAt: new Date(),
-          },
-          { merge: true }
-        );
-    } catch {}
-
-    return res;
-  } catch (e) {
+  const admin = ensureAdmin();
+  if (!admin) {
     return NextResponse.json(
-      { ok: false, error: String(e?.message || e) },
+      { ok: false, error: "admin-not-configured" },
+      { status: 500 }
+    );
+  }
+
+  const { idToken } = await req.json();
+  if (!idToken) {
+    return NextResponse.json(
+      { ok: false, error: "missing-idToken" },
       { status: 400 }
     );
   }
+
+  const decoded = await admin.adminAuth.verifyIdToken(idToken, true);
+  const cookie = await admin.adminAuth.createSessionCookie(idToken, {
+    expiresIn: maxMs(),
+  });
+
+  const res = NextResponse.json({ ok: true, uid: decoded.uid });
+  const secure = process.env.NODE_ENV === "production";
+  res.cookies.set("session", cookie, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
+    path: "/",
+    maxAge: Math.floor(maxMs() / 1000),
+  });
+  return res;
 }

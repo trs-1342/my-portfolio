@@ -1,16 +1,16 @@
-// app/api/auth/logout/route.js
 export const runtime = "nodejs";
-
 import { NextResponse } from "next/server";
 
-export async function GET(req) {
-  const res = NextResponse.redirect(new URL("/", req.url), { status: 303 });
+export async function GET() {
+  const res = NextResponse.redirect(
+    new URL("/", `https://${process.env.VERCEL_URL || "localhost:3000"}`)
+  );
   res.cookies.set("session", "", {
     httpOnly: true,
-    secure: true,
     sameSite: "lax",
+    secure: true,
     path: "/",
-    maxAge: 0,
+    expires: new Date(0),
   });
   return res;
 }
