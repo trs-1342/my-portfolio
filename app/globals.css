@@ -37,6 +37,7 @@ html.light .intro h2,
 html.light .stack,
 html.light .card-content p,
 html.light ul.skills li,
+html.light .skills-card h3,
 html.light footer,
 html.light footer .motto,
 html.light .footer-socials a,
@@ -73,6 +74,18 @@ html.light .card {
 html.light .card:hover {
   background: #f6f6f6 !important;
   border-left-color: #111 !important;
+}
+
+.skills-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.05rem;
+  opacity: 0.9;
+  color: #fff; /* Açık tema için başlıkları beyaz yapar */
+}
+@media (prefers-color-scheme: dark) {
+  .skills-card h3 {
+    color: inherit;
+  } /* Koyu temada varsayılan rengi kullanır */
 }
 
 /* Footer linkleri hover */
