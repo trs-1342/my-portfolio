@@ -1172,7 +1172,7 @@ html.light .bmc-btn:focus-visible {
 .site-nav__link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   padding: 8px 14px;
   border-radius: 999px;
   text-decoration: none;
@@ -1200,7 +1200,7 @@ html.light .site-nav__link.is-active {
 }
 
 .site-nav__link i {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 .site-nav__link span {
   font-weight: 700;
@@ -1679,4 +1679,123 @@ html.light {
   border-radius: 10px;
   padding: 10px 12px;
   text-decoration: none;
+}
+/* AUTH */
+/* ===== Auth Layout ===== */
+.auth-container {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+
+.auth-card {
+  width: min(440px, 92vw);
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
+  padding: 18px 18px 16px;
+}
+
+.auth-header h1 {
+  font-weight: 800;
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+}
+.auth-sub {
+  color: var(--text-2);
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+.auth-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 6px;
+}
+.field {
+  display: grid;
+  gap: 6px;
+}
+.field label {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.field input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  outline: none;
+}
+.field input:focus {
+  border-color: var(--text);
+}
+
+.pw-wrap {
+  position: relative;
+  display: grid;
+}
+.pw-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.auth-submit {
+  margin-top: 4px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--text);
+  color: var(--bg);
+  border: 1px solid var(--text);
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.08s ease;
+}
+html.light .auth-submit {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+.auth-submit:active {
+  transform: translateY(1px);
+}
+
+.auth-footer {
+  margin-top: 12px;
+  color: var(--text-2);
+  font-size: 0.95rem;
+}
+.auth-footer a {
+  color: #9ad1ff;
+  text-decoration: none;
+}
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Küçük cihaz iyileştirmeleri */
+@media (max-width: 420px) {
+  .auth-card {
+    padding: 16px 14px;
+    border-radius: 12px;
+  }
+  .auth-header h1 {
+    font-size: 1.25rem;
+  }
 }

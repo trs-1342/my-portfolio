@@ -18,6 +18,7 @@ const items = [
   },
   { href: "/hsounds", label: "HSound", icon: "fa-solid fa-rss" },
   { href: "/muhattab", label: "Muhattab", icon: "fa-solid fa-comment" },
+  { href: "/login", label: "Login", icon: "" },
 ];
 
 export default function Nav() {

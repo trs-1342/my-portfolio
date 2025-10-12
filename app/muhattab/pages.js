@@ -1,6 +1,6 @@
 import ThemeToggle from "@/components/ThemeToggle";
 
-export default function Muhattab() {
+export default function MuhattabPage() {
   return (
     <>
       <main className="page">
