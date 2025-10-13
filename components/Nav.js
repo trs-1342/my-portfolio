@@ -1,9 +1,9 @@
-// components/Nav.js  (replace mevcut ile)
 "use client";
+
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import Avatar from "@/components/Avatar";
 
 const baseItems = [
   { href: "/", label: "Anasayfa", icon: "fa-solid fa-house" },
@@ -20,14 +20,12 @@ const baseItems = [
 
 export default function Nav() {
   const pathname = usePathname();
-  const [me, setMe] = useState(null);
   const [open, setOpen] = useState(false);
+  const [me, setMe] = useState(null); // { loggedIn: boolean, user?: { picture, ... } }
   const ref = useRef(null);
 
-  // rota değişince menüyü kapat
+  // menü kapanma davranışları
   useEffect(() => setOpen(false), [pathname]);
-
-  // dış tıklama ile kapat
   useEffect(() => {
     const onClick = (e) =>
       ref.current && !ref.current.contains(e.target) && setOpen(false);
@@ -35,45 +33,50 @@ export default function Nav() {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  // oturum durumu getir
+  // oturum bilgisi (session cookie → /api/auth/me)
   useEffect(() => {
-    let ok = true;
+    let alive = true;
     (async () => {
       try {
-        const r = await fetch("/api/auth/me", { credentials: "include" });
+        const r = await fetch("/api/auth/me", {
+          credentials: "include",
+          cache: "no-store",
+        });
         const j = await r.json();
-        if (ok) setMe(j);
+        if (alive) setMe(j);
       } catch {
-        if (ok) setMe({ loggedIn: false });
+        if (alive) setMe({ loggedIn: false });
       }
     })();
     return () => {
-      ok = false;
+      alive = false;
     };
   }, [pathname]);
 
+  // Menü maddeleri: yalnızca hesap/login maddesinde avatar alanı var
   const items = [...baseItems];
   if (me?.loggedIn && me?.user) {
     items.push({
       href: "/profile",
       label: "Hesap",
-      avatar: me.user.picture || "",
+      icon: "", // icon yok
+      avatar: me.user.picture || "", // SADECE bu maddede avatar var
     });
   } else {
     items.push({
       href: "/login",
-      label: "Giriş",
+      label: "Login",
       icon: "fa-solid fa-right-to-bracket",
+      avatar: "", // avatar yok
     });
   }
 
   return (
     <nav ref={ref} className="site-nav">
-      {/* HAMBURGER / MENÜ BUTONU - sadece mobilde görünür (CSS ile) */}
       <button
         type="button"
         className="site-nav__menu-btn"
-        aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
+        aria-label="Menüyü aç/kapat"
         aria-expanded={open}
         aria-controls="primary-nav"
         onClick={() => setOpen((v) => !v)}
@@ -88,30 +91,29 @@ export default function Nav() {
         id="primary-nav"
         className={`site-nav__list${open ? " is-open" : ""}`}
       >
-        {items.map((it) => (
-          <li key={it.href} className="site-nav__item">
-            <Link
-              href={it.href}
-              className={`site-nav__link${
-                pathname === it.href ? " is-active" : ""
-              }`}
-              prefetch
-            >
-              {it.avatar ? (
-                <span className="nav-avatar" title="Hesap">
-                  {/* avatar yüklenmezse fallback gösterilebilir */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={it.avatar} alt="Hesap" />
-                </span>
-              ) : (
-                <i className={it.icon} aria-hidden="true" />
-              )}
-              <span className="nav-label">
-                {it.avatar ? "Hesap" : it.label}
-              </span>
-            </Link>
-          </li>
-        ))}
+        {items.map((it) => {
+          const active =
+            pathname === it.href ||
+            (it.href !== "/" && pathname.startsWith(it.href));
+          return (
+            <li key={it.href} className="site-nav__item">
+              <Link
+                href={it.href}
+                className={`site-nav__link${active ? " is-active" : ""}`}
+                prefetch
+              >
+                {it.avatar ? (
+                  <span className="nav-avatar" title="Hesap">
+                    <Avatar src={it.avatar} alt="Hesap" size={24} />
+                  </span>
+                ) : (
+                  <i className={it.icon} aria-hidden="true" />
+                )}
+                <span className="nav-label">{it.label}</span>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

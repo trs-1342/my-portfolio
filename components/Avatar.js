@@ -1,21 +1,28 @@
-// components/Avatar.js
 "use client";
+
 import Image from "next/image";
 import { useState } from "react";
 
-export default function Avatar({ src, alt = "avatar", size = 40 }) {
-  const [error, setError] = useState(false);
-  const fallback = "/images/default-avatar.png"; // public klasöründe bir default
+export default function Avatar({
+  src,
+  alt = "avatar",
+  size = 32,
+  className = "",
+}) {
+  const [errored, setErrored] = useState(false);
 
-  if (!src || error) {
+  // Görsel yoksa veya hata aldıysa harf balonu
+  if (!src || errored) {
+    const ch = (alt || "?").slice(0, 1).toUpperCase();
     return (
-      <Image
-        src={fallback}
-        alt={alt}
-        width={size}
-        height={size}
-        className="avatar"
-      />
+      <div
+        className={`rounded-full bg-neutral-700 grid place-items-center text-sm ${className}`}
+        style={{ width: size, height: size, minWidth: size, minHeight: size }}
+        aria-label={alt}
+        title={alt}
+      >
+        {ch}
+      </div>
     );
   }
 
@@ -25,10 +32,10 @@ export default function Avatar({ src, alt = "avatar", size = 40 }) {
       alt={alt}
       width={size}
       height={size}
-      loading="lazy"
-      onError={() => setError(true)}
-      style={{ borderRadius: "9999px", objectFit: "cover" }}
-      className="avatar"
+      className={`rounded-full object-cover ${className}`}
+      decoding="async"
+      referrerPolicy="no-referrer"
+      onError={() => setErrored(true)}
     />
   );
 }
