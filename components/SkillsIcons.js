@@ -109,6 +109,8 @@ export default function SkillsIcons() {
           grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
           gap: 16px;
         }
+
+        /* Temel (varsayılan) stiller */
         .skills-card {
           border: 1px solid rgba(0,0,0,0.08);
           border-radius: 16px;
@@ -116,28 +118,57 @@ export default function SkillsIcons() {
           background: var(--card-bg, #fff);
           box-shadow: 0 4px 14px rgba(0,0,0,0.05);
         }
-        .skills-card h3 { margin: 0 0 12px 0; font-size: 1.05rem; opacity: 0.9; }
-        .icon-list {
-          list-style: none; display: flex; flex-wrap: wrap; gap: 10px; padding: 0; margin: 0;
-        }
+        .skills-card h3 { margin: 0 0 12px 0; font-size: 1.05rem; opacity: .9; }
+
+        .icon-list { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; padding: 0; margin: 0; }
         .icon-badge {
           width: 56px; height: 56px; display: grid; place-items: center;
           border-radius: 14px; background: var(--icon-bg, #f7f7f9);
           border: 1px solid rgba(0,0,0,0.06);
         }
         .icon { font-size: 32px; width: 32px; height: 32px; line-height: 1; color: currentColor; }
-        @media (prefers-color-scheme: dark) {
-          .skills-card { background: #0f1115; border-color: rgba(255,255,255,0.08); }
-          .icon-badge { background: #11151c; border-color: rgba(255,255,255,0.06); }
-          .devicon-nextjs-plain.icon,
-          .devicon-express-original.icon,
-          .devicon-linux-plain.icon,
-          .devicon-socketio-original.icon { filter: invert(1) brightness(1.1); }
+
+        /* —— TEMA-BAĞLI STİLLER ———————————————————————————— */
+        /* AÇIK TEMA */
+        html.light .skills-card {
+          background: #ffffff;
+          border-color: rgba(0,0,0,.08);
+          box-shadow: 0 4px 14px rgba(0,0,0,.06);
         }
+        html.light .skills-card h3 { color: #111; opacity: .95; }
+        html.light .icon-badge {
+          background: #f7f7f9;
+          border-color: rgba(0,0,0,.06);
+        }
+        /* Monokrom logolar açık temada normal kalsın */
+        html.light .devicon-nextjs-plain.icon,
+        html.light .devicon-express-original.icon,
+        html.light .devicon-linux-plain.icon,
+        html.light .devicon-socketio-original.icon { filter: none; }
+
+        /* KOYU TEMA (html.light yoksa) */
+        html:not(.light) .skills-card {
+          background: #0f1115;
+          border-color: rgba(255,255,255,.08);
+          box-shadow: 0 8px 24px rgba(0,0,0,.35);
+        }
+        html:not(.light) .skills-card h3 { color: #e8eefb; opacity: .95; }
+        html:not(.light) .icon-badge {
+          background: #11151c;
+          border-color: rgba(255,255,255,.06);
+        }
+        /* Monokrom logoları koyuda görünür kıl */
+        html:not(.light) .devicon-nextjs-plain.icon,
+        html:not(.light) .devicon-express-original.icon,
+        html:not(.light) .devicon-linux-plain.icon,
+        html:not(.light) .devicon-socketio-original.icon { filter: invert(1) brightness(1.1); }
+
+        /* Erişilebilirlik yardımcı sınıfı */
         .sr-only {
           position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
           overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
         }
+
       `}</style>
     </section>
   );

@@ -1,35 +1,35 @@
 // app/muhattab/page.js
-import { cookies } from "next/headers";
-import Link from "next/link";
+import { getSessionUser } from "@/lib/getSessionUser";
+import AuthForm from "@/components/AuthForm";
+import ThemeToggle from "@/components/ThemeToggle";
 import Nav from "@/components/Nav";
 
-export const metadata = { title: "Muhattab — Halil Hattab" };
+export const metadata = { title: "Muhattab — trs-1342" };
 
 export default async function MuhattabPage() {
-  const store = await cookies();
-  const session = store.get("session")?.value;
-
+  const me = await getSessionUser();
+  if (!me) {
+    return (
+      <>
+        <Nav />
+        <ThemeToggle />
+        <section style={{ maxWidth: 560, margin: "40px auto" }}>
+          <AuthForm />
+        </section>
+      </>
+    );
+  }
   return (
-    <main className="content">
+    <>
       <Nav />
-      <section className="panel">
-        <h1 style={{ marginBottom: "0.75rem" }}>Muhattab</h1>
-
-        {!session ? (
-          <div className="empty">
-            <p>Bu alanı görmek için oturum açmalısın.</p>
-            <Link className="btn" href="/login">
-              <i className="fa-brands fa-google" aria-hidden="true" />
-              <span>Google ile devam et</span>
-            </Link>
-          </div>
-        ) : (
-          <div className="wrap">
-            <p>Hoş geldin! Buraya özel içeriğini koyabilirsin.</p>
-            <p>Bu sayfa istedigin gibi diger insanlarla <b>Muhattab</b> olabilirsin =)</p>
-          </div>
-        )}
+      <ThemeToggle />
+      <section style={{ maxWidth: 860, margin: "40px auto" }}>
+        <h1>Muhattab</h1>
+        <p>Merhaba, {me.name || me.email}!</p>
+        <p>
+          En yakın zamanda burada diğer insanlara <b>Muhattab</b> olacaksın!
+        </p>
       </section>
-    </main>
+    </>
   );
 }

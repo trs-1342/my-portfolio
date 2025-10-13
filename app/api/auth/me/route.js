@@ -1,12 +1,11 @@
-// app/api/auth/me/route.js
 export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { adminAuth } from "@/lib/firebaseAdmin";
+import { adminAuth } from "@/lib/firebaseAdmin"; // senin admin wrapper'ına göre uyarlayın
 
 export async function GET() {
-  const store = await cookies();
-  const token = store.get("session")?.value;
+  const jar = await cookies();
+  const token = jar.get("session")?.value;
   if (!token) return NextResponse.json({ loggedIn: false });
 
   try {
@@ -18,7 +17,8 @@ export async function GET() {
       picture: decoded.picture ?? null,
     };
     return NextResponse.json({ loggedIn: true, user });
-  } catch {
+  } catch (err) {
+    console.error("auth/me error:", err?.message || err);
     return NextResponse.json({ loggedIn: false });
   }
 }

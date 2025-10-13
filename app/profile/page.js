@@ -1,68 +1,60 @@
-// app/profile/page.js
-export const runtime = "nodejs";
-
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+// app/profile/page.js  (Nav’ı üstte gösterdiğini varsayıyorum)
 import Nav from "@/components/Nav";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { adminAuth } from "@/lib/firebaseAdmin";
-import Link from "next/link";
+import Image from "next/image";
 
-export const metadata = { title: "Profil — Halil Hattab" };
+export const metadata = { title: "Hesabım — Halil Hattab" };
 
 export default async function ProfilePage() {
-  // 🔧 Next 15: cookies() async
-  const cookieStore = await cookies();
-  const session = cookieStore.get("session")?.value;
-  if (!session) redirect("/login");
+  const jar = await cookies();
+  const token = jar.get("session")?.value;
+  if (!token) redirect("/login");
 
   let user;
   try {
-    const decoded = await adminAuth.verifySessionCookie(session, true);
+    const decoded = await adminAuth().verifySessionCookie(token, true);
     user = {
-      uid: decoded.uid,
+      name: decoded.name ?? "Kullanıcı",
       email: decoded.email ?? "",
-      name: decoded.name ?? "",
       picture: decoded.picture ?? "",
-      provider: decoded.firebase?.sign_in_provider ?? "google",
     };
   } catch {
     redirect("/login");
   }
 
   return (
-    <main className="profile-wrap">
+    <>
       <Nav />
-      <section className="profile-card">
-        <div className="profile-head">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={user.picture || "/avatar-fallback.png"}
-            alt="Profil fotoğrafı"
-            className="profile-avatar"
-          />
-          <div className="profile-id">
-            <h1>{user.name || "İsimsiz Kullanıcı"}</h1>
-            <p className="muted">{user.email}</p>
-            <p className="muted">Sağlayıcı: {user.provider}</p>
+      <section className="profile-wrap">
+        <div className="profile-card">
+          <div className="profile-head">
+            <div className="avatar">
+              <Image
+                src={user.picture || "/avatar-fallback.png"}
+                alt="avatar"
+                width={64}
+                height={64}
+                unoptimized
+              />
+            </div>
+            <div>
+              <h1 style={{ margin: 0 }}>Hesabım</h1>
+              <div style={{ opacity: 0.8 }}>{user.name}</div>
+              <div style={{ opacity: 0.7, fontSize: ".95rem" }}>
+                {user.email}
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className="profile-meta">
-          <div>
-            <span className="tag">UID</span>
-            <code>{user.uid}</code>
+          <div className="profile-actions">
+            <a className="chip" href="/api/auth/logout">
+              Çıkış Yap
+            </a>
           </div>
-        </div>
-
-        <div className="profile-actions">
-          <Link className="btn btn-primary" href="/">
-            Anasayfa
-          </Link>
-          <a className="btn btn-danger" href="/api/auth/logout">
-            Çıkış Yap
-          </a>
         </div>
       </section>
-    </main>
+    </>
   );
 }

@@ -56,7 +56,7 @@ export default function Gallery() {
         <Image
           key={cur.src + "-base"}
           src={cur.src}
-          alt="Halil Hattab"
+          alt="Halil Hattab (trs-1342)"
           fill
           priority
           sizes="(max-width: 900px) 100vw, 50vw"
