@@ -1962,3 +1962,28 @@ html:not(.light) .google-btn {
   height: 100%;
   object-fit: cover;
 }
+/* muhattab */
+/* örnek: globals.css içine */
+.panel {
+  max-width: 960px;
+  margin: 1rem auto;
+  padding: 1rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.btn {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #f5f5f5;
+  color: #111;
+  text-decoration: none;
+}
+html.light .btn {
+  background: #111;
+  color: #fff;
+}

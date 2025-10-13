@@ -1,6 +1,6 @@
 export const runtime = "nodejs";
 import { NextResponse } from "next/server";
-import { ensureAdmin } from "@/lib/firebaseAdmin";
+import { adminAuth } from "@/lib/firebaseAdmin";
 
 function maxMs() {
   const days = Math.min(
@@ -8,6 +8,10 @@ function maxMs() {
     30
   );
   return days * 24 * 60 * 60 * 1000;
+}
+
+export async function GET() {
+  return NextResponse.json({ ok: Boolean(adminAuth) });
 }
 
 export async function POST(req) {
