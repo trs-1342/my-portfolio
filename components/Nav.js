@@ -109,6 +109,7 @@ export default function Nav() {
                 ) : (
                   <i className={it.icon} aria-hidden="true" />
                 )}
+
                 <span className="nav-label">{it.label}</span>
               </Link>
             </li>
