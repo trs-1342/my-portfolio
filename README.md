@@ -1,5 +1,9 @@
 # Halil Hattab — Portföy (Next.js)
 
+- [portfolio site](https://hattab.vercel.app)
+
+![version](https://img.shields.io/github/v/tag/trs-1342/my-portfolio?label=version&sort=semver)
+
 Siyah–beyaz (varsayılan siyah) temalı, performans ve erişilebilirliğe özen gösterilmiş kişisel portföy sitesi.
 GitHub verileri sunucu tarafı API’lerinden çekilir, projeler kart yapısıyla gösterilir, sol panelde optimize görsel galerisi 7 sn’de bir animasyonla değişir (tıklayınca bir sonrakine geçer).
 
@@ -81,38 +85,14 @@ npm run lint
 /app/globals.css          # Tema, layout, tablo, kartlar, responsive stiller
 ```
 
-## 🖼️ Görseller
-
-- **Sol panel** görsel yolu: `/public/halil.png`
-  Dilersen `.webp` kullan ve `IMAGES` dizisini güncelle (Gallery.js).
-
-## 🔎 Özelleştirme İpuçları
-
-- **Pinned (Vitrin) Projeler**: İstersen `/app/api/gh/pinned/route.js` ile GraphQL eklenebilir.
-- **Filtre/Arama**: `GithubTable.js` içine dil/yıldız filtreleri ve arama kutusu eklenebilir.
-- **Case Study**: Önemli projeler için “problem → çözüm → sonuç” bölümü oluştur.
-
-## 🔒 Güvenlik
-
-- Token’ı `.env.local` dışında hiçbir yere koyma.
-- Deploy’da (Vercel vb.) **Environment Variables** bölümüne ekle ve redeploy et.
-- Token yetkileri sadece **Read-only** olmalı.
-
-## 🚀 Dağıtım (Öneri: Vercel)
-
-- Vercel → New Project → Import repo
-- `GITHUB_TOKEN` env ekle → Deploy
-- Önbellek için Next.js revalidate ayarı API’de `next: { revalidate: 60 }` şeklinde kullanılabilir.
-
-## 🧭 Yol Haritası
-
-- [ ] Proje “case study” sayfaları
-- [ ] İletişim formu (server actions + hCaptcha)
-- [ ] PWA (manifest + offline temel cache)
-
 ---
 
-**Motto:** _“I defend the moral concept in software.”_
+## Proje version türü:
+
+- vX.X.M.Y:
+  - X: version numarası
+  - M: güncellenen ay
+  - Y: güncellenen yıl
 
 ## 📧 İletişim
 
