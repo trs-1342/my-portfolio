@@ -2,7 +2,7 @@
 
 - [portfolio site](https://hattab.vercel.app)
 
-![version](https://img.shields.io/github/v/tag/trs-1342/my-portfolio?label=version&sort=semver)
+![version](https://img.shields.io/github/v/tag/trs-1342/my-portfolio?label=version)
 
 Siyah–beyaz (varsayılan siyah) temalı, performans ve erişilebilirliğe özen gösterilmiş kişisel portföy sitesi.
 GitHub verileri sunucu tarafı API’lerinden çekilir, projeler kart yapısıyla gösterilir, sol panelde optimize görsel galerisi 7 sn’de bir animasyonla değişir (tıklayınca bir sonrakine geçer).
@@ -99,3 +99,4 @@ npm run lint
 [![Email](https://img.shields.io/badge/E--posta-hattab1342@gmail.com-blue?style=flat&logo=gmail)](mailto:hattab1342@gmail.com)
 
 © 2025 trs-1342
+
