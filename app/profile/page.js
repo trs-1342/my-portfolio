@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import Image from "next/image";
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { adminAuth } from "@/lib/firebaseAdmin";
 import prisma from "@/lib/prisma";
@@ -76,7 +77,7 @@ export default async function ProfilePage() {
           </dl>
 
           <div className="profile-actions">
-            <a href="/" className="btn">Anasayfa</a>
+            <Link href="/" className="btn">Anasayfa</Link>
             <LogoutButton />
           </div>
         </section>

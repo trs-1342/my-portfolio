@@ -1,7 +1,7 @@
 "use client";
 
 import Nav from "@/components/Nav";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { auth } from "@/lib/firebaseClient";
 import {
   GoogleAuthProvider,
@@ -11,23 +11,52 @@ import {
 } from "firebase/auth";
 
 /**
- * Basit chat akışı:
- * - Giriş yoksa Google ile giriş butonu göster.
- * - Giriş varsa: /api/session'a idToken gönder → session cookie set + kullanıcı MySQL'e upsert
- * - Mesajları /api/messages GET ile çek, POST ile gönder.
- * - Her 3 sn'de bir polling yap (ileri aşamada web socket eklenir).
+ * Akış:
+ * - Giriş yoksa: Google ile giriş butonu.
+ * - Giriş olunca: idToken → /api/auth/session (cookie set + DB upsert).
+ * - Mesajları /api/messages GET, gönderimi POST.
+ * - 3 sn polling.
  */
 
 export default function MuhattabPage() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState < import("firebase/auth").User | null > (null);
   const [text, setText] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState < Array < any >> ([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const scrollerRef = useRef(null);
+  const scrollerRef = useRef < HTMLDivElement | null > (null);
 
   // Google provider'ı bir defa üret
   const provider = useMemo(() => new GoogleAuthProvider(), []);
+
+  // Mesajları çek (memoize)
+  const fetchMessages = useCallback(async () => {
+    try {
+      const current = auth.currentUser;
+      const idToken = current ? await current.getIdToken() : undefined;
+
+      const res = await fetch("/api/messages", {
+        headers: idToken ? { Authorization: `Bearer ${idToken}` } : {},
+        cache: "no-store",
+        credentials: "include",
+      });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const ordered = [...data].reverse(); // alttan yukarı okunsun
+      setMessages(ordered);
+
+      // Scroll
+      const el = scrollerRef.current;
+      if (el) {
+        requestAnimationFrame(() => {
+          el.scrollTop = el.scrollHeight;
+        });
+      }
+    } catch {
+      /* yut */
+    }
+  }, []);
 
   // Auth state
   useEffect(() => {
@@ -35,15 +64,15 @@ export default function MuhattabPage() {
       setUser(u);
       if (u) {
         try {
-          // session cookie oluştur + kullanıcıyı DB'ye upsert
-          const idToken = await auth.currentUser.getIdToken(true);
+          const idToken = await u.getIdToken(true);
+          // Session cookie oluştur + DB upsert
           await fetch("/api/auth/session", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ idToken }), // <-- zorunlu
+            body: JSON.stringify({ idToken }),
+            credentials: "include",
           });
-
-          await fetchMessages(); // giriş olmuşken ilk listeyi çek
+          await fetchMessages();
           setLoading(false);
         } catch {
           setLoading(false);
@@ -54,47 +83,35 @@ export default function MuhattabPage() {
       }
     });
     return () => unsub();
-  }, []);
+  }, [fetchMessages]);
 
   // 3 sn'de bir güncelle (kullanıcı giriş yaptıysa)
   useEffect(() => {
     if (!user) return;
-    const t = setInterval(fetchMessages, 3000);
+    const t = setInterval(() => {
+      fetchMessages();
+    }, 3000);
     return () => clearInterval(t);
-  }, [user]);
-
-  // Mesajları çek
-  async function fetchMessages() {
-    try {
-      const idToken = await auth.currentUser?.getIdToken();
-      const res = await fetch("/api/messages", {
-        headers: idToken ? { Authorization: `Bearer ${idToken}` } : {},
-        cache: "no-store",
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      // API en yeni üstte döndürüyor; aşağıdan yukarı okunsun diye tersle
-      const ordered = [...data].reverse();
-      setMessages(ordered);
-      scrollToBottomSmooth();
-    } catch {
-      /* yut */
-    }
-  }
+  }, [user, fetchMessages]);
 
   // Mesaj gönder
   async function handleSend(e) {
     e.preventDefault();
     if (!text.trim() || sending) return;
+
+    const current = auth.currentUser;
+    if (!current) return;
+
     setSending(true);
     try {
-      const idToken = await auth.currentUser?.getIdToken();
+      const idToken = await current.getIdToken();
       const res = await fetch("/api/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
         },
+        credentials: "include",
         body: JSON.stringify({ text: text.trim() }),
       });
       if (res.ok) {
@@ -106,18 +123,14 @@ export default function MuhattabPage() {
     }
   }
 
-  function scrollToBottomSmooth() {
-    const el = scrollerRef.current;
-    if (!el) return;
-    requestAnimationFrame(() => {
-      el.scrollTop = el.scrollHeight;
-    });
-  }
-
   async function handleLogin() {
     await signInWithPopup(auth, provider);
   }
+
   async function handleLogout() {
+    // önce server-side session cookie'yi temizle
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    // sonra client tarafı firebase oturumunu kapat
     await signOut(auth);
   }
 
