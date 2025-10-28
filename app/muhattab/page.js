@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import Nav from "@/components/Nav";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -12,24 +13,25 @@ import {
 
 /**
  * Akış:
- * - Giriş yoksa: Google ile giriş butonu.
+ * - Giriş yoksa Google ile giriş butonu.
  * - Giriş olunca: idToken → /api/auth/session (cookie set + DB upsert).
  * - Mesajları /api/messages GET, gönderimi POST.
  * - 3 sn polling.
  */
 
 export default function MuhattabPage() {
-  const [user, setUser] = useState < import("firebase/auth").User | null > (null);
+  const [user, setUser] = useState(null);
   const [text, setText] = useState("");
-  const [messages, setMessages] = useState < Array < any >> ([]);
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const scrollerRef = useRef < HTMLDivElement | null > (null);
+  const scrollerRef = useRef(null);
 
   // Google provider'ı bir defa üret
   const provider = useMemo(() => new GoogleAuthProvider(), []);
 
   // Mesajları çek (memoize)
+  /* eslint-disable react-hooks/exhaustive-deps */
   const fetchMessages = useCallback(async () => {
     try {
       const current = auth.currentUser;
@@ -46,7 +48,6 @@ export default function MuhattabPage() {
       const ordered = [...data].reverse(); // alttan yukarı okunsun
       setMessages(ordered);
 
-      // Scroll
       const el = scrollerRef.current;
       if (el) {
         requestAnimationFrame(() => {
@@ -57,6 +58,7 @@ export default function MuhattabPage() {
       /* yut */
     }
   }, []);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   // Auth state
   useEffect(() => {
