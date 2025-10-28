@@ -1,17 +1,15 @@
-// components/LogoutButton.js
-"use client";
-import { useRouter } from "next/navigation";
+'use client'
 
 export default function LogoutButton() {
-  const router = useRouter();
-  const doLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-    router.push("/login");
-    router.refresh();
-  };
   return (
-    <button className="btn" onClick={doLogout} type="button">
-      Çıkış Yap
+    <button
+      className="btn btn-danger"
+      onClick={async () => {
+        await fetch("/api/auth/logout", { method: "POST" });
+        window.location.href = "/login";
+      }}
+    >
+      Çıkış yap
     </button>
   );
 }

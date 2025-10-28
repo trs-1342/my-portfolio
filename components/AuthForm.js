@@ -1,9 +1,11 @@
 // components/AuthForm.js  (varolan dosyaya ekle/güncelle)
 "use client";
+
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "@/lib/firebaseClient"; // initializeApp edilmiş instance
 import Link from "next/link";
 // import { auth, googleProvider, appleProvider } from "@/lib/firebaseClient";
-import { auth, googleProvider } from "@/lib/firebaseClient";
-import { signInWithPopup, signOut } from "firebase/auth";
+// import { auth, googleProvider } from "@/lib/firebaseClient";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -33,38 +35,25 @@ export default function AuthForm() {
   };
 
   const loginWithGoogle = async () => {
-    setErr("");
-    setBusy(true);
     try {
-      const cred = await signInWithPopup(auth, googleProvider);
-      await handleSignInCredential(cred);
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const idToken = await result.user.getIdToken();
+
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+        credentials: 'include',
+      });
+
+
+      // Artık cookie var → profile'a geç
+      window.location.href = "/profile";
     } catch (e) {
-      setErr(`Firebase: ${e?.message || e}`);
-      try {
-        await signOut(auth);
-      } catch {}
-    } finally {
-      setBusy(false);
+      console.error("Google login failed:", e);
     }
   };
-
-  // const loginWithApple = async () => {
-  //   setErr("");
-  //   setBusy(true);
-  //   try {
-  //     // Apple için OAuthProvider('apple.com') kullanıyoruz (lib/firebaseClient.js içinde tanımlı)
-  //     const cred = await signInWithPopup(auth, appleProvider);
-  //     // ÖNEMLİ: Apple bazen email/name vermez (ilk kayıtta gelir, sonraki girişlerde gelmeyebilir)
-  //     await handleSignInCredential(cred);
-  //   } catch (e) {
-  //     setErr(`Firebase(Apple): ${e?.message || e}`);
-  //     try {
-  //       await signOut(auth);
-  //     } catch {}
-  //   } finally {
-  //     setBusy(false);
-  //   }
-  // };
 
   async function handleApple() {
     if (!appleProvider) return; // SSR sırasında null olabilir
@@ -78,6 +67,7 @@ export default function AuthForm() {
           <h1 id="auth-title" className="auth-title">
             Giriş Yap
           </h1>
+          <p>Login gecici bir sureligine <b>duzgun</b> calismiyor, en yakin zamanda duzeltecegim.</p>
         </header>
 
         <div className="auth-form">

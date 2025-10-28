@@ -1,12 +1,30 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+import Image from "next/image";
 import { cookies } from "next/headers";
 import { adminAuth } from "@/lib/firebaseAdmin";
 import prisma from "@/lib/prisma";
-import Link from "next/link";
+import { redirect } from "next/navigation";
+import Nav from "@/components/Nav";
+import ThemeToggle from "@/components/ThemeToggle";
+import LogoutButton from "@/components/LogoutButton";
 
-// Server-side oturum okuma (aynı cookie)
+function normalizeGoogleAvatar(url, size = 128) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.endsWith("googleusercontent.com")) {
+      // ?sz varsa güncelle, yoksa =s{size}-c ekle
+      if (u.searchParams.has("sz")) {
+        u.searchParams.set("sz", String(size));
+        return u.toString();
+      }
+      return `${u.toString()}=s${size}-c`;
+    }
+  } catch { }
+  return url;
+}
+
 async function getMe() {
   const store = await cookies();
   const token = store.get("session")?.value;
@@ -15,11 +33,10 @@ async function getMe() {
   try {
     const dec = await adminAuth.verifySessionCookie(token, true);
     const email = dec.email || `${dec.uid}@noemail.local`;
-    const user = await prisma.user.findUnique({
+    return await prisma.user.findUnique({
       where: { email },
       select: { id: true, name: true, email: true, image: true },
     });
-    return user;
   } catch {
     return null;
   }
@@ -27,43 +44,43 @@ async function getMe() {
 
 export default async function ProfilePage() {
   const me = await getMe();
-
   if (!me) {
-    // Artık login sayfasına YÖNLENDİRMİYORUZ; sayfada uyarı + link gösteriyoruz
-    return (
-      <div className="px-6 py-10">
-        <h1 className="text-xl font-semibold mb-3">Giriş gerekli</h1>
-        <p className="mb-6 opacity-80">
-          Hesap bilgilerini görmek için Google ile giriş yap.
-        </p>
-        <Link href="/login" className="underline">
-          Google ile giriş yap
-        </Link>
-      </div>
-    );
+    redirect("/login");
   }
 
   return (
-    <div className="px-6 py-10">
-      <h1 className="text-xl font-semibold mb-6">Hesap</h1>
-      <div className="flex items-center gap-4">
-        {me.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={me.image}
-            alt="avatar"
-            width={64}
-            height={64}
-            className="rounded-full"
-          />
-        ) : (
-          <div className="w-16 h-16 rounded-full bg-neutral-700" />
-        )}
-        <div>
-          <div className="font-medium">{me.name || "İsimsiz"}</div>
-          <div className="opacity-70 text-sm">{me.email}</div>
-        </div>
-      </div>
-    </div>
+    <>
+      <Nav />
+      <ThemeToggle />
+      <main className="profile-wrap">
+        <section className="profile-card" aria-labelledby="profile-heading">
+          <header className="profile-head">
+            {/* <img src={me.image ?? ""} alt="" className="profile-avatar" /> */}
+            <Image src={`/api/avatar?u=${encodeURIComponent(me.image)}&sz=128`} width={72} height={72} className="profile-avatar" alt="" />
+
+            <div className="profile-id">
+              <h1 id="profile-heading">{me.name || "İsimsiz"}</h1>
+              <div className="profile-email">{me.email}</div>
+            </div>
+          </header>
+
+          <dl className="profile-rows">
+            <div className="profile-row">
+              <dt>Kullanıcı ID</dt>
+              <dd>{me.id}</dd>
+            </div>
+            <div className="profile-row">
+              <dt>Durum</dt>
+              <dd>Aktif</dd>
+            </div>
+          </dl>
+
+          <div className="profile-actions">
+            <a href="/" className="btn">Anasayfa</a>
+            <LogoutButton />
+          </div>
+        </section>
+      </main>
+    </>
   );
 }
