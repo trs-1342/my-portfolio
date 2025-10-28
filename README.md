@@ -4,6 +4,9 @@
 
 ![version](https://img.shields.io/github/v/tag/trs-1342/my-portfolio?label=version)
 
+> Warning:
+> /login adresindeki login işlemi ve /muhattab adreesindeki login işlemi birbirinden farklıdır.
+
 Siyah–beyaz (varsayılan siyah) temalı, performans ve erişilebilirliğe özen gösterilmiş kişisel portföy sitesi.
 GitHub verileri sunucu tarafı API’lerinden çekilir, projeler kart yapısıyla gösterilir, sol panelde optimize görsel galerisi 7 sn’de bir animasyonla değişir (tıklayınca bir sonrakine geçer).
 
