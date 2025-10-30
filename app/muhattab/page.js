@@ -11,14 +11,6 @@ import {
   signOut,
 } from "firebase/auth";
 
-/**
- * Akış:
- * - Giriş yoksa Google ile giriş butonu.
- * - Giriş olunca: idToken → /api/auth/session (cookie set + DB upsert).
- * - Mesajları /api/messages GET, gönderimi POST.
- * - 3 sn polling.
- */
-
 export default function MuhattabPage() {
   const [user, setUser] = useState(null);
   const [text, setText] = useState("");
