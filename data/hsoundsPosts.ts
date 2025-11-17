@@ -11,12 +11,14 @@ export const hsoundsPosts: HSoundsPost[] = [
         slug: "rss-reader-v1",
         title: "RSS Reader App - İlk Sürüm",
         summary: "React Native + AI ile geliştirdiğim RSS okuyucu uygulamasının ilk sürümünü yayınladım.",
+        // connection: "",
         date: "2025-11-17",
     },
     {
         slug: "rss-reader-v2",
         title: "RSS Reader App - Yenile Butonu",
         summary: "RSS Reader uygulamasına yenile butonu ekledim, böylece kullanıcılar manuel olarak beslemeleri güncelleyebilir.",
+        // connection: "",
         date: "2025-11-17",
     }
 ];
