@@ -1,51 +1,62 @@
-import ThemeToggle from "@/components/ThemeToggle";
-import Nav from "@/components/Nav";
+// app/hsounds/page.js
+
+import Link from "next/link";
+import { hsoundsPosts } from "@/data/hsoundsPosts.ts";
+
+export const metadata = {
+  title: "HSounds | Halil Hattab",
+  description: "Halil Hattab'ın projeleri, deneyleri ve RSS üzerinden takip edilebilen paylaşımları.",
+};
 
 export default function HSoundsPage() {
   return (
-    <div className="page">
-      <div>
-        <ThemeToggle />
-        <Nav />
-        <h1 className="page-title">HSounds</h1>
-        <section>
-          <h2>HSounds Ne Demek?</h2>
-          <p>
-            H = halil, sounds ise sesler anlamına gelir. Yani Halil&#39;in Sesleri.
-          </p>
-          <h2>HSounds Nedir?</h2>
-          <p>
-            Bu sayfada projelerimi, fikirlerimi ve duyurularımı yayınlayacağım
-          </p>
-          <p>
-            Burada atılan gönderileri RSS bağlantısı ile APK uygulamaları çekecek
-            ve kullanıcıya gösterecek <small>veya</small> Oturum açma işlemi
-            getirip kullanıcıların Web arayüzünden okumalarını sağlarım.
-          </p>
-        </section>
-        <br />
-        <hr />
-        <br />
-        <b>Çok yakında burada olacağım!</b>
-      </div>
-      <main className="container">
-        <h1>HSounds</h1>
-        <p>Burada projelerimi, fikirlerimi ve duyurularımı paylaşıyorum.</p>
+    <main style={{ maxWidth: 800, margin: "0 auto", padding: "2rem 1.5rem" }}>
+      <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "0.5rem" }}>
+        HSounds
+      </h1>
 
-        {hsoundsPosts.length === 0 && <p>Şimdilik gönderi yok. Çok yakında burada olacağım!</p>}
+      <p style={{ marginBottom: "1.5rem", opacity: 0.8 }}>
+        Burada geliştirdiğim projeleri, fikirleri ve deneyleri paylaşıyorum.
+        Bu sayfanın RSS feed&apos;ini kullanarak güncellemeleri uygulamandan takip edebilirsin.
+      </p>
 
-        <ul>
-          {hsoundsPosts.map((post) => (
-            <li key={post.slug}>
-              <h2>{post.title}</h2>
-              <p>{post.summary}</p>
-              <small>{new Date(post.date).toLocaleDateString("tr-TR")}</small>
-              {/* İleride detay sayfası açarsan: */}
-              {/* <Link href={`/hsounds/${post.slug}`}>Detay</Link> */}
-            </li>
-          ))}
+      <p style={{ marginBottom: "2rem", fontSize: "0.9rem", opacity: 0.7 }}>
+        RSS adresi:{" "}
+        <code>
+          https://hattab.vercel.app/hsounds/rss.xml
+        </code>
+      </p>
+
+      {hsoundsPosts.length === 0 ? (
+        <p>Şimdilik paylaşım yok. Birazdan buralar dolar.</p>
+      ) : (
+        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "1rem" }}>
+          {hsoundsPosts
+            .slice()
+            .sort((a, b) => (a.date < b.date ? 1 : -1))
+            .map((post) => (
+              <li
+                key={post.slug}
+                style={{
+                  borderRadius: 16,
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  padding: "1rem 1.25rem",
+                  background: "rgba(255,255,255,0.02)",
+                }}
+              >
+                <h2 style={{ fontSize: "1.1rem", marginBottom: "0.25rem" }}>
+                  {post.title}
+                </h2>
+                <small style={{ fontSize: "0.8rem", opacity: 0.6 }}>
+                  {new Date(post.date).toLocaleDateString("tr-TR")}
+                </small>
+                <p style={{ marginTop: "0.5rem", opacity: 0.8 }}>
+                  {post.summary}
+                </p>
+              </li>
+            ))}
         </ul>
-      </main>
-    </div>
+      )}
+    </main>
   );
 }
