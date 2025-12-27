@@ -145,17 +145,10 @@ export default function Page() {
             >
               <i className="fa-brands fa-linkedin"></i>
             </a>
-            <a
-              href="https://instagram.com/42.55.29.546.0.3095.3.2307.13"
-              target="_blank"
-              aria-label="Instagram"
-            >
-              <i className="fa-brands fa-instagram"></i>
-            </a>
           </div>
           <p className="copy">
             <i className="fa-regular fa-copyright"></i>{" "}
-            {new Date().getFullYear()} trs-1342 — Tüm hakları saklıdır.
+            {new Date().getFullYear()} trs-1342
           </p>
         </footer>
       </main>
