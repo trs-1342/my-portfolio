@@ -139,7 +139,7 @@ export default function Page() {
               <i className="fa-brands fa-github"></i>
             </a>
             <a
-              href="https://www.linkedin.com/in/halil-hattab-b961b127a/"
+              href="https://www.linkedin.com/in/halil-h-b961b127a/"
               target="_blank"
               aria-label="LinkedIn"
             >
