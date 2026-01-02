@@ -139,6 +139,13 @@ export default function Page() {
               <i className="fa-brands fa-github"></i>
             </a>
             <a
+              href="https://instagram.com/trs.1342"
+              target="_blank"
+              aria-label="Instagram"
+            >
+              <i className="fa-brands fa-instagram"></i>
+            </a>
+            <a
               href="https://www.linkedin.com/in/halil-h-b961b127a/"
               target="_blank"
               aria-label="LinkedIn"
