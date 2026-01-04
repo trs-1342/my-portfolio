@@ -2294,31 +2294,54 @@ html.light .btn {
 }
 
 /*  */
-/* === BERAY özel rengi === */
+/* ===============================
+   ACCENT : BERAY (#FFF57E)
+   =============================== */
+
+/* Dark mode (varsayılan) */
 :root {
-  --acc-beray-bg: #2a1414; /* koyu zemin */
-  --acc-beray-bd: #d25353; /* border */
-  --acc-beray-fg: #d25353; /* yazı */
+  --acc-beray-bg: rgba(255, 245, 126, 0.14);
+  --acc-beray-bd: #fff57e;
+  --acc-beray-fg: #fff57e;
 }
 
+/* Light mode varsa */
 html.light {
-  --acc-beray-bg: #fdeaea; /* açık zemin */
-  --acc-beray-bd: #d25353;
-  --acc-beray-fg: #8a1f1f;
+  --acc-beray-bg: #fffbd6;
+  --acc-beray-bd: #e6d84f;
+  --acc-beray-fg: #8a7f00;
 }
 
-/* === BERAY accent === */
-.thanks-chip.accent-beray,
-.person-link.accent-beray {
+/* Chip */
+.thanks-chip.accent-beray {
   background: var(--acc-beray-bg);
-  border-color: var(--acc-beray-bd);
+  border: 1px solid var(--acc-beray-bd);
   color: var(--acc-beray-fg);
 }
 
+/* Chip hover */
+.thanks-chip.accent-beray:hover {
+  background: rgba(255, 245, 126, 0.26);
+  box-shadow: 0 0 18px rgba(255, 245, 126, 0.35);
+}
+
+/* Modal header */
 .person-modal__header.accent-beray {
   border-bottom: 1px solid var(--acc-beray-bd);
 }
 
 .person-modal__header.accent-beray .person-modal__title {
   color: var(--acc-beray-fg);
+}
+
+/* Link */
+.person-link.accent-beray {
+  border: 1px solid var(--acc-beray-bd);
+  color: var(--acc-beray-fg);
+  background: var(--acc-beray-bg);
+}
+
+.person-link.accent-beray:hover {
+  background: rgba(255, 245, 126, 0.22);
+  box-shadow: 0 0 14px rgba(255, 245, 126, 0.3);
 }
