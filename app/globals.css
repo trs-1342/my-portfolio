@@ -2295,21 +2295,21 @@ html.light .btn {
 
 /*  */
 /* ===============================
-   ACCENT : BERAY (#FFF57E)
+   ACCENT : BERAY (#670D2F)
    =============================== */
 
 /* Dark mode (varsayılan) */
 :root {
-  --acc-beray-bg: rgba(255, 245, 126, 0.14);
-  --acc-beray-bd: #fff57e;
-  --acc-beray-fg: #fff57e;
+  --acc-beray-bg: rgba(103, 13, 47, 0.18);
+  --acc-beray-bd: #670d2f;
+  --acc-beray-fg: #e8b6c8; /* koyu zeminde okunabilirlik için */
 }
 
 /* Light mode varsa */
 html.light {
-  --acc-beray-bg: #fffbd6;
-  --acc-beray-bd: #e6d84f;
-  --acc-beray-fg: #8a7f00;
+  --acc-beray-bg: #f6d9e3;
+  --acc-beray-bd: #670d2f;
+  --acc-beray-fg: #670d2f;
 }
 
 /* Chip */
@@ -2321,8 +2321,8 @@ html.light {
 
 /* Chip hover */
 .thanks-chip.accent-beray:hover {
-  background: rgba(255, 245, 126, 0.26);
-  box-shadow: 0 0 18px rgba(255, 245, 126, 0.35);
+  background: rgba(103, 13, 47, 0.28);
+  box-shadow: 0 0 18px rgba(103, 13, 47, 0.45);
 }
 
 /* Modal header */
@@ -2342,6 +2342,6 @@ html.light {
 }
 
 .person-link.accent-beray:hover {
-  background: rgba(255, 245, 126, 0.22);
-  box-shadow: 0 0 14px rgba(255, 245, 126, 0.3);
+  background: rgba(103, 13, 47, 0.26);
+  box-shadow: 0 0 14px rgba(103, 13, 47, 0.35);
 }
