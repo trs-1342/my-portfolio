@@ -20,7 +20,11 @@ export default function ThanksCard({
       {people.length > 0 && (
         <ul className="thanks-list">
           {people.map((p, i) => (
-            <PersonChip key={i} person={p} color={p.color || color} />
+            <PersonChip
+              key={i}
+              person={p}
+              color={p.color || color} // ← DOKUNMA
+            />
           ))}
         </ul>
       )}
