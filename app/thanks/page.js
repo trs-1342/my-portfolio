@@ -4,7 +4,7 @@ import ThanksCard from "@/components/ThanksCard";
 import ThemeToggle from "@/components/ThemeToggle";
 import { thanksGroups } from "@/lib/thanks";
 
-export const metadata = { title: "Teşekkürler — Halil Hattab" };
+export const metadata = { title: "Teşekkür ederim =)" };
 
 export default function ThanksPage() {
   const byKey = Object.fromEntries(thanksGroups.map((g) => [g.key, g]));
@@ -74,6 +74,18 @@ export default function ThanksPage() {
           people={byKey.university?.people || []}
           footnote={
             (byKey.university?.people?.length ?? 0) > 0
+              ? "ve diğer adını yazmadıklarım"
+              : undefined
+          }
+        />
+
+        {/* Üniversite Arkadaşlarım */}
+        <ThanksCard
+          icon={byKey.universityFriends?.icon}
+          title={byKey.universityFriends?.title || "Üniversite Arkadaşlarım"}
+          people={byKey.universityFriends?.people || []}
+          footnote={
+            (byKey.universityFriends?.people?.length ?? 0) > 0
               ? "ve diğer adını yazmadıklarım"
               : undefined
           }
