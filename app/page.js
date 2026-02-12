@@ -21,6 +21,7 @@ export default function Page() {
         {/* Intro */}
         <section className="intro">
           <h1>Halil Hattab</h1>
+          <h6>yakinda buralar guzellesecek...</h6>
           <h2>Full-Stack Developer</h2>
           <p className="stack">
             React • React Native • Node.js • Next.js • WordPress • Firebase •
@@ -35,7 +36,7 @@ export default function Page() {
           <div className="about-left">
             <h2>Hakkımda</h2>
             <p>
-              Selam, ben <strong>Halil Hattab</strong>. 18 yaşındayım; ŞBBKMTAL
+              Selam, ben <strong>Halil Hattab</strong>. 19 yaşındayım; ŞBBKMTAL
               Bilişim mezunuyum. Şu an İstanbul Gelişim Üniversitesi’nde 1.
               sınıf <strong>Yazılım Mühendisliği</strong> öğrencisiyim.
             </p>
