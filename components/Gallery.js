@@ -7,6 +7,7 @@ const IMAGES = [
   { src: "/halil.png", fit: "cover", pos: "center 30%" },
   { src: "/halil2.png", fit: "cover", pos: "center center" },
   { src: "/halil3.png", fit: "cover", pos: "center center" },
+  { src: "/halil4.png", fit: "cover", pos: "center center" },
   { src: "/favicon.ico", fit: "cover", pos: "center center" },
 ];
 

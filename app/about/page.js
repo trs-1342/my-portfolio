@@ -5,31 +5,28 @@ import Nav from "@/components/Nav";
 export const metadata = { title: "Hakkımda — Halil Hattab" };
 
 const skills = [
-  { name: "JavaScript", level: 85, icon: "fa-brands fa-js" },
-  { name: "TypeScript", level: 70, icon: "fa-solid fa-code" },
-  { name: "Node.js", level: 80, icon: "fa-brands fa-node-js" },
-  { name: "React / Next.js", level: 78, icon: "fa-brands fa-react" },
-  { name: "SQL", level: 65, icon: "fa-solid fa-database" },
+  { name: "JavaScript", level: 60, icon: "fa-brands fa-js" },
+  { name: "TypeScript", level: 50, icon: "fa-solid fa-code" },
+  { name: "Node.js", level: 60, icon: "fa-brands fa-node-js" },
+  { name: "React / Next.js", level: 60, icon: "fa-brands fa-react" },
+  { name: "SQL", level: 60, icon: "fa-solid fa-database" },
   { name: "Linux", level: 60, icon: "fa-brands fa-linux" },
 ];
 
 const donuts = [
-  { label: "Frontend", pct: 78 },
-  { label: "Backend", pct: 82 },
-  { label: "DB", pct: 65 },
-  { label: "Security", pct: 55 },
+  { label: "Frontend", pct: 80 },
+  { label: "Backend", pct: 80 },
+  { label: "DB", pct: 60 },
+  { label: "Security", pct: 65 },
 ];
 
 const tools = [
   "Git",
   "GitHub",
-  "Tailwind/CSS",
-  "Postman",
+  "CSS/BOOTSTRAP",
   "Docker (temel)",
-  "Prisma/Sequelize",
   "Express",
-  "MongoDB",
-  "PostgreSQL",
+  "Expo"
 ];
 
 export default function About() {

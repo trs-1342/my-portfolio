@@ -20,5 +20,12 @@ export const hsoundsPosts: HSoundsPost[] = [
         summary: "RSS Reader uygulamasına yenile butonu ekledim, böylece kullanıcılar manuel olarak beslemeleri güncelleyebilir.",
         // connection: "",
         date: "2025-11-17",
+    },
+    {
+        slug: "rss-reader-v3",
+        title: "RSS Reader App - Yakında",
+        summary: "RSS Reader uygulaması için yeni güncellemeler yakında olacak. Beklemede kalın...",
+        // connection: "",
+        date: "2026-02-27",
     }
 ];
