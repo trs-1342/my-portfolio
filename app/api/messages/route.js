@@ -48,11 +48,19 @@ async function authUser(req) {
   try {
     const u = await userFromSessionCookie();
     if (u) return u;
-  } catch {}
+  } catch (e) {
+  if (process.env.NODE_ENV !== "production") {
+    console.error("Session verify failed:", e);
+  }
+}
   try {
     const u = await userFromBearer(req);
     if (u) return u;
-  } catch {}
+  } catch (e) {
+  if (process.env.NODE_ENV !== "production") {
+    console.error("Session verify failed:", e);
+  }
+}
   return null;
 }
 
