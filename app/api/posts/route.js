@@ -25,8 +25,8 @@ export async function POST(req) {
     if (!session)
       return NextResponse.json({ ok: false, error: "auth" }, { status: 401 });
 
-    const decoded = await adminAuth()
-      .verifySessionCookie(session, true)
+    const decoded = await adminAuth
+   .verifySessionCookie(session, true)
       .catch(() => null);
     if (!decoded)
       return NextResponse.json({ ok: false, error: "auth" }, { status: 401 });
@@ -46,7 +46,7 @@ export async function POST(req) {
       updatedAt: now,
     };
 
-    const ref = await adminDb().collection("posts").add(doc);
+    const ref = await adminDb.collection("posts").add(doc);
     return NextResponse.json(
       { ok: true, id: ref.id, post: { id: ref.id, ...doc } },
       { status: 201 }
