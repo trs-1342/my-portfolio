@@ -109,6 +109,24 @@ export default function Page() {
           </div>
         </section>
 
+        <div className="chip">
+          <i className="fa-solid fa-file-pdf"></i>
+          <a
+            href="/cv.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            CV Görüntüle
+          </a>
+        </div>
+
+        <div className="chip">
+          <i className="fa-solid fa-download"></i>
+          <a href="/cv.pdf" download>
+            CV İndir
+          </a>
+        </div>
+
         <section className="support-section">
           <div className="support-title">
             ☕ Bana bir kahve ısmarlayarak destek olabilirsin!
