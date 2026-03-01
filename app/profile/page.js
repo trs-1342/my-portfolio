@@ -50,20 +50,19 @@ async function getMe() {
 
 export default async function ProfilePage() {
   const me = await getMe();
-  if (!me) redirect("/login"); // ✅ server-side guard
+  if (!me) redirect("/login");
 
-  const safeImg = normalizeGoogleAvatar(me.image, 128);
+  const img = normalizeGoogleAvatar(me.image, 128);
 
   return (
     <>
       <Nav />
       <ThemeToggle />
-
       <main className="profile-wrap">
         <section className="profile-card" aria-labelledby="profile-heading">
           <header className="profile-head">
             <Image
-              src={`/api/avatar?u=${encodeURIComponent(safeImg)}&sz=128`}
+              src={`/api/avatar?u=${encodeURIComponent(img)}&sz=128`}
               width={72}
               height={72}
               className="profile-avatar"

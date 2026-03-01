@@ -19,25 +19,18 @@ export default function MuhattabPage() {
   const [sending, setSending] = useState(false);
   const scrollerRef = useRef(null);
 
-  // Google provider'ı bir defa üret
   const provider = useMemo(() => new GoogleAuthProvider(), []);
 
-  // Mesajları çek (memoize)
-  /* eslint-disable react-hooks/exhaustive-deps */
   const fetchMessages = useCallback(async () => {
     try {
-      const current = auth.currentUser;
-      const idToken = current ? await current.getIdToken() : undefined;
-
       const res = await fetch("/api/messages", {
-        headers: idToken ? { Authorization: `Bearer ${idToken}` } : {},
         cache: "no-store",
-        credentials: "include",
+        credentials: "include", // ✅ cookie ile auth
       });
       if (!res.ok) return;
 
       const data = await res.json();
-      const ordered = [...data].reverse(); // alttan yukarı okunsun
+      const ordered = [...data].reverse();
       setMessages(ordered);
 
       const el = scrollerRef.current;
@@ -50,64 +43,64 @@ export default function MuhattabPage() {
       /* yut */
     }
   }, []);
-  /* eslint-enable react-hooks/exhaustive-deps */
 
-  // Auth state
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
-      if (u) {
-        try {
-          const idToken = await u.getIdToken(true);
-          // Session cookie oluştur + DB upsert
-          await fetch("/api/auth/session", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ idToken }),
-            credentials: "include",
-          });
-          await fetchMessages();
-          setLoading(false);
-        } catch {
-          setLoading(false);
-        }
-      } else {
+
+      if (!u) {
         setMessages([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const idToken = await u.getIdToken(true);
+
+        // ✅ session cookie oluştur (server)
+        const s = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken }),
+          credentials: "include",
+        });
+
+        if (!s.ok) {
+          // session cookie yazılamadıysa çık
+          setMessages([]);
+          setLoading(false);
+          return;
+        }
+
+        await fetchMessages();
+      } finally {
         setLoading(false);
       }
     });
+
     return () => unsub();
   }, [fetchMessages]);
 
-  // 3 sn'de bir güncelle (kullanıcı giriş yaptıysa)
   useEffect(() => {
     if (!user) return;
-    const t = setInterval(() => {
-      fetchMessages();
-    }, 3000);
+    const t = setInterval(fetchMessages, 3000);
     return () => clearInterval(t);
   }, [user, fetchMessages]);
 
-  // Mesaj gönder
   async function handleSend(e) {
     e.preventDefault();
     if (!text.trim() || sending) return;
-
-    const current = auth.currentUser;
-    if (!current) return;
+    if (!auth.currentUser) return;
 
     setSending(true);
     try {
-      const idToken = await current.getIdToken();
       const res = await fetch("/api/messages", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // ✅ cookie ile auth
         body: JSON.stringify({ text: text.trim() }),
       });
+
       if (res.ok) {
         setText("");
         await fetchMessages();
@@ -122,13 +115,10 @@ export default function MuhattabPage() {
   }
 
   async function handleLogout() {
-    // önce server-side session cookie'yi temizle
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-    // sonra client tarafı firebase oturumunu kapat
     await signOut(auth);
   }
 
-  // ------ UI ------
   if (loading) {
     return (
       <div style={{ maxWidth: 860, margin: "24px auto", padding: 12 }}>
@@ -175,7 +165,6 @@ export default function MuhattabPage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {/* avatar */}
           {user.photoURL ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -206,7 +195,6 @@ export default function MuhattabPage() {
         </button>
       </header>
 
-      {/* Mesaj paneli */}
       <div
         ref={scrollerRef}
         style={{
@@ -243,11 +231,7 @@ export default function MuhattabPage() {
         )}
       </div>
 
-      {/* Girdi alanı */}
-      <form
-        onSubmit={handleSend}
-        style={{ display: "flex", gap: 8, marginTop: 12 }}
-      >
+      <form onSubmit={handleSend} style={{ display: "flex", gap: 8, marginTop: 12 }}>
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
