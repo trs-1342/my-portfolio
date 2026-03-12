@@ -13,7 +13,7 @@ import {
   EmailAuthProvider, reauthenticateWithCredential,
 } from "firebase/auth";
 import { auth, googleProvider, firebaseReady } from "@/lib/firebase";
-import { getUserProfile, UserProfile } from "@/lib/firestore";
+import { getUserProfile, ensureAdminRole, UserProfile } from "@/lib/firestore";
 
 interface AuthContextValue {
   user:    User | null;
@@ -72,12 +72,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginEmail = async (email: string, password: string) => {
     if (!auth) throw new Error("Firebase yapılandırılmamış.");
     const { user: u } = await signInWithEmailAndPassword(auth, email, password);
+    await ensureAdminRole(u.uid, u.email ?? "");
     await setSessionCookie(u);
   };
 
   const loginGoogle = async (): Promise<User> => {
     if (!auth) throw new Error("Firebase yapılandırılmamış.");
     const { user: u } = await signInWithPopup(auth, googleProvider);
+    await ensureAdminRole(u.uid, u.email ?? "");
     await setSessionCookie(u);
     return u;
   };
