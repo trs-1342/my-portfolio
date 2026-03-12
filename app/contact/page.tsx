@@ -2,20 +2,31 @@ import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContactForm from "@/components/contact/ContactForm";
-import BlockedGuard from "@/components/BlockedGuard";
+import BlockedPage from "@/components/BlockedPage";
+import { getServerProfile, isBlocked } from "@/lib/getServerProfile";
 
 export const metadata = {
   title: "İletişim — trs",
   description: "Hata bildirimi, geri bildirim veya işbirliği için iletişim.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const profile = await getServerProfile();
+  if (isBlocked(profile, "/contact")) {
+    return (
+      <>
+        <AmbientGlow />
+        <Navbar />
+        <BlockedPage profile={profile!} currentPath="/contact" />
+      </>
+    );
+  }
+
   return (
     <>
       <AmbientGlow />
       <Navbar />
 
-      <BlockedGuard path="/contact">
       <div className="page-content" style={{ paddingTop: "100px" }}>
         {/* Başlık */}
         <header style={{ marginBottom: "48px" }}>
@@ -62,7 +73,6 @@ export default function ContactPage() {
 
         <Footer />
       </div>
-      </BlockedGuard>
     </>
   );
 }

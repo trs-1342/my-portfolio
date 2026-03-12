@@ -4,7 +4,8 @@ import Footer from "@/components/Footer";
 import Waveform from "@/components/hsounds/Waveform";
 import ContentToggle from "@/components/hsounds/ContentToggle";
 import { getArticles, getRssFeeds } from "@/lib/hsounds";
-import BlockedGuard from "@/components/BlockedGuard";
+import BlockedPage from "@/components/BlockedPage";
+import { getServerProfile, isBlocked } from "@/lib/getServerProfile";
 
 export const metadata = {
   title: "HSounds — trs",
@@ -12,14 +13,27 @@ export const metadata = {
 };
 
 export default async function HSoundsPage() {
-  const [articles, rssFeeds] = await Promise.all([getArticles(), getRssFeeds()]);
+  const [profile, articles, rssFeeds] = await Promise.all([
+    getServerProfile(),
+    getArticles(),
+    getRssFeeds(),
+  ]);
+
+  if (isBlocked(profile, "/hsounds")) {
+    return (
+      <>
+        <AmbientGlow />
+        <Navbar />
+        <BlockedPage profile={profile!} currentPath="/hsounds" />
+      </>
+    );
+  }
 
   return (
     <>
       <AmbientGlow />
       <Navbar />
 
-      <BlockedGuard path="/hsounds">
       <div className="page-content" style={{ paddingTop: "100px" }}>
         {/* Header */}
         <header style={{ marginBottom: "60px" }}>
@@ -120,7 +134,6 @@ export default async function HSoundsPage() {
 
         <Footer />
       </div>
-      </BlockedGuard>
     </>
   );
 }
