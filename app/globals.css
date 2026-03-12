@@ -1,26 +1,505 @@
 @import "tailwindcss";
 
+/* ================================================
+   TEMA MOTORU — CSS Variables
+   ================================================ */
+
+/* Default: Dark "Deep Space" */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg:            #09090B;
+  --bg-2:          #111113;
+  --panel:         rgba(255, 255, 255, 0.03);
+  --panel-hover:   rgba(255, 255, 255, 0.06);
+  --border:        rgba(255, 255, 255, 0.09);
+  --border-hover:  rgba(16, 185, 129, 0.5);
+  --text:          #FAFAFA;
+  --text-2:        #A1A1AA;
+  --text-3:        #52525B;
+  --accent:        #10B981;
+  --accent-dim:    rgba(16, 185, 129, 0.12);
+  --accent-glow:   rgba(16, 185, 129, 0.22);
+  --shadow-card:   0 4px 24px rgba(0, 0, 0, 0.45);
+  --shadow-hover:  0 8px 40px rgba(16, 185, 129, 0.18), 0 4px 24px rgba(0, 0, 0, 0.55);
+  --ambient-1:     #3B82F6;
+  --ambient-2:     #8B5CF6;
+  --ambient-3:     #10B981;
+  --spring:        cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+  --font-sans:     'Inter', sans-serif;
+  --font-mono:     'JetBrains Mono', monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Light: "Frosted Glass" */
+html.light {
+  --bg:            #FAFAFA;
+  --bg-2:          #F3F4F6;
+  --panel:         rgba(255, 255, 255, 0.55);
+  --panel-hover:   rgba(255, 255, 255, 0.75);
+  --border:        rgba(0, 0, 0, 0.06);
+  --border-hover:  rgba(5, 150, 105, 0.4);
+  --text:          #0A0A0B;
+  --text-2:        #52525B;
+  --text-3:        #71717A;
+  --accent:        #059669;
+  --accent-dim:    rgba(5, 150, 105, 0.1);
+  --accent-glow:   rgba(5, 150, 105, 0.2);
+  --shadow-card:   0 4px 24px rgba(0, 0, 0, 0.07);
+  --shadow-hover:  0 8px 40px rgba(5, 150, 105, 0.14), 0 4px 24px rgba(0, 0, 0, 0.09);
+  --ambient-1:     #93C5FD;
+  --ambient-2:     #C4B5FD;
+  --ambient-3:     #6EE7B7;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ================================================
+   TEMEL
+   ================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ================================================
+   AMBIENT GLOW — Nefes alan arka plan küreleri
+   ================================================ */
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(130px);
+}
+
+.ambient-orb-1 {
+  width: 600px;
+  height: 600px;
+  background: var(--ambient-1);
+  top: -12%;
+  left: -8%;
+  opacity: 0.14;
+  animation: orbFloat 16s ease-in-out infinite alternate;
+}
+
+.ambient-orb-2 {
+  width: 500px;
+  height: 500px;
+  background: var(--ambient-2);
+  top: 25%;
+  right: -6%;
+  opacity: 0.12;
+  animation: orbFloat 22s ease-in-out infinite alternate-reverse;
+  animation-delay: -6s;
+}
+
+.ambient-orb-3 {
+  width: 450px;
+  height: 450px;
+  background: var(--ambient-3);
+  bottom: -8%;
+  left: 28%;
+  opacity: 0.1;
+  animation: orbFloat 19s ease-in-out infinite alternate;
+  animation-delay: -10s;
+}
+
+@keyframes orbFloat {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(40px, -50px) scale(1.12); }
+}
+
+/* ================================================
+   GLASSMORPHISM KART
+   ================================================ */
+
+.glass {
+  background: var(--panel);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  transition:
+    transform 0.35s var(--spring),
+    border-color 0.25s ease,
+    box-shadow 0.35s ease;
+}
+
+.glass-hover:hover {
+  transform: scale(1.02);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ================================================
+   ANİMASYONLAR
+   ================================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anim-fade-up {
+  animation: fadeInUp 0.65s var(--ease-out) both;
+}
+
+/* Stagger delay sınıfları */
+.d1 { animation-delay: 0.05s; }
+.d2 { animation-delay: 0.12s; }
+.d3 { animation-delay: 0.2s; }
+.d4 { animation-delay: 0.28s; }
+.d5 { animation-delay: 0.36s; }
+.d6 { animation-delay: 0.44s; }
+.d7 { animation-delay: 0.52s; }
+.d8 { animation-delay: 0.6s; }
+
+/* Photo slider — 6.5sn döngü */
+@keyframes photoFadeIn {
+  0%, 100% { opacity: 0; }
+  8%, 92%  { opacity: 1; }
+}
+
+/* Yanıp sönen durum noktası */
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); }
+  50%       { opacity: 0.8; transform: scale(1.25); box-shadow: 0 0 0 4px transparent; }
+}
+
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: statusPulse 2s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--accent-glow);
+  flex-shrink: 0;
+}
+
+/* ================================================
+   NAVBAR
+   ================================================ */
+
+.navbar {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  will-change: opacity, transform;
+}
+
+.navbar-pill {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 6px;
+  background: var(--panel);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-card);
+}
+
+.nav-link {
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: background 0.18s ease, color 0.18s ease;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.nav-link:hover {
+  background: var(--panel-hover);
+  color: var(--text);
+}
+
+.nav-link--active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.nav-link--active:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.nav-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* ================================================
+   LAYOUT
+   ================================================ */
+
+.page-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 100px;
+}
+
+/* ================================================
+   TİPOGRAFİ
+   ================================================ */
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.text-muted {
+  color: var(--text-2);
+}
+
+/* ================================================
+   BUTONLAR
+   ================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.btn-accent:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+.btn-ghost {
+  background: var(--panel);
+  color: var(--text-2);
+  backdrop-filter: blur(12px);
+}
+
+.btn-ghost:hover {
+  background: var(--panel-hover);
+  color: var(--text);
+  border-color: var(--border-hover);
+}
+
+.btn-full {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ================================================
+   PROJE KARTI
+   ================================================ */
+
+.project-cover {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--bg-2);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+
+.project-lang-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+/* ================================================
+   SKİLL KARTI
+   ================================================ */
+
+.skill-icon {
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+}
+
+.skill-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text-2);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* ================================================
+   GITHUB STATS
+   ================================================ */
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+}
+
+/* Katkı hücresi */
+.contrib-cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  transition: transform 0.15s ease;
+}
+
+.contrib-cell:hover {
+  transform: scale(1.4);
+}
+
+.contrib-cell[data-l="1"] { background: rgba(16, 185, 129, 0.22); border-color: transparent; }
+.contrib-cell[data-l="2"] { background: rgba(16, 185, 129, 0.45); border-color: transparent; }
+.contrib-cell[data-l="3"] { background: rgba(16, 185, 129, 0.68); border-color: transparent; }
+.contrib-cell[data-l="4"] { background: var(--accent); border-color: transparent; }
+
+/* ================================================
+   PHOTO SLIDER
+   ================================================ */
+
+.photo-slot {
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.photo-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+}
+
+/* ================================================
+   MOBİL
+   ================================================ */
+
+@media (max-width: 768px) {
+  .navbar-pill .nav-link {
+    padding: 7px 10px;
+    font-size: 0.78rem;
+  }
+
+  .ambient-orb-1 { width: 320px; height: 320px; }
+  .ambient-orb-2 { width: 260px; height: 260px; }
+  .ambient-orb-3 { width: 220px; height: 220px; }
+
+  .page-content {
+    padding: 0 16px 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-pill .nav-link span {
+    display: none;
+  }
+}
+
+/* ================================================
+   FOOTER LİNKLER
+   ================================================ */
+
+.footer-link {
+  font-size: 0.85rem;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.footer-link:hover {
+  color: var(--text);
+}
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-social:hover {
+  color: var(--accent);
 }

@@ -1,0 +1,233 @@
+[
+  {
+    "key": "family",
+    "title": "Aileme",
+    "icon": "🤍",
+    "people": [
+      {
+        "name": "Annem",
+        "bio": "Varolduğu için, Yaşam kaynağım. {iyi ki varsın <3}",
+        "url": "https://www.linkedin.com/in/bushra-dukhan-671869107/",
+        "color": "red",
+        "highlight": true
+      },
+      {
+        "name": "Hiba",
+        "bio": "Varolduğu ve bana Annelik ettiği için. {iyi ki varsın}",
+        "color": "red",
+        "highlight": false
+      }
+    ]
+  },
+  {
+    "key": "friends",
+    "title": "Arkadaşlar",
+    "icon": "🔥",
+    "people": [
+      {
+        "name": "Ozan",
+        "bio": "Dostum ve destekçim. {iyi ki varsın}",
+        "url": "https://ozansec.vercel.app/",
+        "color": "green",
+        "highlight": false
+      },
+      {
+        "name": "Hamza",
+        "bio": "Çocukluk arkadaşım.",
+        "url": "https://instagram.com/h_27_5_2",
+        "color": "blue",
+        "highlight": false
+      },
+      {
+        "name": "Ati",
+        "bio": "Yazılımda bana fikir ve katkı sağladı.",
+        "url": "https://instagram.com/ataer667",
+        "color": "green",
+        "highlight": false
+      },
+      {
+        "name": "İbrahim",
+        "bio": "Saygı değer ve karakterinden insan olduğu için.",
+        "url": "https://instagram.com/ibrahimmefc",
+        "color": "green",
+        "highlight": false
+      },
+      {
+        "name": "Haydar",
+        "bio": "Ortak geleceğimiz, hedeflerimiz ve karakterinden.",
+        "url": "https://instagram.com/7._aero",
+        "color": "blue",
+        "highlight": false
+      },
+      {
+        "name": "IBOOO",
+        "bio": "İş yerinde tanıdığım ve bana gerçekten moral ve destek veren biridir.",
+        "url": "https://instagram.com/eltanawy_0",
+        "color": "blue",
+        "highlight": false
+      },
+      {
+        "name": "ela",
+        "bio": "İş yerinde tanıdım, hedeflerini ciddiye alan, benim için nitelik taşıyan biri olduğu için.",
+        "url": "https://instagram.com/elaagrs",
+        "color": "red",
+        "highlight": false
+      }
+    ]
+  },
+  {
+    "key": "vfriends",
+    "title": "Sanal Dostlar",
+    "icon": "🌐",
+    "people": [
+      {
+        "name": "Beray",
+        "bio": "En çok favori sanal arkadaşımdır. Tesadüfen tanışmış olmam ve çok iyi anlaşabilmemiz adına.",
+        "url": "https://www.instagram.com/beray_wn/",
+        "color": "#ec4899",
+        "highlight": false
+      },
+      {
+        "name": "İsmail",
+        "bio": "Zor durumlarda kendini yetiştirebilen bir arkadaşım. Kendisiyle tanıştığıma memnunum.",
+        "url": "http://ismaiwz.com.tr",
+        "color": "blue",
+        "highlight": false
+      }
+    ]
+  },
+  {
+    "key": "ortaokul",
+    "title": "Ortaokul Hocalarım",
+    "icon": "🏫",
+    "people": [
+      {
+        "name": "Zehra Hocam",
+        "bio": "Benimsediğim ahlaki ve etik değerlerin kaynaklarındandır. Hayatımdaki en sevdiğim hocamdır.",
+        "color": "red",
+        "highlight": false
+      }
+    ]
+  },
+  {
+    "key": "lise",
+    "title": "Lise Hocalarım",
+    "icon": "🏫",
+    "people": [
+      {
+        "name": "Mustafa Hocam",
+        "bio": "Bana yazılımı sevdiren ilk insan. Ona olan saygımı ve sevgimi anlatmak istesem ayrı bir blog yazmam gerekiyor... <3",
+        "color": "red",
+        "highlight": false
+      },
+      {
+        "name": "Şahdiye Hocam",
+        "bio": "Tanıdığım ilk lise hocam, bana rehberlik etti.",
+        "url": "https://instagram.com/sadiyeozcnn",
+        "color": "green",
+        "highlight": false
+      },
+      {
+        "name": "Fatma Hocam",
+        "bio": "Bilişim alanında bana çok destek oldu.",
+        "url": "https://instagram.com/_fatmaunal_",
+        "color": "blue",
+        "highlight": false
+      },
+      {
+        "name": "Ezgi Hocam",
+        "bio": "Türk edebiyatını sevdiren hocamdır.",
+        "color": "yellow",
+        "highlight": false
+      },
+      {
+        "name": "Ünal Hocam",
+        "bio": "Bilişim alanında bana çok destek oldu ve beni anlayışla karşıladı.",
+        "color": "blue",
+        "highlight": false
+      },
+      {
+        "name": "Sema Hocam",
+        "bio": "Edebiyatta farklı bakış açısı kazanmamı sağladı.",
+        "url": "https://instagram.com/semaakann",
+        "color": "yellow",
+        "highlight": false
+      }
+    ]
+  },
+  {
+    "key": "university",
+    "title": "Üniversite Hocalarım",
+    "icon": "🎓",
+    "people": [
+      {
+        "name": "Dr. Öğr. Üyesi Serkan G.",
+        "bio": "En çok destek veren hocamdır. Yazılım Mühendisliği'nde bana çok şey kattı.",
+        "url": "https://avesis.gelisim.edu.tr/sgonen",
+        "color": "red",
+        "highlight": false
+      },
+      {
+        "name": "Arş. Gör. Mehmet Ali B.",
+        "bio": "Bana en çok öğreten hocamdır. Yazılım Mühendisliği'nde bana çok şey kattı.",
+        "url": "https://avesis.gelisim.edu.tr/mabariskan",
+        "color": "green",
+        "highlight": false
+      }
+    ]
+  },
+  {
+    "key": "universityFriends",
+    "title": "Üniversite Arkadaşlarım",
+    "icon": "🎓",
+    "people": [
+      {
+        "name": "İhab",
+        "bio": "Projelerde fikir, ortaklık, öneri ve destekleyici bir iletişim sergilediği için.",
+        "url": "https://www.instagram.com/ehabhosni.gbl/",
+        "color": "red",
+        "highlight": false
+      },
+      {
+        "name": "MO.SALAH",
+        "bio": "Bir çok konuda cevap bulmama neden oldu, iletişimde ve destekleyici olması için.",
+        "url": "https://www.instagram.com/mohammed_.104/",
+        "color": "green",
+        "highlight": false
+      },
+      {
+        "name": "Caner",
+        "bio": "Buraya eklenen ilk üniversite arkadaşımdır. Olgun, açık fikirli, gerçekten saygılı.",
+        "color": "blue",
+        "highlight": false
+      }
+    ]
+  },
+  {
+    "key": "community",
+    "title": "Katkıda Bulunanlar",
+    "icon": "🌱",
+    "people": [
+      {
+        "name": "Suhaib",
+        "bio": "Eğitim hayatıma çok büyük katkılarda bulundu.",
+        "color": "red",
+        "highlight": false
+      },
+      {
+        "name": "Feyzanur Abla",
+        "bio": "İyi kalbi ile manevi olarak destek oldu...",
+        "url": "https://instagram.com/feyzanur.demircii/",
+        "color": "yellow",
+        "highlight": false
+      },
+      {
+        "name": "Hamza Sedat Abi",
+        "bio": "Hiç düşünmeden bana destek oldu.",
+        "url": "https://instagram.com/hamzasedatdemir",
+        "color": "blue",
+        "highlight": false
+      }
+    ]
+  }
+]
