@@ -30,26 +30,57 @@ function sanitize(s: string) {
     .replace(/'/g, "&#x27;");
 }
 
-const NEOFETCH_ART = `        /\\
-       /  \\
-      /\\   \\
-     /  \\ \\ \\
-    / /\\ \\ \\/
-   /_/  \\_\\_\\`;
+const NEOFETCH_ART = `                  -\`
+                 .o+\`
+                \`ooo/
+               \`+oooo:
+              \`+oooooo:
+              -+oooooo+:
+            \`/:-:++oooo+:
+           \`/++++/+++++++:
+          \`/++++++++++++++:
+         \`/+++ooooooooooooo/\`
+        ./ooosssso++osssssso+\`
+       .oossssso-\`\`\`\`/ossssss+\`
+      -osssssso.      :ssssssso.
+     :osssssss/        osssso+++.
+    /ossssssss/        +ssssooo/-
+  \`/ossssso+/:-        -:/+osssso+-
+ \`+sso+:-\`                 \`.-/+oso:
+\`++:.                           \`-/+/
+.\`                                 \`/\`
+`;
 
 function buildNeofetch(projectCount: number): Line[] {
   const art = NEOFETCH_ART.split("\n");
   const info = [
-    "trs@arch-server",
-    "─────────────────────",
-    "OS: Arch Linux x86_64",
-    "Kernel: 6.19.6-arch1-1",
-    "Shell: zsh 5.9",
-    "WM: Hyprland",
-    "Terminal: custom-term v1.0",
-    "Theme: Deep Space [Dark]",
-    "Lang: C · TypeScript · Next.js",
-    `Projects: ${projectCount}`,
+    "                          trs@arch-server",
+    "                         ─────────────────────",
+    "                         OS: Arch Linux x86_64",
+    "                        Host: 82KU (IdeaPad 3 15ALC6)",
+    "                       Kernel: Linux 6.19.6-arch1-1",
+    "                      Uptime: 6 day, 13 hours, 42 mins",
+    "                     Packages: 885 (pacman), 6 (flatpak)",
+    "                    Shell: bash 5.3.9",
+    "                   Display (AUO369F): 1920x1080 in 16, 60 Hz [Built-in]",
+    "                 DE: KDE Plasma 6.6.2",
+    "                WM: KWin (Wayland)",
+    "               WM Theme: Breeze",
+    "              Theme: Breeze (Dark) [Qt], Breeze-Dark [GTK2], Breeze [GTK3]",
+    "             Icons: breeze-dark [Qt], breeze-dark [GTK2/3/4]",
+    "             Font: Noto Sans (10pt) [Qt], Noto Sans (10pt) [GTK2/3/4]",
+    "           Cursor: Oxygen_Zion (24px)",
+    "          Terminal: konsole 25.12.3",
+    "         Terminal Font: Hack (13pt)",
+    "        CPU: AMD Ryzen 7 5700U (16) @ 1.80 GHz",
+    "                              GPU: AMD Lucienne [Integrated]",
+    "                              Memory: 13.42 GiB / 17.40 GiB (77.13%)",
+    "                              Swap: 472.16 MiB / 8.70 GiB (5%)",
+    "                              Disk (/): 22.13 GiB / 1.79 TiB (1%) - ext4",
+    "                              Disk (/mnt/boot): 56.03 MiB / 1021.98 MiB (5%) - vfat",
+    "                              Local IP (wlan0): 192.168.13.42/55",
+    "                              Battery (L20C2PF0): 100% [AC Connected]",
+    "                              Locale: en_US.UTF-8",
   ];
   const lines: Line[] = [];
   const maxRows = Math.max(art.length, info.length);
@@ -363,7 +394,7 @@ export default function Terminal({ projects }: { projects: Project[] }) {
         style={{
           padding: "16px",
           minHeight: "240px",
-          maxHeight: "380px",
+          maxHeight: "680px",
           overflowY: "auto",
           cursor: "text",
           scrollbarWidth: "thin",

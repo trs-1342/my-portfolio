@@ -7,7 +7,7 @@
       {
         "name": "Annem",
         "bio": "Varolduğu için, Yaşam kaynağım. {iyi ki varsın <3}",
-        "url": "https://www.linkedin.com/in/bushra-dukhan-671869107/",
+        "url": "https://bushradukhan.com/",
         "color": "red",
         "highlight": true
       },
@@ -22,14 +22,14 @@
   {
     "key": "friends",
     "title": "Arkadaşlar",
-    "icon": "🔥",
+    "icon": "👤",
     "people": [
       {
         "name": "Ozan",
         "bio": "Dostum ve destekçim. {iyi ki varsın}",
         "url": "https://ozansec.vercel.app/",
         "color": "green",
-        "highlight": false
+        "highlight": true
       },
       {
         "name": "Hamza",
@@ -43,7 +43,7 @@
         "bio": "Yazılımda bana fikir ve katkı sağladı.",
         "url": "https://instagram.com/ataer667",
         "color": "green",
-        "highlight": false
+        "highlight": true
       },
       {
         "name": "İbrahim",
@@ -57,7 +57,7 @@
         "bio": "Ortak geleceğimiz, hedeflerimiz ve karakterinden.",
         "url": "https://instagram.com/7._aero",
         "color": "blue",
-        "highlight": false
+        "highlight": true
       },
       {
         "name": "IBOOO",
@@ -71,7 +71,7 @@
         "bio": "İş yerinde tanıdım, hedeflerini ciddiye alan, benim için nitelik taşıyan biri olduğu için.",
         "url": "https://instagram.com/elaagrs",
         "color": "red",
-        "highlight": false
+        "highlight": true
       }
     ]
   },
@@ -85,14 +85,14 @@
         "bio": "En çok favori sanal arkadaşımdır. Tesadüfen tanışmış olmam ve çok iyi anlaşabilmemiz adına.",
         "url": "https://www.instagram.com/beray_wn/",
         "color": "#ec4899",
-        "highlight": false
+        "highlight": true
       },
       {
         "name": "İsmail",
         "bio": "Zor durumlarda kendini yetiştirebilen bir arkadaşım. Kendisiyle tanıştığıma memnunum.",
         "url": "http://ismaiwz.com.tr",
         "color": "blue",
-        "highlight": false
+        "highlight": true
       }
     ]
   },
@@ -105,7 +105,7 @@
         "name": "Zehra Hocam",
         "bio": "Benimsediğim ahlaki ve etik değerlerin kaynaklarındandır. Hayatımdaki en sevdiğim hocamdır.",
         "color": "red",
-        "highlight": false
+        "highlight": true
       }
     ]
   },
@@ -118,40 +118,40 @@
         "name": "Mustafa Hocam",
         "bio": "Bana yazılımı sevdiren ilk insan. Ona olan saygımı ve sevgimi anlatmak istesem ayrı bir blog yazmam gerekiyor... <3",
         "color": "red",
-        "highlight": false
+        "highlight": true
       },
       {
         "name": "Şahdiye Hocam",
         "bio": "Tanıdığım ilk lise hocam, bana rehberlik etti.",
         "url": "https://instagram.com/sadiyeozcnn",
         "color": "green",
-        "highlight": false
+        "highlight": true
       },
       {
         "name": "Fatma Hocam",
         "bio": "Bilişim alanında bana çok destek oldu.",
         "url": "https://instagram.com/_fatmaunal_",
         "color": "blue",
-        "highlight": false
+        "highlight": true
       },
       {
         "name": "Ezgi Hocam",
         "bio": "Türk edebiyatını sevdiren hocamdır.",
         "color": "yellow",
-        "highlight": false
+        "highlight": true
       },
       {
         "name": "Ünal Hocam",
         "bio": "Bilişim alanında bana çok destek oldu ve beni anlayışla karşıladı.",
         "color": "blue",
-        "highlight": false
+        "highlight": true
       },
       {
         "name": "Sema Hocam",
         "bio": "Edebiyatta farklı bakış açısı kazanmamı sağladı.",
         "url": "https://instagram.com/semaakann",
         "color": "yellow",
-        "highlight": false
+        "highlight": true
       }
     ]
   },
@@ -165,14 +165,14 @@
         "bio": "En çok destek veren hocamdır. Yazılım Mühendisliği'nde bana çok şey kattı.",
         "url": "https://avesis.gelisim.edu.tr/sgonen",
         "color": "red",
-        "highlight": false
+        "highlight": true
       },
       {
         "name": "Arş. Gör. Mehmet Ali B.",
         "bio": "Bana en çok öğreten hocamdır. Yazılım Mühendisliği'nde bana çok şey kattı.",
         "url": "https://avesis.gelisim.edu.tr/mabariskan",
         "color": "green",
-        "highlight": false
+        "highlight": true
       }
     ]
   },
@@ -193,7 +193,7 @@
         "bio": "Bir çok konuda cevap bulmama neden oldu, iletişimde ve destekleyici olması için.",
         "url": "https://www.instagram.com/mohammed_.104/",
         "color": "green",
-        "highlight": false
+        "highlight": true
       },
       {
         "name": "Caner",
@@ -219,7 +219,7 @@
         "bio": "İyi kalbi ile manevi olarak destek oldu...",
         "url": "https://instagram.com/feyzanur.demircii/",
         "color": "yellow",
-        "highlight": false
+        "highlight": true
       },
       {
         "name": "Hamza Sedat Abi",

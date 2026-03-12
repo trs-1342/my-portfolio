@@ -315,7 +315,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
             <Link href="/my-projects" className="btn btn-ghost" style={{ fontSize: "0.82rem" }}>
               ← Tüm Projeler
             </Link>
-            {project.repo_url && (
+            {/*{project.repo_url && (
               <a
                 href={project.repo_url}
                 target="_blank"
@@ -325,7 +325,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
               >
                 github.com/trs-1342/{project.slug} ↗
               </a>
-            )}
+            )}*/}
           </div>
 
         </div>

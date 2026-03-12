@@ -23,39 +23,48 @@ const EVENTS: Event[] = [
   {
     id: 1,
     date: "2024 — 2025",
-    title: "Staj & Mezuniyet",
-    desc: "Gerçek dünya deneyimi: staj projelerinde aktif geliştirme. Lise mezuniyeti.",
-    log: "> Staj modülü yükleniyor...\n> Bağlantı kuruldu: production_env [OK]\n> Deneyim +1 eklendi [OK]\n> Mezuniyet sertifikası oluşturuldu [OK]",
+    title: "Staj",
+    desc: "Gerçek dünya deneyimi: staj projelerinde aktif geliştirme.",
+    log: "> Staj modülü yükleniyor...\n> Bağlantı kuruldu: production_env [OK]\n> Deneyim +1 eklendi [OK]\n> İş yeri açma belgesi oluşturuldu [OK]",
   },
   {
     id: 2,
+    date: "25.02.2025",
+    title: "Proje Satışı",
+    desc: "Gerçek ürün satış deneyimi: projenin aylar sonrasında satılması.",
+    log: "> Staj modülü yükleniyor...\n> Bağlantı kuruldu: production_sale [OK]\n> Satış deneyimi +1 eklendi [OK]\n> İphone 13 faturası oluşturuldu [OK]",
+  },
+  {
+    id: 3,
     date: "22.09.2025",
     title: "Üniversite",
     desc: "İstanbul Gelişim Üniversitesi — Yazılım Mühendisliği 1. Sınıf başlangıcı.",
     log: "> IGÜ bağlantısı kuruluyor...\n> Fakülte: Mühendislik [OK]\n> Bölüm: Yazılım Mühendisliği [OK]\n> Yeni akademik dönem başlatıldı [OK]",
   },
   {
-    id: 3,
+    id: 4,
     date: "Bugün",
     title: "Aktif Geliştirici",
     desc: "Freelance projeler, açık kaynak katkıları ve süregelen öğrenme yolculuğu.",
-    log: "> Sistem durumu kontrol ediliyor...\n> Tüm modüller aktif [OK]\n> Proje sayısı: 12+ [OK]\n> Öğrenme modu: infinity [OK]\n> trs@arch:~$ _",
+    log: "> Sistem durumu kontrol ediliyor...\n> Tüm modüller aktif [OK]\n> Proje sayısı: 42+ [OK]\n> Öğrenme modu: while [OK]\n> trs@arch:~$ ",
     isCurrent: true,
   },
 ];
 
-/* Her nodun container içindeki hedef konumu (% cinsinden) */
+/* 6 ELEMAN İÇİN GÜNCELLENMİŞ KONUMLAR (% cinsinden) */
+// "Proje Satışı" için x: 48, y: 38 eklendi, diğerleri yeniden dengelendi
 const BASE_POSITIONS = [
-  { x: 12, y: 35 },
-  { x: 35, y: 65 },
-  { x: 62, y: 28 },
-  { x: 84, y: 55 },
+  { x: 10, y: 45 }, // Lise (id: 0)
+  { x: 28, y: 70 }, // Staj & Mezuniyet (id: 1)
+  { x: 48, y: 35 }, // Proje Satışı (id: 2) -> YENİ EKLENEN
+  { x: 72, y: 65 }, // Üniversite (id: 3)
+  { x: 90, y: 30 }, // Aktif Geliştirici (Bugün) (id: 4)
 ];
 
-/* Float animasyonu için offset — her node farklı salınır */
 const FLOAT_OFFSETS = [
   { ax: 0.6, ay: 0.8, px: 0.7, py: 1.1 },
   { ax: 0.9, ay: 0.5, px: 1.3, py: 0.8 },
+  { ax: 0.7, ay: 0.9, px: 1.0, py: 0.5 },
   { ax: 0.5, ay: 1.0, px: 0.9, py: 0.6 },
   { ax: 0.8, ay: 0.7, px: 0.6, py: 1.2 },
 ];
@@ -121,8 +130,8 @@ export default function ConstellationTimeline() {
 
   /* Float animasyonu — requestAnimationFrame döngüsü */
   useEffect(() => {
-    const SPEED = 0.0004;
-    const AMPLITUDE = 14; // px
+    const SPEED = 0.0007;
+    const AMPLITUDE = 13; // px
 
     const animate = (ts: number) => {
       timeRef.current = ts;
@@ -246,9 +255,8 @@ export default function ConstellationTimeline() {
             {/* Hover kart + SVG bağlantı çizgisi */}
             {hoveredId === i && (() => {
               const orbR = ev.isCurrent ? 11 : 8;
-              // Kart boyutunu tahmini belirle — SVG bu mesafeyi köprüler
               const LINE_H = 28;
-              const CARD_W = 230;
+              const CARD_W = 330;
               return (
                 <>
                   {/* SVG: orb merkezinden kart altına esnek çizgi */}
@@ -257,7 +265,7 @@ export default function ConstellationTimeline() {
                       position: "absolute",
                       left: "50%",
                       transform: "translateX(-50%)",
-                      bottom: `${orbR}px`,       // orb merkezi
+                      bottom: `${orbR}px`,
                       width: CARD_W,
                       height: LINE_H,
                       overflow: "visible",
@@ -273,7 +281,6 @@ export default function ConstellationTimeline() {
                         <stop offset="100%" stopColor="#10B981" stopOpacity="0.3" />
                       </linearGradient>
                     </defs>
-                    {/* Dikey bağlantı çizgisi */}
                     <line
                       x1={CARD_W / 2} y1={LINE_H}
                       x2={CARD_W / 2} y2={0}
@@ -281,7 +288,6 @@ export default function ConstellationTimeline() {
                       strokeWidth="1.5"
                       strokeDasharray="4 4"
                     />
-                    {/* Orb'dan yayılan yıldız parlaması */}
                     <circle
                       cx={CARD_W / 2} cy={LINE_H}
                       r="3" fill="#10B981" opacity="0.6"

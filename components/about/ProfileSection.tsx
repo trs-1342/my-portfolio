@@ -108,7 +108,7 @@ export default function ProfileSection() {
           <p style={{ color: "var(--text-2)", lineHeight: 1.8, fontSize: "0.96rem" }}>
             Amacım; teknolojinin hızla değiştiği bu çağda{" "}
             <span style={{ color: "var(--text)", fontWeight: 600 }}>
-              ahlaki değerleri koruyarak
+              ürün çıkartmaya odaklı
             </span>{" "}
             üretmek ve insanların hayatına gerçekten dokunan projeler geliştirmek.
           </p>
@@ -122,7 +122,7 @@ export default function ProfileSection() {
           <a href="https://github.com/trs-1342" className="btn btn-accent" target="_blank" rel="noopener noreferrer">
             ⌨️ GitHub
           </a>
-          <a href="#contact" className="btn btn-ghost">
+          <a href="/contact" className="btn btn-ghost">
             ✉️ İletişim
           </a>
         </div>

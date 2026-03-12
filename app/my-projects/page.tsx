@@ -70,7 +70,7 @@ export default function ProjectsPage() {
             style={{ color: "var(--text-2)", fontSize: "0.96rem", maxWidth: "540px", lineHeight: 1.7 }}
           >
             Açık kaynak çalışmalarım, kişisel projelerim ve aktif geliştirmeler.
-            Terminali kullanarak projeleri keşfedebilirsin.
+            Terminali kullanarak projeleri keşfedebilirsin, bilgisayarımın anısına yaptım.
           </p>
         </header>
 
@@ -109,7 +109,7 @@ export default function ProjectsPage() {
         )}
 
         {/* Tüm Projeler */}
-        <section>
+        {/*<section>
           <h2
             className="mono"
             style={{
@@ -136,7 +136,7 @@ export default function ProjectsPage() {
               </div>
             ))}
           </div>
-        </section>
+        </section>*/}
 
         {/* İnteraktif Terminal — footer'ın hemen üstünde */}
         <div className="anim-fade-up" style={{ marginTop: "60px" }}>

@@ -56,7 +56,7 @@ export default function Hero() {
               display: "inline-block",
             }}
           />
-          available for work
+          çalışmaya müsait
         </div>
 
         {/* İsim */}
@@ -85,7 +85,7 @@ export default function Hero() {
         >
           Mid-level{" "}
           <span style={{ color: "var(--accent)", fontWeight: 700 }}>
-            Software Developer
+            Software Enginner
           </span>
         </h2>
 
@@ -99,17 +99,18 @@ export default function Hero() {
             maxWidth: "460px",
           }}
         >
-          Arch Linux ortamında C ve modern web teknolojileri geliştiriyorum.
-          Sistem programlama, web ve yazılım mimarisine olan ilgimi
-          ahlaki değerleri koruyarak üretmeye dönüştürmeyi hedefliyorum.
+          İstanbul Gelişim Üniversitesi'nde Yazılım Mühendisliği öğrencisiyim.
+          Arch Linux'u keşfediyor, C diliyle algoritma mantığını ve modern web teknolojilerini öğreniyorum.
+          Teknik becerilerimi ürün çıkartmaya odaklıyım.
+          Teknoloji dünyası ile yakından ilgileniyor, gelişime ve öğrenmeye açık birisiyim.
         </p>
 
         {/* CTA butonlar */}
         <div className="anim-fade-up d5" style={{ display: "flex", gap: "12px" }}>
-          <a href="#projects" className="btn btn-accent">
+          <a href="/my-projects" className="btn btn-accent">
             Projeleri Gör
           </a>
-          <a href="#contact" className="btn btn-ghost">
+          <a href="/contact" className="btn btn-ghost">
             İletişim
           </a>
         </div>
@@ -124,7 +125,7 @@ export default function Hero() {
             marginTop: "4px",
           }}
         >
-          {["C", "Linux", "Next.js", "TypeScript", "Arch"].map((t) => (
+          {["C", "Linux", "Arch", "Next.js", "JavaScript", "TypeScript", "AI"].map((t) => (
             <span
               key={t}
               style={{

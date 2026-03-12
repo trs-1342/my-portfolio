@@ -1,5 +1,12 @@
 const active = [
   {
+    emoji: "🌐",
+    title: "mnp",
+    desc: "Kişisel portfolyo ve blog platformum.",
+    status: "Geliştiriliyor",
+    stack: ["Next.js", "Firebase", "TypeScript", "Firebase Auth", "Vercel"],
+  },
+  {
     emoji: "🎓",
     title: "OpenUni",
     desc: "Üniversite kaynak ve not yönetimi platformu.",
@@ -12,13 +19,6 @@ const active = [
     desc: "Yerel pazar dijitalleştirme uygulaması.",
     status: "Planlama",
     stack: ["React Native", "Node.js"],
-  },
-  {
-    emoji: "🖥️",
-    title: "sysmon",
-    desc: "Arch Linux sistem izleme aracı, terminal UI.",
-    status: "Geliştiriliyor",
-    stack: ["C", "ncurses"],
   },
 ];
 

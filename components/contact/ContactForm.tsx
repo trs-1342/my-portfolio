@@ -6,10 +6,11 @@ type Category = "bug" | "feedback" | "collab" | "hi";
 type Status = "idle" | "sending" | "success";
 
 const CATEGORIES: { id: Category; label: string }[] = [
-  { id: "bug",      label: "🐛 Hata Bildirimi"      },
-  { id: "feedback", label: "💡 Geri Bildirim"        },
-  { id: "collab",   label: "🤝 İşbirliği / Proje"   },
   { id: "hi",       label: "💬 Sadece Selam"         },
+  { id: "feedback", label: "💡 Geri Bildirim"        },
+  { id: "rec",      label: "💡 Öneri"      },
+  { id: "collab",   label: "🤝 İşbirliği / Proje"   },
+  { id: "bug",      label: "🐛 Hata Bildirimi"      },
 ];
 
 const TERMINAL_LINES = [
@@ -336,7 +337,7 @@ export default function ContactForm() {
             <span className="mono" style={{ fontSize: "0.7rem", color: "var(--accent)" }}>Çevrimiçi</span>
           </div>
           <p style={{ fontSize: "0.78rem", color: "var(--text-2)", lineHeight: 1.6 }}>
-            Genellikle <strong style={{ color: "var(--text)" }}>24 saat</strong> içinde yanıt veririm.
+            Genellikle <strong style={{ color: "var(--text)" }}>42 saat</strong> içinde yanıt veririm.
           </p>
         </div>
       </div>

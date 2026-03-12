@@ -1,1 +1,59 @@
-[]
+[
+  {
+    "id": 0,
+    "slug": "mnp",
+    "title": "mnp (my-new-portfolio)",
+    "description": "Bu site! Tamamen yeniden tasarlanmış kişisel portfolyo. Deep Space & Glassmorphism tema sistemi, interaktif terminal simülatörü, Canvas tabanlı constellation timeline ve çok daha fazlası.",
+    "long_description": "mnp (my-new-portfolio), my-portfolio'yu sıfırdan yeniden tasarlama kararından doğdu. Yalnızca frontend — backend bağlantısı olmadan, hız ve tasarım kalitesine odaklanarak. Deep Space teması CSS değişkenleriyle iki modlu (dark/light) çalışır. Canvas API ile çizilen constellation timeline, hover'da elastik SVG çizgisiyle detay kartı açar. Projelerim sayfasındaki interaktif terminal, gerçek bir CLI deneyimi sunar: ls, cd, cat, neofetch ve daha fazlası. HSounds bölümü yazılarım ve takip ettiğim RSS akışlarını tutar.",
+    "image": null,
+    "live_url": "https://hllhttb.vercel.app",
+    "repo_url": "https://github.com/trs-1342/mnp",
+    "is_active": true,
+    "tags": ["TypeScript", "Next.js", "CSS", "Canvas"],
+    "highlights": [
+      "CSS değişkenleriyle dual-mode tema sistemi",
+      "Canvas API ile constellation timeline animasyonu",
+      "İnteraktif CLI terminal simülatörü",
+      "Server Components + async veri servisi",
+      "HSounds: makale + RSS okuyucu"
+    ]
+  },
+  {
+    "id": 1,
+    "slug": "openuni",
+    "title": "OpenUni",
+    "description": "Üniversite öğrencileri için kaynak, not ve ders yönetimi platformu. Öğrenci topluluklarını dijitalleştirmeyi hedefliyor. Firebase backend, React Native mobil uygulama planlaması.",
+    "long_description": "OpenUni, üniversite öğrencilerinin ders notlarını, kaynaklarını ve topluluk yazışmalarını tek bir platformda yönetebileceği bir sistemdir. Mevcut çözümlerin (WhatsApp grupları, Drive klasörleri) dağınıklığına karşı yapılandırılmış bir alternatif sunmayı hedefler. Şu an aktif geliştirme aşamasında: Firebase Firestore veri modeli ve temel kimlik doğrulama altyapısı tamamlandı. Gelecek aşamada React Native ile mobil uygulama eklenecek.",
+    "image": null,
+    "live_url": "https://openigu.vercel.app",
+    "repo_url": "https://github.com/trs-1342/openuni",
+    "is_active": true,
+    "tags": ["TypeScript", "React Native", "Firebase"],
+    "highlights": [
+      "Ders notu ve kaynak paylaşım sistemi",
+      "Topluluk bazlı içerik yönetimi",
+      "Firebase Firestore veri modeli",
+      "React Native mobil app (planlama aşamasında)",
+      "Rol sistemi: öğrenci / editör / admin"
+    ]
+  },
+  {
+    "id": 2,
+    "slug": "souq",
+    "title": "Souq",
+    "description": "Yerel pazarları dijitalleştiren alışveriş uygulaması. Satıcı–alıcı eşleşme sistemi, konum tabanlı filtreleme ve gerçek zamanlı mesajlaşma hedefleniyor.",
+    "long_description": "Souq, geleneksel yerel pazarcıların dijital ortama taşınmasını kolaylaştırmak için tasarlanan bir platformdur. Satıcılar ürünlerini listeleyebilir, alıcılar konum bazlı filtreleme yapabilir ve iki taraf gerçek zamanlı olarak iletişim kurabilir. Proje fikir ve mimari aşamasında; Node.js/Express backend, MongoDB Atlas ve React Native ön yüzü planlanmaktadır. Temel zorluk: güvenilir konum servisi ve satıcı doğrulama akışı.",
+    "image": null,
+    "live_url": null,
+    "repo_url": "https://github.com/trs-1342/souq",
+    "is_active": true,
+    "tags": ["Node.js", "React Native", "MongoDB"],
+    "highlights": [
+      "Satıcı–alıcı eşleşme algoritması",
+      "Konum tabanlı ürün filtreleme",
+      "Gerçek zamanlı mesajlaşma (Socket.io)",
+      "Satıcı doğrulama akışı",
+      "Node.js / Express / MongoDB Atlas backend"
+    ]
+  }
+]
