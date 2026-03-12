@@ -1,0 +1,242 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { getAllUsers, updateUserStatus, updateUserBlockedPages } from "@/lib/firestore";
+import type { UserProfile } from "@/lib/firestore";
+
+/* Engellenebilir sayfalar */
+const BLOCKABLE = [
+  { path: "/contact",  label: "İletişim Formu" },
+  { path: "/hsounds",  label: "Hsounds"        },
+  { path: "/photos",   label: "Fotoğraflar"    },
+  { path: "/profile",  label: "Profil"         },
+  { path: "/settings", label: "Ayarlar"        },
+];
+
+export default function AdminUsersPage() {
+  const [users,    setUsers]    = useState<UserProfile[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [busy,     setBusy]     = useState<string | null>(null); // işlem sırasındaki uid
+
+  const load = async () => {
+    setLoading(true);
+    const data = await getAllUsers();
+    /* Admin her zaman en üstte */
+    data.sort((a, b) => (a.role === "admin" ? -1 : b.role === "admin" ? 1 : 0));
+    setUsers(data);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  /* Ban / unban */
+  const handleToggleBan = async (u: UserProfile) => {
+    setBusy(u.uid);
+    const next = u.status === "banned" ? "active" : "banned";
+    await updateUserStatus(u.uid, next);
+    setUsers((prev) => prev.map((x) => x.uid === u.uid ? { ...x, status: next } : x));
+    setBusy(null);
+  };
+
+  /* Sayfa engeli toggle */
+  const handleTogglePage = async (u: UserProfile, path: string) => {
+    setBusy(u.uid);
+    const current = u.blockedPages ?? [];
+    const next = current.includes(path)
+      ? current.filter((p) => p !== path)
+      : [...current, path];
+    await updateUserBlockedPages(u.uid, next);
+    setUsers((prev) => prev.map((x) => x.uid === u.uid ? { ...x, blockedPages: next } : x));
+    setBusy(null);
+  };
+
+  /* Kullanıcı sil */
+  const handleDelete = async (u: UserProfile) => {
+    if (u.role === "admin") { alert("Admin hesabı silinemez."); return; }
+    if (!confirm(`@${u.username} kullanıcısını silmek istediğinden emin misin?\nBu işlem geri alınamaz.`)) return;
+    setBusy(u.uid);
+    const res = await fetch("/api/admin/delete-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uid: u.uid, username: u.username }),
+    });
+    if (res.ok) {
+      setUsers((prev) => prev.filter((x) => x.uid !== u.uid));
+      if (expanded === u.uid) setExpanded(null);
+    } else {
+      alert("Silme başarısız. Tekrar dene.");
+    }
+    setBusy(null);
+  };
+
+  const totalUsers = users.filter((u) => u.role !== "admin").length;
+  const bannedCount = users.filter((u) => u.status === "banned").length;
+
+  return (
+    <div>
+      {/* Başlık */}
+      <header style={{ marginBottom: "32px" }}>
+        <p className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "8px" }}>
+          /admin/users
+        </p>
+        <h1 style={{ fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" }}>
+          Kullanıcılar
+        </h1>
+        <p style={{ fontSize: "0.82rem", color: "var(--text-3)", marginTop: "6px" }}>
+          {totalUsers} kullanıcı · {bannedCount} engelli
+        </p>
+      </header>
+
+      {loading ? (
+        <p className="mono" style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>Yükleniyor...</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {users.map((u) => {
+            const isAdmin    = u.role === "admin";
+            const isBanned   = u.status === "banned";
+            const isExpanded = expanded === u.uid;
+            const isBusy     = busy === u.uid;
+
+            return (
+              <div
+                key={u.uid}
+                className="glass"
+                style={{
+                  borderRadius: "14px",
+                  border: isBanned
+                    ? "1px solid rgba(239,68,68,0.25)"
+                    : isAdmin
+                    ? "1px solid rgba(16,185,129,0.25)"
+                    : "1px solid var(--border)",
+                  overflow: "hidden",
+                  opacity: isBusy ? 0.6 : 1,
+                  transition: "opacity 0.2s",
+                }}
+              >
+                {/* Satır */}
+                <div
+                  onClick={() => !isAdmin && setExpanded(isExpanded ? null : u.uid)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: "14px",
+                    padding: "14px 20px",
+                    cursor: isAdmin ? "default" : "pointer",
+                    background: isExpanded ? "var(--panel-hover)" : "transparent",
+                  }}
+                >
+                  {/* Fotoğraf / avatar */}
+                  <div style={{
+                    width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+                    background: "var(--bg-2)", border: "1px solid var(--border)",
+                    overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "1rem",
+                  }}>
+                    {u.photoURL
+                      ? <img src={u.photoURL} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : "👤"}
+                  </div>
+
+                  {/* İsim + email */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span className="mono" style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text)" }}>
+                        @{u.username}
+                      </span>
+                      {isAdmin && (
+                        <span style={{ fontSize: "0.65rem", padding: "2px 7px", borderRadius: "999px", background: "rgba(16,185,129,0.12)", color: "var(--accent)", border: "1px solid rgba(16,185,129,0.3)" }}>
+                          🔑 admin
+                        </span>
+                      )}
+                      {isBanned && (
+                        <span style={{ fontSize: "0.65rem", padding: "2px 7px", borderRadius: "999px", background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.25)" }}>
+                          engelli
+                        </span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-3)" }}>{u.email}</span>
+                  </div>
+
+                  {/* Kayıt tarihi */}
+                  <span className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", flexShrink: 0 }}>
+                    {u.createdAt ? new Date((u.createdAt as { seconds: number }).seconds * 1000).toLocaleDateString("tr-TR") : "—"}
+                  </span>
+
+                  {!isAdmin && (
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-3)", flexShrink: 0 }}>
+                      {isExpanded ? "▲" : "▼"}
+                    </span>
+                  )}
+                </div>
+
+                {/* Detay paneli */}
+                {isExpanded && !isAdmin && (
+                  <div style={{ padding: "0 20px 20px 70px", borderTop: "1px solid var(--border)" }}>
+
+                    {/* Sayfa engelleri */}
+                    <p className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "16px 0 10px" }}>
+                      Sayfa Erişim Kısıtlamaları
+                    </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "20px" }}>
+                      {BLOCKABLE.map((page) => {
+                        const blocked = (u.blockedPages ?? []).includes(page.path);
+                        return (
+                          <button
+                            key={page.path}
+                            onClick={() => handleTogglePage(u, page.path)}
+                            disabled={isBusy}
+                            style={{
+                              padding: "6px 12px", borderRadius: "8px", border: "1px solid",
+                              borderColor: blocked ? "rgba(239,68,68,0.4)" : "var(--border)",
+                              background:  blocked ? "rgba(239,68,68,0.08)" : "transparent",
+                              color:       blocked ? "#ef4444" : "var(--text-2)",
+                              fontSize: "0.78rem", fontWeight: 500,
+                              cursor: "pointer", fontFamily: "var(--font-sans)", transition: "all 0.15s",
+                            }}
+                          >
+                            {blocked ? "🚫 " : ""}{page.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Aksiyonlar */}
+                    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                      <button
+                        onClick={() => handleToggleBan(u)}
+                        disabled={isBusy}
+                        style={{
+                          padding: "8px 16px", borderRadius: "9px", border: "1px solid",
+                          borderColor: isBanned ? "rgba(16,185,129,0.4)" : "rgba(239,68,68,0.35)",
+                          background:  isBanned ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.06)",
+                          color:       isBanned ? "var(--accent)" : "#ef4444",
+                          fontSize: "0.82rem", fontWeight: 600,
+                          cursor: "pointer", fontFamily: "var(--font-sans)", transition: "all 0.15s",
+                        }}
+                      >
+                        {isBanned ? "✓ Engeli Kaldır" : "⊘ Hesabı Engelle"}
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(u)}
+                        disabled={isBusy}
+                        style={{
+                          padding: "8px 16px", borderRadius: "9px",
+                          border: "1px solid rgba(239,68,68,0.3)",
+                          background: "transparent", color: "#ef4444",
+                          fontSize: "0.82rem", fontWeight: 600,
+                          cursor: "pointer", fontFamily: "var(--font-sans)", transition: "all 0.15s",
+                        }}
+                      >
+                        🗑 Hesabı Sil
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

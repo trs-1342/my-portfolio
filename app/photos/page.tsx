@@ -4,6 +4,7 @@ import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MasonryGallery from "@/components/photos/MasonryGallery";
+import BlockedGuard from "@/components/BlockedGuard";
 
 export const metadata = {
   title: "Fotoğraflar — trs",
@@ -30,6 +31,7 @@ export default function PhotosPage() {
       <AmbientGlow />
       <Navbar />
 
+      <BlockedGuard path="/photos">
       <div className="page-content" style={{ paddingTop: "100px" }}>
 
         {/* Başlık */}
@@ -96,6 +98,7 @@ export default function PhotosPage() {
 
         <Footer />
       </div>
+      </BlockedGuard>
     </>
   );
 }

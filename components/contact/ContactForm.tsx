@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 type Category = "bug" | "feedback" | "collab" | "hi" | "rec";
 type Status = "idle" | "sending" | "success";
@@ -28,6 +29,8 @@ const QUICK_LINKS = [
 ];
 
 export default function ContactForm() {
+  const { user } = useAuth();
+
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
   const [category, setCategory] = useState<Category | null>(null);
@@ -36,6 +39,11 @@ export default function ContactForm() {
   const [termLines, setTermLines] = useState<string[]>([]);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  /* Oturum açıksa email'i otomatik doldur */
+  useEffect(() => {
+    if (user?.email) setEmail(user.email);
+  }, [user]);
 
   /* Textarea auto-resize */
   const autoResize = () => {
@@ -58,17 +66,20 @@ export default function ContactForm() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!category) return;
     setStatus("sending");
     runTerminal();
-
-    /* TODO: ileride EmailJS / Formspree / Firebase endpoint'e bağla
-    await fetch("/api/contact", {
-      method: "POST",
-      body: JSON.stringify({ name, email, category, message }),
-    }); */
+    try {
+      await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, category, message }),
+      });
+    } catch {
+      /* API hatası terminal animasyonunu durdurmaz */
+    }
   };
 
   const reset = () => {
@@ -109,42 +120,49 @@ export default function ContactForm() {
 
             {/* Ad + Email */}
             <div className="contact-fields" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-              {[
-                { label: "Ad / Username", value: name,  setter: setName,  type: "text",  placeholder: "trs", auto: "name" },
-                { label: "Email Adresi",  value: email, setter: setEmail, type: "email", placeholder: "ornek@mail.com", auto: "email" },
-              ].map((f) => (
-                <div key={f.label}>
-                  <label
-                    className="mono"
-                    style={{ fontSize: "0.7rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "6px" }}
-                  >
-                    {f.label}
-                  </label>
-                  <input
-                    type={f.type}
-                    value={f.value}
-                    onChange={(e) => f.setter(e.target.value)}
-                    placeholder={f.placeholder}
-                    autoComplete={f.auto}
-                    required
-                    disabled={status === "sending"}
-                    style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      borderRadius: "10px",
-                      border: "1px solid var(--border)",
-                      background: "var(--bg)",
-                      color: "var(--text)",
-                      fontFamily: "var(--font-sans)",
-                      fontSize: "0.9rem",
-                      outline: "none",
-                      transition: "border-color 0.15s",
-                    }}
-                    onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
-                    onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-                  />
-                </div>
-              ))}
+              {/* Ad */}
+              <div>
+                <label className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "6px" }}>
+                  Ad / Username
+                </label>
+                <input
+                  type="text" value={name} onChange={(e) => setName(e.target.value)}
+                  placeholder="trs" autoComplete="name" required
+                  disabled={status === "sending"}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-sans)", fontSize: "0.9rem", outline: "none", transition: "border-color 0.15s" }}
+                  onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+                  onBlur={(e)  => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+
+              {/* Email — oturum açıksa readonly */}
+              <div>
+                <label className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "6px" }}>
+                  Email Adresi
+                  {user?.email && (
+                    <span style={{ marginLeft: "6px", color: "var(--accent)", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>
+                      · oturumdan alındı
+                    </span>
+                  )}
+                </label>
+                <input
+                  type="email" value={email}
+                  onChange={(e) => { if (!user?.email) setEmail(e.target.value); }}
+                  placeholder="ornek@mail.com" autoComplete="email" required
+                  readOnly={!!user?.email}
+                  disabled={status === "sending"}
+                  style={{
+                    width: "100%", padding: "10px 14px", borderRadius: "10px",
+                    border: "1px solid var(--border)",
+                    background: user?.email ? "var(--bg-2)" : "var(--bg)",
+                    color: "var(--text)", fontFamily: "var(--font-sans)", fontSize: "0.9rem",
+                    outline: "none", transition: "border-color 0.15s",
+                    cursor: user?.email ? "default" : "text",
+                  }}
+                  onFocus={(e) => { if (!user?.email) e.target.style.borderColor = "var(--accent)"; }}
+                  onBlur={(e)  => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
             </div>
 
             {/* Kategori pill butonları */}

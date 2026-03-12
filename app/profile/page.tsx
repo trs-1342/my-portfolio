@@ -8,6 +8,7 @@ import { deleteUser } from "firebase/auth";
 import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BlockedPage from "@/components/BlockedPage";
 
 export default function ProfilePage() {
   const { user, profile, loading, logout, changePassword, refreshProfile } = useAuth();
@@ -47,6 +48,17 @@ export default function ProfilePage() {
         <div className="page-content" style={{ paddingTop: "100px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
           <p className="mono" style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>Yükleniyor...</p>
         </div>
+      </>
+    );
+  }
+
+  /* Engellendi kontrolü */
+  if (profile.status === "banned" || profile.blockedPages?.includes("/profile")) {
+    return (
+      <>
+        <AmbientGlow />
+        <Navbar />
+        <BlockedPage profile={profile} currentPath="/profile" />
       </>
     );
   }
@@ -97,11 +109,28 @@ export default function ProfilePage() {
       <AmbientGlow />
       <Navbar />
       <div className="page-content" style={{ paddingTop: "100px", paddingBottom: "80px" }}>
-        <header style={{ marginBottom: "48px" }}>
-          <p className="mono anim-fade-up" style={{ fontSize: "0.72rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>/profile</p>
-          <h1 className="anim-fade-up d2" style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--text)" }}>
-            Profilim
-          </h1>
+        <header style={{ marginBottom: "48px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+          <div>
+            <p className="mono anim-fade-up" style={{ fontSize: "0.72rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>/profile</p>
+            <h1 className="anim-fade-up d2" style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--text)" }}>
+              Profilim
+            </h1>
+          </div>
+          <button
+            onClick={async () => { await logout(); router.push("/"); }}
+            className="anim-fade-up d3"
+            style={{
+              padding: "9px 18px", borderRadius: "10px",
+              border: "1px solid var(--border)", background: "var(--panel)",
+              color: "var(--text-2)", fontSize: "0.82rem", fontWeight: 500,
+              cursor: "pointer", fontFamily: "var(--font-sans)",
+              transition: "all 0.15s", backdropFilter: "blur(12px)",
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = "#ef4444"; (e.currentTarget as HTMLButtonElement).style.color = "#ef4444"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)"; (e.currentTarget as HTMLButtonElement).style.color = "var(--text-2)"; }}
+          >
+            ⎋ Oturumu Kapat
+          </button>
         </header>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", alignItems: "start", maxWidth: "880px" }}>

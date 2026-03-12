@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import Waveform from "@/components/hsounds/Waveform";
 import ContentToggle from "@/components/hsounds/ContentToggle";
 import { getArticles, getRssFeeds } from "@/lib/hsounds";
+import BlockedGuard from "@/components/BlockedGuard";
 
 export const metadata = {
   title: "HSounds — trs",
@@ -18,6 +19,7 @@ export default async function HSoundsPage() {
       <AmbientGlow />
       <Navbar />
 
+      <BlockedGuard path="/hsounds">
       <div className="page-content" style={{ paddingTop: "100px" }}>
         {/* Header */}
         <header style={{ marginBottom: "60px" }}>
@@ -118,6 +120,7 @@ export default async function HSoundsPage() {
 
         <Footer />
       </div>
+      </BlockedGuard>
     </>
   );
 }

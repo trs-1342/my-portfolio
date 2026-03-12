@@ -2,6 +2,7 @@ import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContactForm from "@/components/contact/ContactForm";
+import BlockedGuard from "@/components/BlockedGuard";
 
 export const metadata = {
   title: "İletişim — trs",
@@ -14,6 +15,7 @@ export default function ContactPage() {
       <AmbientGlow />
       <Navbar />
 
+      <BlockedGuard path="/contact">
       <div className="page-content" style={{ paddingTop: "100px" }}>
         {/* Başlık */}
         <header style={{ marginBottom: "48px" }}>
@@ -60,6 +62,7 @@ export default function ContactPage() {
 
         <Footer />
       </div>
+      </BlockedGuard>
     </>
   );
 }

@@ -2,6 +2,7 @@ import {
   doc, getDoc, setDoc, updateDoc,
   serverTimestamp, deleteDoc,
   collection, addDoc,
+  getDocs, query, orderBy, where,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -14,6 +15,7 @@ export interface UserProfile {
   role: "user" | "admin";
   status: "active" | "banned";
   createdAt: unknown; // Firestore Timestamp
+  blockedPages?: string[]; // engellenmiş sayfa path'leri
   settings: {
     navbarPosition: "top" | "bottom";
     theme: "dark" | "light";
@@ -131,4 +133,63 @@ export async function saveContactMessage(data: {
     createdAt: serverTimestamp(),
     read: false,
   });
+}
+
+/* Kullanıcı durumunu güncelle (admin) */
+export async function updateUserStatus(uid: string, status: "active" | "banned") {
+  if (!db) return;
+  await updateDoc(doc(db, "users", uid), { status });
+}
+
+/* Kullanıcının engellenmiş sayfalarını güncelle (admin) */
+export async function updateUserBlockedPages(uid: string, blockedPages: string[]) {
+  if (!db) return;
+  await updateDoc(doc(db, "users", uid), { blockedPages });
+}
+
+/* ── Admin Fonksiyonları ── */
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  category: string;
+  message: string;
+  createdAt: { seconds: number } | null;
+  read: boolean;
+}
+
+/* Tüm iletişim mesajlarını getir (admin) */
+export async function getContacts(): Promise<ContactMessage[]> {
+  if (!db) return [];
+  const q = query(collection(db, "contacts"), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as ContactMessage));
+}
+
+/* Mesajı okundu olarak işaretle */
+export async function markContactRead(id: string, read = true) {
+  if (!db) return;
+  await updateDoc(doc(db, "contacts", id), { read });
+}
+
+/* Mesajı sil */
+export async function deleteContact(id: string) {
+  if (!db) return;
+  await deleteDoc(doc(db, "contacts", id));
+}
+
+/* Tüm kullanıcıları getir (admin) */
+export async function getAllUsers(): Promise<UserProfile[]> {
+  if (!db) return [];
+  const snap = await getDocs(collection(db, "users"));
+  return snap.docs.map((d) => d.data() as UserProfile);
+}
+
+/* Okunmamış mesaj sayısı */
+export async function getUnreadContactCount(): Promise<number> {
+  if (!db) return 0;
+  const q = query(collection(db, "contacts"), where("read", "==", false));
+  const snap = await getDocs(q);
+  return snap.size;
 }
