@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type Category = "bug" | "feedback" | "collab" | "hi";
+type Category = "bug" | "feedback" | "collab" | "hi" | "rec";
 type Status = "idle" | "sending" | "success";
 
 const CATEGORIES: { id: Category; label: string }[] = [
