@@ -458,6 +458,9 @@ body {
    MOBİL
    ================================================ */
 
+/* Nav ikonu masaüstünde gizli — sadece küçük ekranda gösterilir */
+.nav-icon { display: none; }
+
 @media (max-width: 768px) {
   .navbar-pill .nav-link {
     padding: 7px 10px;
@@ -471,11 +474,52 @@ body {
   .page-content {
     padding: 0 16px 80px;
   }
+
+  /* İletişim formu — 2 sütundan 1 sütuna */
+  .contact-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* İletişim formu içi ad+email alanları */
+  .contact-fields {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Hakkımda sayfası profil bölümü */
+  .profile-section {
+    grid-template-columns: 1fr !important;
+    min-height: auto !important;
+    padding-top: 80px !important;
+  }
 }
 
-@media (max-width: 480px) {
-  .navbar-pill .nav-link span {
-    display: none;
+@media (max-width: 640px) {
+  /* Navbar: etiket gizle, ikon göster */
+  .nav-label { display: none; }
+  .nav-icon  { display: inline-block; }
+
+  /* Navbar pill genişliği ve hizalama */
+  .navbar {
+    width: calc(100% - 24px);
+  }
+
+  .navbar-pill {
+    width: 100%;
+    justify-content: space-between;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .navbar-pill::-webkit-scrollbar { display: none; }
+
+  .navbar-pill .nav-link {
+    padding: 6px 9px;
+    font-size: 1rem; /* ikon boyutu */
+  }
+
+  /* Sabitlenmiş projeler grid — 2 sütundan 1 sütuna */
+  .featured-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 

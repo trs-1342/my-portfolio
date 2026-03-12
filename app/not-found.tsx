@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import AmbientGlow from "@/components/AmbientGlow";
 
 const GLITCH_CHARS = "!<>-_\\/[]{}—=+*^?#@$%&";
@@ -34,21 +35,10 @@ function useGlitch(text: string, active: boolean) {
   return output;
 }
 
-const TERMINAL_BOOT = [
-  "PANIC: kernel trap at 0x00000000, type 14=Page Fault",
-  "rip 0xffffffff81a3e40f",
-  "$ dmesg | grep -i error",
-  "[ 4.028147] EXT4-fs error: 404 inode not found",
-  "$ find / -name 'page' 2>/dev/null",
-  "find: '/requested/path': No such file or directory",
-  "$ sudo ls -la /requested/path",
-  "ls: cannot access '/requested/path': No such file or directory",
-  "$ whoami",
-  "visitor",
-  "$ exit",
-];
-
 export default function NotFound() {
+  // Gidilen hatalı yolu dinamik olarak alıyoruz
+  const pathname = usePathname() || "/*";
+
   const [glitchActive, setGlitchActive] = useState(false);
   const [termLines, setTermLines] = useState<string[]>([]);
   const [showLinks, setShowLinks] = useState(false);
@@ -57,16 +47,31 @@ export default function NotFound() {
 
   /* Sayfa açılınca terminal boot sekansı */
   useEffect(() => {
+    // Terminal boot dizisini pathname'e göre dinamik oluşturuyoruz
+    const terminalBoot = [
+      "PANIC: kernel trap at 0x00000000, type 14=Page Fault",
+      "rip 0xffffffff81a3e40f",
+      "$ dmesg | grep -i error",
+      "[ 4.028147] EXT4-fs error: 404 inode not found",
+      "$ find / -name 'page' 2>/dev/null",
+      `find: '${pathname}': No such file or directory`,
+      `$ sudo ls -la ${pathname}`,
+      `ls: cannot access '${pathname}': No such file or directory`,
+      "$ whoami",
+      "visitor",
+      "$ exit",
+    ];
+
     setGlitchActive(true);
-    TERMINAL_BOOT.forEach((line, i) => {
+    terminalBoot.forEach((line, i) => {
       setTimeout(() => {
         setTermLines((prev) => [...prev, line]);
-        if (i === TERMINAL_BOOT.length - 1) {
+        if (i === terminalBoot.length - 1) {
           setTimeout(() => setShowLinks(true), 300);
         }
       }, i * 180);
     });
-  }, []);
+  }, [pathname]);
 
   return (
     <>
@@ -137,7 +142,7 @@ export default function NotFound() {
             </div>
 
             {/* Output */}
-            <div style={{ padding: "14px 16px", maxHeight: "240px", overflowY: "auto" }}>
+            <div style={{ padding: "14px 16px", maxHeight: "540px", overflowY: "auto" }}>
               {termLines.map((line, i) => (
                 <p
                   key={i}

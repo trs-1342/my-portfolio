@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const [password2,   setPassword2]   = useState("");
   const [error,       setError]       = useState("");
   const [loading,     setLoading]     = useState(false);
+  const [sent,        setSent]        = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,9 +25,8 @@ export default function RegisterPage() {
     if (password.length < 6)   { setError("Şifre en az 6 karakter olmalı."); return; }
     setLoading(true);
     try {
-      const u = await register(email, password);
-      /* Henüz username yok, setup-username sayfasına yönlendir */
-      router.push("/setup-username");
+      await register(email, password);
+      setSent(true);
     } catch (err: unknown) {
       const msg = (err as { code?: string }).code;
       if (msg === "auth/email-already-in-use") setError("Bu email zaten kayıtlı.");
@@ -48,6 +48,42 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  if (sent) {
+    return (
+      <div style={{ width: "min(440px, 100%)" }}>
+        <Link href="/" className="mono" style={{ display: "block", textAlign: "center", fontSize: "1.4rem", fontWeight: 700, color: "var(--accent)", marginBottom: "32px", textDecoration: "none" }}>
+          trs
+        </Link>
+        <div className="glass" style={{ borderRadius: "20px", padding: "40px 32px", textAlign: "center" }}>
+          <div style={{ fontSize: "3rem", marginBottom: "16px" }}>📧</div>
+          <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--text)", marginBottom: "8px" }}>
+            Email Gönderildi!
+          </h2>
+          <p style={{ fontSize: "0.85rem", color: "var(--text-2)", lineHeight: 1.7, marginBottom: "28px" }}>
+            <strong style={{ color: "var(--text)" }}>{email}</strong> adresine doğrulama bağlantısı gönderildi.
+            Gelen kutunu kontrol et ve bağlantıya tıkla.
+          </p>
+          <button
+            onClick={() => router.push("/setup-username")}
+            className="btn btn-accent"
+            style={{ justifyContent: "center", padding: "12px 24px", fontSize: "0.9rem" }}
+          >
+            Doğruladım, devam et →
+          </button>
+          <p style={{ fontSize: "0.78rem", color: "var(--text-3)", marginTop: "16px" }}>
+            Email gelmedi mi?{" "}
+            <button
+              onClick={() => setSent(false)}
+              style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: "0.78rem", fontFamily: "var(--font-sans)", padding: 0 }}
+            >
+              Tekrar dene
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ width: "min(440px, 100%)" }}>

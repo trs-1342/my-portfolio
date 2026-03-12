@@ -45,7 +45,7 @@ export default function Skills() {
       </h2>
 
       {/* grid-cols-2 ile her satırda 2 kart sağlandı, gap-4 ile aralarındaki mesafe artırıldı */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {skills.map((s, i) => (
           <div
             key={s.name}

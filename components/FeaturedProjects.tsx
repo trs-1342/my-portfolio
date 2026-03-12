@@ -58,6 +58,7 @@ export default function FeaturedProjects() {
       </h2>
 
       <div
+        className="featured-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(2, 1fr)",
@@ -135,14 +136,6 @@ export default function FeaturedProjects() {
         ))}
       </div>
 
-      {/* Mobil: tek sütun */}
-      <style>{`
-        @media (max-width: 600px) {
-          #projects .projects-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

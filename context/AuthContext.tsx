@@ -10,6 +10,7 @@ import {
   signInWithPopup, signOut,
   sendPasswordResetEmail,
   updatePassword,
+  sendEmailVerification,
   EmailAuthProvider, reauthenticateWithCredential,
 } from "firebase/auth";
 import { auth, googleProvider, firebaseReady } from "@/lib/firebase";
@@ -87,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (email: string, password: string): Promise<User> => {
     if (!auth) throw new Error("Firebase yapılandırılmamış.");
     const { user: u } = await createUserWithEmailAndPassword(auth, email, password);
+    await sendEmailVerification(u);
     await setSessionCookie(u);
     return u;
   };

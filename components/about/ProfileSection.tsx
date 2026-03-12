@@ -19,6 +19,7 @@ export default function ProfileSection() {
   const photo = getFirstPhoto();
   return (
     <section
+      className="profile-section"
       style={{
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
@@ -204,15 +205,6 @@ export default function ProfileSection() {
         </div>
       </div>
 
-      {/* Mobil: tek sütun */}
-      <style>{`
-        @media (max-width: 768px) {
-          section:first-of-type {
-            grid-template-columns: 1fr !important;
-            min-height: auto !important;
-          }
-        }
-      `}</style>
     </section>
   );
 }

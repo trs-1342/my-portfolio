@@ -7,13 +7,12 @@ import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "@/context/AuthContext";
 
 const links = [
-  // { href: "/",    label: "Anasayfa" },
-  { href: "/about",       label: "Hakkımda"    },
-  { href: "/my-projects", label: "Projeler"    },
-  { href: "/photos",      label: "Fotoğraflar" },
-  { href: "/hsounds",     label: "Hsounds"     },
-  { href: "/thanks",     label: "Teşekkürler"     },
-  { href: "/contact",     label: "İletişim"    },
+  { href: "/about",       label: "Hakkımda",    icon: "👤" },
+  { href: "/my-projects", label: "Projeler",    icon: "⚡" },
+  { href: "/photos",      label: "Fotoğraflar", icon: "📷" },
+  { href: "/hsounds",     label: "Hsounds",     icon: "🎵" },
+  { href: "/thanks",      label: "Teşekkürler", icon: "💫" },
+  { href: "/contact",     label: "İletişim",    icon: "✉️" },
 ];
 
 export default function Navbar() {
@@ -79,7 +78,8 @@ export default function Navbar() {
               href={l.href}
               className={`nav-link${isActive ? " nav-link--active" : ""}`}
             >
-              {l.label}
+              <span className="nav-icon">{l.icon}</span>
+              <span className="nav-label">{l.label}</span>
             </a>
           );
         })}

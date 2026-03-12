@@ -79,6 +79,7 @@ export default function ContactForm() {
 
   return (
     <div
+      className="contact-grid"
       style={{
         display: "grid",
         gridTemplateColumns: "1fr 280px",
@@ -107,7 +108,7 @@ export default function ContactForm() {
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
 
             {/* Ad + Email */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+            <div className="contact-fields" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
               {[
                 { label: "Ad / Username", value: name,  setter: setName,  type: "text",  placeholder: "trs", auto: "name" },
                 { label: "Email Adresi",  value: email, setter: setEmail, type: "email", placeholder: "ornek@mail.com", auto: "email" },
@@ -342,13 +343,7 @@ export default function ContactForm() {
         </div>
       </div>
 
-      {/* Mobil: tek sütun */}
       <style>{`
-        @media (max-width: 768px) {
-          form + div, div[style*="280px"] {
-            grid-template-columns: 1fr !important;
-          }
-        }
         input::placeholder, textarea::placeholder { color: var(--text-3); opacity: 0.7; }
         input:disabled, textarea:disabled { opacity: 0.6; cursor: not-allowed; }
       `}</style>
