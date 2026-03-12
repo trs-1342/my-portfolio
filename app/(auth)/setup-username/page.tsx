@@ -8,7 +8,7 @@ import { createUserProfile, isUsernameAvailable } from "@/lib/firestore";
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 
 export default function SetupUsernamePage() {
-  const { user, refreshProfile } = useAuth();
+  const { user, refreshProfile, loading } = useAuth();
   const router = useRouter();
 
   const [username,   setUsername]   = useState("");
@@ -18,10 +18,11 @@ export default function SetupUsernamePage() {
   const [saving,     setSaving]     = useState(false);
   const debounceRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /* Oturum yoksa login'e yönlendir */
+  /* Auth tamamlanınca kontrol et */
   useEffect(() => {
-    if (!user && typeof window !== "undefined") router.push("/login");
-  }, [user, router]);
+    if (loading) return;
+    if (!user) router.push("/login");
+  }, [loading, user, router]);
 
   /* Username uygunluk kontrolü (debounced) */
   useEffect(() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { updateUserProfile } from "@/lib/firestore";
 import AmbientGlow from "@/components/AmbientGlow";
@@ -8,7 +9,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function SettingsPage() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, loading, refreshProfile } = useAuth();
+  const router = useRouter();
 
   const [navPos,   setNavPos]   = useState<"top" | "bottom">("top");
   const [theme,    setTheme]    = useState<"dark" | "light">("dark");
@@ -28,6 +30,13 @@ export default function SettingsPage() {
     setNotifSystem(profile.notifications?.system  ?? true);
   }, [profile]);
 
+  /* Auth sonuçlanınca yönlendir */
+  useEffect(() => {
+    if (loading) return;
+    if (!user) router.push("/login");
+    else if (!profile) router.push("/setup-username");
+  }, [loading, user, profile, router]);
+
   /* Tema önizlemesi — kaydetmeden anında uygula */
   const handleThemeChange = (v: "dark" | "light") => {
     setTheme(v);
@@ -40,7 +49,18 @@ export default function SettingsPage() {
     }
   };
 
-  if (!user || !profile) return null;
+  /* Yükleniyor */
+  if (loading || !user || !profile) {
+    return (
+      <>
+        <AmbientGlow />
+        <Navbar />
+        <div className="page-content" style={{ paddingTop: "100px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
+          <p className="mono" style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>Yükleniyor...</p>
+        </div>
+      </>
+    );
+  }
 
   const handleSave = async () => {
     setSaving(true); setMsg("");

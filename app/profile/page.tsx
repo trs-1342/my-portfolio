@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { updateUserProfile, updateUsername, deleteUserData } from "@/lib/firestore";
@@ -10,11 +10,11 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function ProfilePage() {
-  const { user, profile, logout, changePassword, refreshProfile } = useAuth();
+  const { user, profile, loading, logout, changePassword, refreshProfile } = useAuth();
   const router = useRouter();
 
-  const [displayName,  setDisplayName]  = useState(profile?.displayName  ?? "");
-  const [newUsername,  setNewUsername]  = useState(profile?.username     ?? "");
+  const [displayName,  setDisplayName]  = useState("");
+  const [newUsername,  setNewUsername]  = useState("");
   const [currentPwd,   setCurrentPwd]   = useState("");
   const [newPwd,       setNewPwd]       = useState("");
   const [saving,       setSaving]       = useState(false);
@@ -23,7 +23,33 @@ export default function ProfilePage() {
   const [pwdMsg,       setPwdMsg]       = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState(false);
 
-  if (!user || !profile) return null;
+  /* Profil yüklenince form state'lerini doldur */
+  useEffect(() => {
+    if (profile) {
+      setDisplayName(profile.displayName ?? "");
+      setNewUsername(profile.username ?? "");
+    }
+  }, [profile]);
+
+  /* Auth sonuçlanınca yönlendir */
+  useEffect(() => {
+    if (loading) return;
+    if (!user) router.push("/login");
+    else if (!profile) router.push("/setup-username");
+  }, [loading, user, profile, router]);
+
+  /* Yükleniyor */
+  if (loading || !user || !profile) {
+    return (
+      <>
+        <AmbientGlow />
+        <Navbar />
+        <div className="page-content" style={{ paddingTop: "100px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
+          <p className="mono" style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>Yükleniyor...</p>
+        </div>
+      </>
+    );
+  }
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
