@@ -8,7 +8,6 @@ import { deleteUser } from "firebase/auth";
 import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import BlockedPage from "@/components/BlockedPage";
 
 export default function ProfilePage() {
   const { user, profile, loading, logout, changePassword, refreshProfile } = useAuth();
@@ -48,17 +47,6 @@ export default function ProfilePage() {
         <div className="page-content" style={{ paddingTop: "100px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
           <p className="mono" style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>Yükleniyor...</p>
         </div>
-      </>
-    );
-  }
-
-  /* Engellendi kontrolü */
-  if (profile.status === "banned" || profile.blockedPages?.includes("/profile")) {
-    return (
-      <>
-        <AmbientGlow />
-        <Navbar />
-        <BlockedPage profile={profile} currentPath="/profile" />
       </>
     );
   }

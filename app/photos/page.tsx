@@ -4,8 +4,6 @@ import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MasonryGallery from "@/components/photos/MasonryGallery";
-import BlockedPage from "@/components/BlockedPage";
-import { getServerProfile, isBlocked } from "@/lib/getServerProfile";
 
 export const metadata = {
   title: "Fotoğraflar — trs",
@@ -24,17 +22,8 @@ function getPhotos(): string[] {
   }
 }
 
-export default async function PhotosPage() {
-  const [profile, photos] = await Promise.all([getServerProfile(), Promise.resolve(getPhotos())]);
-  if (isBlocked(profile, "/photos")) {
-    return (
-      <>
-        <AmbientGlow />
-        <Navbar />
-        <BlockedPage profile={profile!} currentPath="/photos" />
-      </>
-    );
-  }
+export default function PhotosPage() {
+  const photos = getPhotos();
 
   return (
     <>
