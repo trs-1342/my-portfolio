@@ -2,66 +2,31 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import MatrixOverlay from "./MatrixOverlay";
+import type { LifeEvent } from "@/lib/firestore";
 
+// Matrix overlay'in beklediği Event tipi
 interface Event {
   id: number;
   date: string;
   title: string;
   desc: string;
-  log: string; // Matrix overlay'de gösterilecek sistem logu
+  log: string;
   isCurrent?: boolean;
 }
 
-const EVENTS: Event[] = [
-  {
-    id: 0,
-    date: "09.09.2021",
-    title: "Lise Başlangıcı",
-    desc: "ŞBBKMTAL Bilişim Alanı'na kayıt. Yazılım dünyasının kapıları açıldı.",
-    log: "> Sistem logu yükleniyor...\n> Lise dönemi başlatıldı [OK]\n> Bilişim modülü aktif [OK]\n> Yeni süreç başlatılıyor: trs [PID: 2021]",
-  },
-  {
-    id: 1,
-    date: "2024 — 2025",
-    title: "Staj",
-    desc: "Gerçek dünya deneyimi: staj projelerinde aktif geliştirme.",
-    log: "> Staj modülü yükleniyor...\n> Bağlantı kuruldu: production_env [OK]\n> Deneyim +1 eklendi [OK]\n> İş yeri açma belgesi oluşturuldu [OK]",
-  },
-  {
-    id: 2,
-    date: "25.02.2025",
-    title: "Proje Satışı",
-    desc: "Gerçek ürün satış deneyimi: projenin aylar sonrasında satılması.",
-    log: "> Staj modülü yükleniyor...\n> Bağlantı kuruldu: production_sale [OK]\n> Satış deneyimi +1 eklendi [OK]\n> İphone 13 faturası oluşturuldu [OK]",
-  },
-  {
-    id: 3,
-    date: "22.09.2025",
-    title: "Üniversite",
-    desc: "İstanbul Gelişim Üniversitesi — Yazılım Mühendisliği 1. Sınıf başlangıcı.",
-    log: "> IGÜ bağlantısı kuruluyor...\n> Fakülte: Mühendislik [OK]\n> Bölüm: Yazılım Mühendisliği [OK]\n> Yeni akademik dönem başlatıldı [OK]",
-  },
-  {
-    id: 4,
-    date: "Bugün",
-    title: "Aktif Geliştirici",
-    desc: "Freelance projeler, açık kaynak katkıları ve süregelen öğrenme yolculuğu.",
-    log: "> Sistem durumu kontrol ediliyor...\n> Tüm modüller aktif [OK]\n> Proje sayısı: 42+ [OK]\n> Öğrenme modu: while [OK]\n> trs@arch:~$ ",
-    isCurrent: true,
-  },
-];
+interface Props {
+  events: LifeEvent[];
+}
 
-/* 6 ELEMAN İÇİN GÜNCELLENMİŞ KONUMLAR (% cinsinden) */
-// "Proje Satışı" için x: 48, y: 38 eklendi, diğerleri yeniden dengelendi
-const BASE_POSITIONS = [
-  { x: 10, y: 45 }, // Lise (id: 0)
-  { x: 28, y: 70 }, // Staj & Mezuniyet (id: 1)
-  { x: 48, y: 35 }, // Proje Satışı (id: 2) -> YENİ EKLENEN
-  { x: 72, y: 65 }, // Üniversite (id: 3)
-  { x: 90, y: 30 }, // Aktif Geliştirici (Bugün) (id: 4)
-];
+/* Olayların sayısına göre pozisyonları dinamik hesapla */
+function buildPositions(count: number) {
+  return Array.from({ length: count }, (_, i) => ({
+    x: count === 1 ? 50 : 8 + (84 / Math.max(count - 1, 1)) * i,
+    y: i % 2 === 0 ? 40 : 65,
+  }));
+}
 
-const FLOAT_OFFSETS = [
+const FLOAT_OFFSETS_POOL = [
   { ax: 0.6, ay: 0.8, px: 0.7, py: 1.1 },
   { ax: 0.9, ay: 0.5, px: 1.3, py: 0.8 },
   { ax: 0.7, ay: 0.9, px: 1.0, py: 0.5 },
@@ -69,7 +34,20 @@ const FLOAT_OFFSETS = [
   { ax: 0.8, ay: 0.7, px: 0.6, py: 1.2 },
 ];
 
-export default function ConstellationTimeline() {
+export default function ConstellationTimeline({ events }: Props) {
+  const EVENTS: Event[] = [...events]
+    .sort((a, b) => a.order - b.order)
+    .map((ev, i) => ({
+      id:        i,
+      date:      ev.date,
+      title:     ev.title,
+      desc:      ev.desc,
+      log:       ev.log,
+      isCurrent: ev.isCurrent,
+    }));
+
+  const BASE_POSITIONS = buildPositions(EVENTS.length);
+  const FLOAT_OFFSETS  = EVENTS.map((_, i) => FLOAT_OFFSETS_POOL[i % FLOAT_OFFSETS_POOL.length]);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);

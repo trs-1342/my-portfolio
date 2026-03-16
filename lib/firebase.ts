@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
 import { getFirestore, Firestore } from "firebase/firestore";
+import { getStorage, FirebaseStorage } from "firebase/storage";
 import { GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
@@ -15,18 +16,20 @@ const firebaseConfig = {
 /* .env.local henüz doldurulmamışsa Firebase'i başlatma */
 const isConfigured = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
-let app: FirebaseApp | null = null;
-let auth: Auth | null = null;
-let db: Firestore | null = null;
+let app:     FirebaseApp     | null = null;
+let auth:    Auth            | null = null;
+let db:      Firestore       | null = null;
+let storage: FirebaseStorage | null = null;
 
 if (isConfigured) {
-  app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db   = getFirestore(app);
+  app     = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  auth    = getAuth(app);
+  db      = getFirestore(app);
+  storage = getStorage(app);
 } else if (typeof window !== "undefined") {
   console.warn("[firebase] NEXT_PUBLIC_FIREBASE_API_KEY eksik — .env.local dosyasını doldur.");
 }
 
-export { auth, db };
+export { auth, db, storage };
 export const googleProvider = new GoogleAuthProvider();
 export const firebaseReady  = isConfigured;

@@ -186,10 +186,211 @@ export async function getAllUsers(): Promise<UserProfile[]> {
   return snap.docs.map((d) => d.data() as UserProfile);
 }
 
+/* ── Site Config Types ── */
+
+export interface HeroButton {
+  id: string;
+  label: string;
+  href: string;
+  variant: "accent" | "ghost";
+  order: number;
+}
+
+export interface SkillBadge {
+  id: string;
+  label: string;
+  order: number;
+}
+
+export interface HomepageConfig {
+  heroLevel: "junior" | "mid" | "senior";
+  heroText: string;
+  aboutText: string;
+  buttons: HeroButton[];
+  skillBadges: SkillBadge[];
+}
+
+export interface SkillItem {
+  id: string;
+  category: string;
+  icon: string;
+  name: string;
+  desc: string;
+  order: number;
+}
+
+export interface Project {
+  id: string;
+  slug?: string;          // URL slug — yoksa title'dan üretilir
+  emoji: string;
+  imageUrl?: string | null; // Firebase Storage URL
+  title: string;
+  desc: string;
+  longDesc?: string;      // Detay sayfası için uzun açıklama
+  highlights?: string[];  // Detay sayfası için öne çıkanlar
+  lang: string;
+  repo: string;
+  live: string | null;
+  pinned: boolean;
+  active: boolean;
+  status: string;
+  stack: string[];
+  order: number;
+}
+
+export interface ProjectsPageConfig {
+  subtitle: string;
+}
+
+export interface MenuItem {
+  id: string;
+  href: string;
+  label: string;
+  icon: string;
+  order: number;
+}
+
+/* ── Site Config CRUD (client-side) ── */
+
+export async function getHomepageConfig(): Promise<HomepageConfig | null> {
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "site_config", "homepage"));
+  if (!snap.exists()) return null;
+  return snap.data() as HomepageConfig;
+}
+
+export async function setHomepageConfig(data: HomepageConfig): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "site_config", "homepage"), data);
+}
+
+export async function getSkillsConfig(): Promise<SkillItem[] | null> {
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "site_config", "skills"));
+  if (!snap.exists()) return null;
+  return (snap.data()?.items ?? []) as SkillItem[];
+}
+
+export async function setSkillsConfig(items: SkillItem[]): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "site_config", "skills"), { items });
+}
+
+export async function getMenuItems(): Promise<MenuItem[] | null> {
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "site_config", "menu"));
+  if (!snap.exists()) return null;
+  return (snap.data()?.items ?? []) as MenuItem[];
+}
+
+export async function setMenuItems(items: MenuItem[]): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "site_config", "menu"), { items });
+}
+
+/* ── Projects CRUD (client-side) ── */
+
+export async function getProjectsList(): Promise<Project[]> {
+  if (!db) return [];
+  const q    = query(collection(db, "projects"), orderBy("order", "asc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Project));
+}
+
+export async function addProject(data: Omit<Project, "id">): Promise<string> {
+  if (!db) return "";
+  const ref = await addDoc(collection(db, "projects"), data);
+  return ref.id;
+}
+
+export async function updateProject(id: string, data: Partial<Omit<Project, "id">>): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, "projects", id), data as Record<string, unknown>);
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  if (!db) return;
+  await deleteDoc(doc(db, "projects", id));
+}
+
+export async function getProjectsPageConfig(): Promise<ProjectsPageConfig | null> {
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "site_config", "projects_page"));
+  if (!snap.exists()) return null;
+  return snap.data() as ProjectsPageConfig;
+}
+
+export async function setProjectsPageConfig(data: ProjectsPageConfig): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "site_config", "projects_page"), data);
+}
+
 /* Okunmamış mesaj sayısı */
 export async function getUnreadContactCount(): Promise<number> {
   if (!db) return 0;
   const q = query(collection(db, "contacts"), where("read", "==", false));
   const snap = await getDocs(q);
   return snap.size;
+}
+
+/* ── About Config Types ── */
+
+export interface PhotoItem {
+  id: string;
+  url: string;
+  order: number;
+}
+
+export interface CvFile {
+  id: string;
+  url: string;
+  label: string;
+  order: number;
+}
+
+export interface LifeEvent {
+  id: string;
+  date: string;
+  title: string;
+  desc: string;
+  log: string;
+  isCurrent: boolean;
+  order: number;
+}
+
+export interface AboutConfig {
+  name: string;
+  handle: string;
+  aboutLevel: "junior" | "mid" | "senior";
+  aboutText: string;
+  bioText: string;
+  buttons: HeroButton[];
+  photos: PhotoItem[];
+  cvFiles: CvFile[];
+}
+
+/* ── About Config CRUD (client-side) ── */
+
+export async function getAboutConfig(): Promise<AboutConfig | null> {
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "site_config", "about"));
+  if (!snap.exists()) return null;
+  return snap.data() as AboutConfig;
+}
+
+export async function setAboutConfig(data: AboutConfig): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "site_config", "about"), data);
+}
+
+export async function getLifeEvents(): Promise<LifeEvent[] | null> {
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "site_config", "life_events"));
+  if (!snap.exists()) return null;
+  return (snap.data()?.items ?? []) as LifeEvent[];
+}
+
+export async function setLifeEvents(items: LifeEvent[]): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "site_config", "life_events"), { items });
 }

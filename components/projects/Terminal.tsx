@@ -1,16 +1,10 @@
 "use client";
 
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
+import type { Project } from "@/lib/firestore";
 
-interface Project {
-  id: number;
-  slug: string;
-  title: string;
-  description: string;
-  live_url?: string | null;
-  repo_url: string;
-  is_active: boolean;
-  tags: string[];
+function toSlug(title: string) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
 type LineType = "input" | "output" | "error" | "success" | "info" | "dim";
@@ -160,11 +154,11 @@ export default function Terminal({ projects }: { projects: Project[] }) {
             { type: "dim", text: "total " + projects.length },
             ...projects.map((p) => ({
               type: "output" as LineType,
-              text: `  📁  ${p.slug}${p.is_active ? "  \x1b[active\x1b]" : ""}`,
+              text: `  📁  ${p.slug || toSlug(p.title)}${p.active ? "  \x1b[active\x1b]" : ""}`,
             }))
           );
         } else {
-          const isC = activeProject.tags.includes("C");
+          const isC = (activeProject.stack ?? []).includes("C");
           push(
             { type: "output", text: "  📄  README.md" },
             { type: "output", text: "  📁  src/" },
@@ -190,10 +184,11 @@ export default function Terminal({ projects }: { projects: Project[] }) {
           }
         } else {
           const proj = projects.find(
-            (p) => p.slug === target || p.title.toLowerCase() === target.toLowerCase()
+            (p) => (p.slug || toSlug(p.title)) === target || p.title.toLowerCase() === target.toLowerCase()
           );
           if (proj) {
-            setCwd(`~/projects/${proj.slug}`);
+            const slug = proj.slug || toSlug(proj.title);
+            setCwd(`~/projects/${slug}`);
             setActiveProject(proj);
             push({ type: "output", text: "" });
           } else {
@@ -207,7 +202,7 @@ export default function Terminal({ projects }: { projects: Project[] }) {
         push({
           type: "output",
           text: activeProject
-            ? `/home/trs/projects/${activeProject.slug}`
+            ? `/home/trs/projects/${activeProject.slug || toSlug(activeProject.title)}`
             : "/home/trs/projects",
         });
         break;
@@ -233,12 +228,12 @@ export default function Terminal({ projects }: { projects: Project[] }) {
           push(
             { type: "success", text: `# ${activeProject.title}` },
             { type: "output",  text: "" },
-            { type: "output",  text: activeProject.description },
+            { type: "output",  text: activeProject.longDesc || activeProject.desc },
             { type: "output",  text: "" },
-            { type: "dim",     text: `Tags: ${activeProject.tags.join(", ")}` },
-            { type: "dim",     text: `Repo: ${activeProject.repo_url}` },
-            ...(activeProject.live_url
-              ? [{ type: "dim" as LineType, text: `Live: ${activeProject.live_url}` }]
+            { type: "dim",     text: `Stack: ${(activeProject.stack ?? []).join(", ")}` },
+            { type: "dim",     text: `Repo: ${activeProject.repo}` },
+            ...(activeProject.live
+              ? [{ type: "dim" as LineType, text: `Live: ${activeProject.live}` }]
               : [])
           );
         } else {

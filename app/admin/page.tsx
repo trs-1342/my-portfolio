@@ -25,9 +25,9 @@ export default function AdminDashboard() {
   const banned  = users.filter((u) => u.status === "banned").length;
 
   const stats = [
-    { label: "Toplam Kullanıcı", value: loading ? "—" : users.filter((u) => u.role !== "admin").length.toString(), icon: "👤" },
     { label: "Okunmamış Mesaj",  value: loading ? "—" : unread.toString(),           icon: "✉️", accent: unread > 0 },
     { label: "Toplam Mesaj",     value: loading ? "—" : contacts.length.toString(),  icon: "📨" },
+    { label: "Toplam Kullanıcı", value: loading ? "—" : users.filter((u) => u.role !== "admin").length.toString(), icon: "👤" },
     { label: "Engelli Hesap",    value: loading ? "—" : banned.toString(),            icon: "🚫", accent: banned > 0 },
   ];
 

@@ -1,8 +1,8 @@
 import { readdirSync } from "fs";
 import { join } from "path";
 import PhotoSlider from "./PhotoSlider";
+import { getHomepageConfigServer } from "@/lib/site-server";
 
-/* public/myphotos klasöründeki tüm görselleri otomatik oku */
 function getPhotos(): string[] {
   try {
     const dir = join(process.cwd(), "public", "myphotos");
@@ -14,8 +14,25 @@ function getPhotos(): string[] {
   }
 }
 
-export default function Hero() {
+const LEVEL_LABELS: Record<string, string> = {
+  junior: "Junior",
+  mid:    "Mid-level",
+  senior: "Senior",
+};
+
+export default async function Hero() {
   const photos = getPhotos();
+  const cfg    = await getHomepageConfigServer();
+
+  /* Markdown ve \n → HTML dönüşümü */
+  const aboutHtml = cfg.aboutText
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/\n/g, "<br>");
+
+  const sortedButtons = [...cfg.buttons].sort((a, b) => a.order - b.order);
+  const sortedBadges  = [...cfg.skillBadges].sort((a, b) => a.order - b.order);
+
   return (
     <section
       id="hero"
@@ -49,11 +66,8 @@ export default function Hero() {
         >
           <span
             style={{
-              width: 7,
-              height: 7,
-              borderRadius: "50%",
-              background: "var(--accent)",
-              display: "inline-block",
+              width: 7, height: 7, borderRadius: "50%",
+              background: "var(--accent)", display: "inline-block",
             }}
           />
           çalışmaya müsait
@@ -83,9 +97,9 @@ export default function Hero() {
             lineHeight: 1.3,
           }}
         >
-          Mid-level{" "}
+          {LEVEL_LABELS[cfg.heroLevel] ?? "Mid-level"}{" "}
           <span style={{ color: "var(--accent)", fontWeight: 700 }}>
-            Software Enginner
+            {cfg.heroText}
           </span>
         </h2>
 
@@ -98,36 +112,26 @@ export default function Hero() {
             fontSize: "0.97rem",
             maxWidth: "460px",
           }}
-        >
-          İstanbul Gelişim Üniversitesi'nde Yazılım Mühendisliği öğrencisiyim.
-          Arch Linux'u keşfediyor, C diliyle algoritma mantığını ve modern web teknolojilerini öğreniyorum.
-          Teknik becerilerimi ürün çıkartmaya odaklıyım.
-          Teknoloji dünyası ile yakından ilgileniyor, gelişime ve öğrenmeye açık birisiyim.
-        </p>
+          dangerouslySetInnerHTML={{ __html: aboutHtml }}
+        />
 
         {/* CTA butonlar */}
-        <div className="anim-fade-up d5" style={{ display: "flex", gap: "12px" }}>
-          <a href="/my-projects" className="btn btn-accent">
-            Projeleri Gör
-          </a>
-          <a href="/contact" className="btn btn-ghost">
-            İletişim
-          </a>
+        <div className="anim-fade-up d5" style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+          {sortedButtons.map((btn) => (
+            <a key={btn.id} href={btn.href} className={`btn btn-${btn.variant}`}>
+              {btn.label}
+            </a>
+          ))}
         </div>
 
         {/* Teknoloji etiketleri */}
         <div
           className="anim-fade-up d6 mono"
-          style={{
-            display: "flex",
-            gap: "8px",
-            flexWrap: "wrap",
-            marginTop: "4px",
-          }}
+          style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "4px" }}
         >
-          {["C", "Linux", "Arch", "Next.js", "JavaScript", "TypeScript", "AI"].map((t) => (
+          {sortedBadges.map((b) => (
             <span
-              key={t}
+              key={b.id}
               style={{
                 padding: "3px 10px",
                 borderRadius: "6px",
@@ -136,7 +140,7 @@ export default function Hero() {
                 color: "var(--text-3)",
               }}
             >
-              {t}
+              {b.label}
             </span>
           ))}
         </div>
@@ -155,26 +159,18 @@ export default function Hero() {
             marginLeft: "auto",
           }}
         >
-          {/* Köşe süslemesi */}
           <div
             className="mono"
             style={{
-              position: "absolute",
-              top: 16,
-              left: 16,
-              zIndex: 10,
-              fontSize: "0.72rem",
-              color: "var(--text-3)",
-              background: "var(--panel)",
-              backdropFilter: "blur(12px)",
-              padding: "4px 10px",
-              borderRadius: "999px",
+              position: "absolute", top: 16, left: 16, zIndex: 10,
+              fontSize: "0.72rem", color: "var(--text-3)",
+              background: "var(--panel)", backdropFilter: "blur(12px)",
+              padding: "4px 10px", borderRadius: "999px",
               border: "1px solid var(--border)",
             }}
           >
             @trs-1342
           </div>
-
           <PhotoSlider photos={photos} />
         </div>
       </div>
@@ -187,13 +183,8 @@ export default function Hero() {
             padding-top: 80px !important;
             min-height: auto !important;
           }
-          #hero > div:last-child {
-            max-width: 100% !important;
-          }
-          #hero > div:last-child > div {
-            margin-left: 0 !important;
-            max-width: 100% !important;
-          }
+          #hero > div:last-child { max-width: 100% !important; }
+          #hero > div:last-child > div { margin-left: 0 !important; max-width: 100% !important; }
         }
       `}</style>
     </section>

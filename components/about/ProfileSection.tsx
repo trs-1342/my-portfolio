@@ -1,22 +1,37 @@
 /* Hakkımda sayfası üst bölüm — 50/50 split */
-import { readdirSync } from "fs";
-import { join } from "path";
 import Image from "next/image";
+import PhotoSlider from "./PhotoSlider";
+import type { AboutConfig } from "@/lib/firestore";
 
-function getFirstPhoto(): string | null {
-  try {
-    const dir = join(process.cwd(), "public", "myphotos");
-    const file = readdirSync(dir).find((f) =>
-      /\.(jpe?g|png|webp|avif|gif)$/i.test(f)
-    );
-    return file ? `/myphotos/${file}` : null;
-  } catch {
-    return null;
-  }
+const LEVEL_LABELS: Record<string, string> = {
+  junior: "Junior Software Developer",
+  mid:    "Mid-level Software Developer",
+  senior: "Senior Software Developer",
+};
+
+interface Props {
+  config: AboutConfig;
 }
 
-export default function ProfileSection() {
-  const photo = getFirstPhoto();
+export default function ProfileSection({ config }: Props) {
+  const { name, handle, aboutLevel, aboutText, bioText, buttons, photos } = config;
+
+  const titleText = aboutText
+    ? `${LEVEL_LABELS[aboutLevel] ?? "Software Developer"} — ${aboutText}`
+    : (LEVEL_LABELS[aboutLevel] ?? "Software Developer");
+
+  /* Markdown-lite: **bold**, *italic*, <br> ve \n → <br> */
+  function renderBio(raw: string) {
+    return raw
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/&lt;br\s*\/?&gt;/gi, "<br>")
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+      .replace(/\n/g, "<br>");
+  }
+
   return (
     <section
       className="profile-section"
@@ -45,7 +60,7 @@ export default function ProfileSection() {
               marginBottom: "6px",
             }}
           >
-            Halil Hattab
+            {name}
           </h1>
 
           {/* Takma ad */}
@@ -58,7 +73,7 @@ export default function ProfileSection() {
               letterSpacing: "0.04em",
             }}
           >
-            @trs
+            {handle}
           </div>
         </div>
 
@@ -88,7 +103,7 @@ export default function ProfileSection() {
                 boxShadow: "0 0 8px var(--accent)",
               }}
             />
-            Mid-level Software Developer
+            {titleText}
           </span>
         </div>
 
@@ -97,36 +112,31 @@ export default function ProfileSection() {
           className="anim-fade-up d3"
           style={{ display: "flex", flexDirection: "column", gap: "14px" }}
         >
-          <p style={{ color: "var(--text-2)", lineHeight: 1.8, fontSize: "0.96rem" }}>
-            Merhaba! Ben Halil — yazılım dünyasına lise yıllarında adım attım ve o günden
-            bu yana kod yazmak hem hobim hem de tutkum oldu. Arch Linux üzerinde C ile
-            sistem programlama, modern web teknolojileriyle full-stack geliştirme yapıyorum.
-          </p>
-          <p style={{ color: "var(--text-2)", lineHeight: 1.8, fontSize: "0.96rem" }}>
-            İstanbul Gelişim Üniversitesi Yazılım Mühendisliği 1. sınıf öğrencisiyim.
-            Akademik hayatımı freelance projeler ve açık kaynak katkılarıyla harmanlıyorum.
-          </p>
-          <p style={{ color: "var(--text-2)", lineHeight: 1.8, fontSize: "0.96rem" }}>
-            Amacım; teknolojinin hızla değiştiği bu çağda{" "}
-            <span style={{ color: "var(--text)", fontWeight: 600 }}>
-              ürün çıkartmaya odaklı
-            </span>{" "}
-            üretmek ve insanların hayatına gerçekten dokunan projeler geliştirmek.
-          </p>
+          <p
+            style={{ color: "var(--text-2)", lineHeight: 1.8, fontSize: "0.96rem" }}
+            dangerouslySetInnerHTML={{ __html: renderBio(bioText) }}
+          />
         </div>
 
         {/* CTA butonlar */}
-        <div
-          className="anim-fade-up d4"
-          style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}
-        >
-          <a href="https://github.com/trs-1342" className="btn btn-accent" target="_blank" rel="noopener noreferrer">
-            ⌨️ GitHub
-          </a>
-          <a href="/contact" className="btn btn-ghost">
-            ✉️ İletişim
-          </a>
-        </div>
+        {buttons.length > 0 && (
+          <div
+            className="anim-fade-up d4"
+            style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}
+          >
+            {[...buttons].sort((a, b) => a.order - b.order).map((btn) => (
+              <a
+                key={btn.id}
+                href={btn.href}
+                className={`btn btn-${btn.variant}`}
+                target={btn.href.startsWith("http") ? "_blank" : undefined}
+                rel={btn.href.startsWith("http") ? "noopener noreferrer" : undefined}
+              >
+                {btn.label}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Sağ — Fotoğraf kartı */}
@@ -142,42 +152,14 @@ export default function ProfileSection() {
             borderRadius: "24px",
           }}
         >
-          {/* Fotoğraf veya placeholder */}
-          {photo ? (
-            <Image
-              src={photo}
-              alt="Halil Hattab"
-              fill
-              style={{ objectFit: "cover" }}
-              priority
-            />
-          ) : (
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: "linear-gradient(135deg, var(--bg-2) 0%, var(--bg) 100%)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "16px",
-              }}
-            >
-              <span style={{ fontSize: "5rem" }}>🧑‍💻</span>
-              <span className="mono" style={{ fontSize: "0.78rem", color: "var(--text-3)", textAlign: "center" }}>
-                /public/myphotos/<br />klasörüne fotoğraf ekle
-              </span>
-            </div>
-          )}
+          <PhotoSlider photos={[...photos].sort((a, b) => a.order - b.order)} name={name} />
 
-          {/* Kenar gradient maskesi — fotoğraf karıştıktan sonra aktif */}
+          {/* Kenar gradient maskesi */}
           <div
             style={{
               position: "absolute",
               inset: 0,
-              background:
-                "radial-gradient(ellipse at center, transparent 50%, var(--bg) 90%)",
+              background: "radial-gradient(ellipse at center, transparent 50%, var(--bg) 90%)",
               pointerEvents: "none",
               zIndex: 2,
             }}
@@ -200,7 +182,7 @@ export default function ProfileSection() {
               border: "1px solid var(--border)",
             }}
           >
-            Halil Hattab — 2026
+            {name} — {new Date().getFullYear()}
           </div>
         </div>
       </div>

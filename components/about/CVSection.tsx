@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import type { CvFile } from "@/lib/firestore";
 
 interface Props {
-  file: string | null; // "/doc/cv.pdf" gibi
+  cvFiles: CvFile[];
 }
 
-export default function CVSection({ file }: Props) {
-  const [expanded, setExpanded] = useState(false);
+export default function CVSection({ cvFiles }: Props) {
+  const sorted = [...cvFiles].sort((a, b) => a.order - b.order);
 
-  if (!file) {
+  if (sorted.length === 0) {
     return (
       <section style={{ marginTop: "64px" }}>
         <SectionLabel />
@@ -27,19 +28,31 @@ export default function CVSection({ file }: Props) {
         >
           <span style={{ fontSize: "2rem" }}>📄</span>
           <p className="mono" style={{ fontSize: "0.8rem", color: "var(--text-3)" }}>
-            public/doc/ klasörüne bir PDF ekle
+            Admin panelinden CV ekle
           </p>
         </div>
       </section>
     );
   }
 
-  const filename = file.split("/").pop() ?? "cv.pdf";
-
   return (
     <section style={{ marginTop: "64px" }} className="anim-fade-up">
       <SectionLabel />
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {sorted.map((cv) => (
+          <CVCard key={cv.id} cv={cv} />
+        ))}
+      </div>
+    </section>
+  );
+}
 
+function CVCard({ cv }: { cv: CvFile }) {
+  const [expanded, setExpanded] = useState(false);
+  const filename = cv.url.split("/").pop() ?? "cv.pdf";
+
+  return (
+    <div>
       {/* Aksiyon çubuğu */}
       <div
         className="glass"
@@ -58,7 +71,7 @@ export default function CVSection({ file }: Props) {
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <span style={{ fontSize: "1.2rem" }}>📄</span>
           <span className="mono" style={{ fontSize: "0.82rem", color: "var(--text-2)" }}>
-            {filename}
+            {cv.label || filename}
           </span>
         </div>
 
@@ -71,7 +84,7 @@ export default function CVSection({ file }: Props) {
             {expanded ? "↑ Gizle" : "👁 Görüntüle"}
           </button>
           <a
-            href={file}
+            href={cv.url}
             download={filename}
             className="btn btn-accent"
             style={{ fontSize: "0.8rem", padding: "7px 14px" }}
@@ -79,7 +92,7 @@ export default function CVSection({ file }: Props) {
             ↓ İndir
           </a>
           <a
-            href={file}
+            href={cv.url}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-ghost"
@@ -101,13 +114,13 @@ export default function CVSection({ file }: Props) {
           }}
         >
           <iframe
-            src={`${file}#toolbar=0&navpanes=0`}
+            src={`${cv.url}#toolbar=0&navpanes=0`}
             style={{ width: "100%", height: "100%", border: "none", display: "block" }}
-            title="CV"
+            title={cv.label || filename}
           />
         </div>
       )}
-    </section>
+    </div>
   );
 }
 

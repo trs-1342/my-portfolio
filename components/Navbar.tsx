@@ -5,14 +5,17 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "@/context/AuthContext";
+import { getMenuItems } from "@/lib/firestore";
+import type { MenuItem } from "@/lib/firestore";
 
-const links = [
-  { href: "/about",       label: "Hakkımda",    icon: "👤" },
-  { href: "/my-projects", label: "Projeler",    icon: "⚡" },
-  { href: "/photos",      label: "Fotoğraflar", icon: "📷" },
-  { href: "/hsounds",     label: "Hsounds",     icon: "🎵" },
-  { href: "/thanks",      label: "Teşekkürler", icon: "💫" },
-  { href: "/contact",     label: "İletişim",    icon: "✉️" },
+const DEFAULT_LINKS: MenuItem[] = [
+  { id: "m1", href: "/about",       label: "Hakkımda",    icon: "👤", order: 0 },
+  { id: "m2", href: "/my-projects", label: "Projeler",    icon: "⚡", order: 1 },
+  { id: "m3", href: "/photos",      label: "Fotoğraflar", icon: "📷", order: 2 },
+  { id: "m4", href: "/hsounds",     label: "Hsounds",     icon: "🎵", order: 3 },
+  { id: "m5", href: "/thanks",      label: "Teşekkürler", icon: "💫", order: 4 },
+  { id: "m6", href: "/contact",     label: "İletişim",    icon: "✉️", order: 5 },
+  { id: "m7", href: "/solar-system",     label: "Güneş Sistemi",    icon: "🌍", order: 6 },
 ];
 
 export default function Navbar() {
@@ -20,7 +23,17 @@ export default function Navbar() {
   const { user, profile, logout } = useAuth();
   const hideProgress = useRef(0);
   const lastY = useRef(0);
-  const [style, setStyle] = useState<React.CSSProperties>({});
+  const [style, setStyle]     = useState<React.CSSProperties>({});
+  const [links, setLinks]     = useState<MenuItem[]>(DEFAULT_LINKS);
+
+  /* Menü öğelerini Firestore'dan yükle (varsa override et) */
+  useEffect(() => {
+    getMenuItems().then((items) => {
+      if (items && items.length > 0) {
+        setLinks([...items].sort((a, b) => a.order - b.order));
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const onScroll = () => {
@@ -74,7 +87,7 @@ export default function Navbar() {
           const isActive = pathname === l.href || pathname.startsWith(l.href + "/");
           return (
             <a
-              key={l.href}
+              key={l.id}
               href={l.href}
               className={`nav-link${isActive ? " nav-link--active" : ""}`}
             >

@@ -1,28 +1,11 @@
-const active = [
-  {
-    emoji: "🌐",
-    title: "mnp",
-    desc: "Kişisel portfolyo ve blog platformum.",
-    status: "Geliştiriliyor",
-    stack: ["Next.js", "Firebase", "TypeScript", "Firebase Auth", "Vercel"],
-  },
-  {
-    emoji: "🎓",
-    title: "OpenUni",
-    desc: "Üniversite kaynak ve not yönetimi platformu.",
-    status: "Geliştiriliyor",
-    stack: ["Next.js", "Firebase"],
-  },
-  {
-    emoji: "🛒",
-    title: "Souq",
-    desc: "Yerel pazar dijitalleştirme uygulaması.",
-    status: "Planlama",
-    stack: ["React Native", "Node.js"],
-  },
-];
+import { getProjectsServer } from "@/lib/site-server";
 
-export default function ActiveProjects() {
+export default async function ActiveProjects() {
+  const all    = await getProjectsServer();
+  const active = all.filter((p) => p.active);
+
+  if (active.length === 0) return null;
+
   return (
     <section style={{ marginTop: "60px" }}>
       <h2
@@ -38,7 +21,6 @@ export default function ActiveProjects() {
         Aktif Geliştirdiğim Projeler
       </h2>
 
-      {/* Yatay kaydırılabilir konteyner */}
       <div
         style={{
           display: "flex",
@@ -50,7 +32,7 @@ export default function ActiveProjects() {
       >
         {active.map((p, i) => (
           <article
-            key={p.title}
+            key={p.id}
             className={`glass glass-hover anim-fade-up d${Math.min(i + 1, 6)}`}
             style={{
               minWidth: "260px",
@@ -62,64 +44,35 @@ export default function ActiveProjects() {
               flexShrink: 0,
             }}
           >
-            {/* Başlık + status indicator */}
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <span style={{ fontSize: "1.5rem" }}>{p.emoji}</span>
               <div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    marginBottom: "3px",
-                  }}
-                >
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
                   <span className="pulse-dot" />
-                  <span
-                    className="mono"
-                    style={{ fontSize: "0.7rem", color: "var(--accent)" }}
-                  >
+                  <span className="mono" style={{ fontSize: "0.7rem", color: "var(--accent)" }}>
                     {p.status}
                   </span>
                 </div>
-                <h3
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "0.95rem",
-                    color: "var(--text)",
-                  }}
-                >
+                <h3 style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--text)" }}>
                   {p.title}
                 </h3>
               </div>
             </div>
 
-            <p
-              style={{
-                fontSize: "0.82rem",
-                color: "var(--text-2)",
-                lineHeight: 1.6,
-              }}
-            >
+            <p style={{ fontSize: "0.82rem", color: "var(--text-2)", lineHeight: 1.6 }}>
               {p.desc}
             </p>
 
-            {/* Stack etiketleri */}
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "auto" }}>
               {p.stack.map((s) => (
-                <span key={s} className="project-lang-badge">
-                  {s}
-                </span>
+                <span key={s} className="project-lang-badge">{s}</span>
               ))}
             </div>
           </article>
         ))}
       </div>
 
-      <style>{`
-        /* Scrollbar gizle — Webkit */
-        div::-webkit-scrollbar { display: none; }
-      `}</style>
+      <style>{`div::-webkit-scrollbar { display: none; }`}</style>
     </section>
   );
 }

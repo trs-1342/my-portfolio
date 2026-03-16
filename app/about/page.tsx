@@ -1,29 +1,21 @@
-import { readdirSync } from "fs";
-import { join } from "path";
 import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProfileSection from "@/components/about/ProfileSection";
 import ConstellationTimeline from "@/components/about/ConstellationTimeline";
 import CVSection from "@/components/about/CVSection";
+import { getAboutConfigServer, getLifeEventsServer } from "@/lib/site-server";
 
 export const metadata = {
   title: "Hakkımda — trs",
   description: "Halil Hattab — Mid-level Software Developer",
 };
 
-function getCVFile(): string | null {
-  try {
-    const dir = join(process.cwd(), "public", "doc");
-    const files = readdirSync(dir).filter((f) => /\.pdf$/i.test(f));
-    return files.length > 0 ? `/doc/${files[0]}` : null;
-  } catch {
-    return null;
-  }
-}
-
-export default function AboutPage() {
-  const cvFile = getCVFile();
+export default async function AboutPage() {
+  const [config, lifeEvents] = await Promise.all([
+    getAboutConfigServer(),
+    getLifeEventsServer(),
+  ]);
 
   return (
     <>
@@ -32,13 +24,13 @@ export default function AboutPage() {
 
       <div className="page-content">
         {/* Profil: 50/50 split */}
-        <ProfileSection />
+        <ProfileSection config={config} />
 
         {/* CV */}
-        <CVSection file={cvFile} />
+        <CVSection cvFiles={config.cvFiles} />
 
         {/* Yıldız Haritası Zaman Çizelgesi */}
-        <ConstellationTimeline />
+        <ConstellationTimeline events={lifeEvents} />
 
         <Footer />
       </div>
