@@ -142,6 +142,20 @@ export async function updateUserTheme(uid: string, themeId: string): Promise<voi
   await updateDoc(doc(db, "users", uid), { "settings.theme": themeId });
 }
 
+/* Site varsayılan temasını getir (giriş yapmayan ziyaretçiler için) */
+export async function getSiteTheme(): Promise<string | null> {
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "site_config", "appearance"));
+  if (!snap.exists()) return null;
+  return (snap.data()?.theme as string) ?? null;
+}
+
+/* Site varsayılan temasını güncelle (sadece admin) */
+export async function setSiteTheme(themeId: string): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "site_config", "appearance"), { theme: themeId }, { merge: true });
+}
+
 /* Kullanıcı durumunu güncelle (admin) */
 export async function updateUserStatus(uid: string, status: "active" | "banned") {
   if (!db) return;

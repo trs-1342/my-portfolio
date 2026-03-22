@@ -7,15 +7,19 @@ interface Props {
   currentTheme: string;          // aktif tema ID
   uid?: string;                  // giriş yapmışsa UID (Firestore'a kayıt için)
   onThemeChange?: (id: string) => void;
+  onSave?: (id: string) => Promise<void>; // uid yerine özel kayıt fn (örn. site teması)
+  hint?: string;                 // alt bilgi yazısı override
 }
 
-export default function ThemePicker({ currentTheme, uid, onThemeChange }: Props) {
+export default function ThemePicker({ currentTheme, uid, onThemeChange, onSave, hint }: Props) {
   const active = normalizeThemeId(currentTheme);
 
   const handleSelect = async (id: string) => {
     applyTheme(id);
     onThemeChange?.(id);
-    if (uid) {
+    if (onSave) {
+      await onSave(id);
+    } else if (uid) {
       await updateUserTheme(uid, id);
     }
   };
@@ -56,7 +60,7 @@ export default function ThemePicker({ currentTheme, uid, onThemeChange }: Props)
       </div>
 
       <p className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)" }}>
-        Seçim anında uygulanır ve hesabına kaydedilir.
+        {hint ?? "Seçim anında uygulanır ve hesabına kaydedilir."}
       </p>
     </div>
   );

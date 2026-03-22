@@ -14,7 +14,7 @@ import {
   EmailAuthProvider, reauthenticateWithCredential,
 } from "firebase/auth";
 import { auth, googleProvider, firebaseReady } from "@/lib/firebase";
-import { getUserProfile, ensureAdminRole, UserProfile } from "@/lib/firestore";
+import { getUserProfile, ensureAdminRole, getSiteTheme, UserProfile } from "@/lib/firestore";
 import { applyTheme, normalizeThemeId } from "@/lib/themes";
 
 interface AuthContextValue {
@@ -69,9 +69,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } else {
         setProfile(null);
-        /* Çıkışta localStorage temasına dön */
-        const saved = localStorage.getItem("theme");
-        applyTheme(normalizeThemeId(saved));
+        /* Çıkışta site varsayılan temasını çek; yoksa localStorage'a dön */
+        const siteTheme = await getSiteTheme();
+        if (siteTheme) {
+          applyTheme(normalizeThemeId(siteTheme));
+        } else {
+          const saved = localStorage.getItem("theme");
+          applyTheme(normalizeThemeId(saved));
+        }
       }
       setLoading(false);
     });

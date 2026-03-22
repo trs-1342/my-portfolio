@@ -3,29 +3,43 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { normalizeThemeId } from "@/lib/themes";
+import { getSiteTheme, setSiteTheme } from "@/lib/firestore";
 import ThemePicker from "@/components/ThemePicker";
 
 export default function AdminThemePage() {
   const { user, profile } = useAuth();
-  const [currentTheme, setCurrentTheme] = useState("dark-green");
+  const [personalTheme, setPersonalTheme] = useState("dark-green");
+  const [siteTheme,     setSiteThemeState] = useState("dark-green");
 
-  /* Profile yüklenince veya ThemePicker dışından değişince güncelle */
+  /* Profile yüklenince kişisel temayı doldur */
   useEffect(() => {
     if (profile?.settings?.theme) {
-      setCurrentTheme(normalizeThemeId(profile.settings.theme));
+      setPersonalTheme(normalizeThemeId(profile.settings.theme));
     } else {
-      const saved = localStorage.getItem("theme");
-      setCurrentTheme(normalizeThemeId(saved));
+      setPersonalTheme(normalizeThemeId(localStorage.getItem("theme")));
     }
   }, [profile]);
 
+  /* Site temasını Firestore'dan çek */
+  useEffect(() => {
+    getSiteTheme().then((t) => {
+      if (t) setSiteThemeState(normalizeThemeId(t));
+    });
+  }, []);
+
+  /* ThemePicker dışından tema değişince kişisel state'i güncelle */
   useEffect(() => {
     const onThemeChange = (e: Event) => {
-      setCurrentTheme((e as CustomEvent<string>).detail);
+      setPersonalTheme((e as CustomEvent<string>).detail);
     };
     window.addEventListener("themechange", onThemeChange);
     return () => window.removeEventListener("themechange", onThemeChange);
   }, []);
+
+  const handleSiteSave = async (id: string) => {
+    setSiteThemeState(id);
+    await setSiteTheme(id);
+  };
 
   return (
     <div style={{ maxWidth: "640px" }}>
@@ -42,17 +56,47 @@ export default function AdminThemePage() {
         }}>
           Tema
         </h1>
-        <p style={{ fontSize: "0.82rem", color: "var(--text-3)", marginTop: "8px" }}>
-          Seçtiğin tema hesabına kaydedilir — her giriş yapışında otomatik yüklenir.
-        </p>
       </header>
 
-      <div className="glass" style={{ borderRadius: "16px", padding: "28px" }}>
-        <ThemePicker
-          currentTheme={currentTheme}
-          uid={user?.uid}
-          onThemeChange={setCurrentTheme}
-        />
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+
+        {/* ── Site Varsayılan Teması ── */}
+        <section>
+          <p style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text)", marginBottom: "4px" }}>
+            Site Varsayılan Teması
+          </p>
+          <p style={{ fontSize: "0.78rem", color: "var(--text-3)", marginBottom: "16px" }}>
+            Giriş yapmayan ziyaretçiler bu temayı görür. Kayıtlı kullanıcıların kendi seçimleri bundan etkilenmez.
+          </p>
+          <div className="glass" style={{ borderRadius: "16px", padding: "28px" }}>
+            <ThemePicker
+              currentTheme={siteTheme}
+              onSave={handleSiteSave}
+              onThemeChange={setSiteThemeState}
+              hint="Seçim kaydedilir ve ziyaretçilere uygulanır."
+            />
+          </div>
+        </section>
+
+        <div style={{ height: "1px", background: "var(--border)" }} />
+
+        {/* ── Kendi Temam ── */}
+        <section>
+          <p style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text)", marginBottom: "4px" }}>
+            Kendi Temam
+          </p>
+          <p style={{ fontSize: "0.78rem", color: "var(--text-3)", marginBottom: "16px" }}>
+            Sadece senin hesabına kaydedilir — giriş yaptığında otomatik yüklenir.
+          </p>
+          <div className="glass" style={{ borderRadius: "16px", padding: "28px" }}>
+            <ThemePicker
+              currentTheme={personalTheme}
+              uid={user?.uid}
+              onThemeChange={setPersonalTheme}
+            />
+          </div>
+        </section>
+
       </div>
     </div>
   );
