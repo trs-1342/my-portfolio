@@ -83,19 +83,21 @@ export default function Navbar() {
 
         <div className="nav-divider" />
 
-        {links.map((l) => {
-          const isActive = pathname === l.href || pathname.startsWith(l.href + "/");
-          return (
-            <a
-              key={l.id}
-              href={l.href}
-              className={`nav-link${isActive ? " nav-link--active" : ""}`}
-            >
-              <span className="nav-icon">{l.icon}</span>
-              <span className="nav-label">{l.label}</span>
-            </a>
-          );
-        })}
+        {links
+          .filter((l) => !(l.href === "/photos" && !user))
+          .map((l) => {
+            const isActive = pathname === l.href || pathname.startsWith(l.href + "/");
+            return (
+              <a
+                key={l.id}
+                href={l.href}
+                className={`nav-link${isActive ? " nav-link--active" : ""}`}
+              >
+                <span className="nav-icon">{l.icon}</span>
+                <span className="nav-label">{l.label}</span>
+              </a>
+            );
+          })}
 
         <div className="nav-divider" />
 

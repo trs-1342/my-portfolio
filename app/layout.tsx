@@ -30,7 +30,7 @@ export default function RootLayout({
         {/* Tema flash'ını önle — render öncesi localStorage okur */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.classList.add('light');}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('theme')||'dark-green';if(t==='light')t='light-green';if(t==='dark')t='dark-green';document.documentElement.setAttribute('data-theme',t);if(t.startsWith('light-'))document.documentElement.classList.add('light');}catch(e){}})();`,
           }}
         />
       </head>

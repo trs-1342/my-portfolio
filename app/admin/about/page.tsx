@@ -5,7 +5,7 @@ import {
   getAboutConfig, setAboutConfig,
   getLifeEvents, setLifeEvents,
 } from "@/lib/firestore";
-import type { AboutConfig, HeroButton, PhotoItem, CvFile, LifeEvent } from "@/lib/firestore";
+import type { AboutConfig, HeroButton, AboutPhoto, CvFile, LifeEvent } from "@/lib/firestore";
 import { uploadFile } from "@/lib/storage";
 import { DEFAULT_ABOUT, DEFAULT_LIFE_EVENTS } from "@/lib/site-defaults";
 
@@ -369,7 +369,7 @@ function EventRow({ ev, idx, total, onChange, onMove, onDelete }: {
 
 /* ── Fotoğraf yükleme satırı ── */
 function PhotoUploadRow({ photo, idx, total, onMove, onDelete, onUploaded }: {
-  photo: PhotoItem; idx: number; total: number;
+  photo: AboutPhoto; idx: number; total: number;
   onMove: (dir: -1 | 1) => void;
   onDelete: () => void;
   onUploaded: (url: string) => void;

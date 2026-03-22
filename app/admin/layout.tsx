@@ -13,10 +13,12 @@ const TOP_NAV = [
 ];
 
 const PAGES_NAV = [
-  { href: "/admin/homepage", label: "Anasayfa",   icon: "🏠" },
-  { href: "/admin/about",    label: "Hakkımda",   icon: "👤" },
-  { href: "/admin/projects", label: "Projeler",   icon: "📁" },
-  { href: "/admin/pages",    label: "Menü & Tema", icon: "⚙️" },
+  { href: "/admin/homepage", label: "Anasayfa",    icon: "🏠" },
+  { href: "/admin/about",    label: "Hakkımda",    icon: "👤" },
+  { href: "/admin/projects", label: "Projeler",    icon: "📁" },
+  { href: "/admin/photos",   label: "Fotoğraflar", icon: "📷" },
+  { href: "/admin/theme",    label: "Tema",         icon: "🎨" },
+  { href: "/admin/pages",    label: "Menü",         icon: "⚙️" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

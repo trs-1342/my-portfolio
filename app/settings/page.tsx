@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { updateUserProfile } from "@/lib/firestore";
+import { normalizeThemeId } from "@/lib/themes";
+import ThemePicker from "@/components/ThemePicker";
 import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -13,7 +15,7 @@ export default function SettingsPage() {
   const router = useRouter();
 
   const [navPos,   setNavPos]   = useState<"top" | "bottom">("top");
-  const [theme,    setTheme]    = useState<"dark" | "light">("dark");
+  const [theme,    setTheme]    = useState<string>("dark-green");
   const [notifEmail,   setNotifEmail]   = useState(true);
   const [notifMessage, setNotifMessage] = useState(true);
   const [notifSystem,  setNotifSystem]  = useState(true);
@@ -24,7 +26,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!profile) return;
     setNavPos(profile.settings.navbarPosition);
-    setTheme(profile.settings.theme);
+    setTheme(normalizeThemeId(profile.settings.theme));
     setNotifEmail(profile.notifications?.email   ?? true);
     setNotifMessage(profile.notifications?.newMessage ?? true);
     setNotifSystem(profile.notifications?.system  ?? true);
@@ -37,16 +39,9 @@ export default function SettingsPage() {
     else if (!profile) router.push("/setup-username");
   }, [loading, user, profile, router]);
 
-  /* Tema önizlemesi — kaydetmeden anında uygula */
-  const handleThemeChange = (v: "dark" | "light") => {
-    setTheme(v);
-    if (v === "light") {
-      document.documentElement.classList.add("light");
-      localStorage.setItem("theme", "light");
-    } else {
-      document.documentElement.classList.remove("light");
-      localStorage.setItem("theme", "dark");
-    }
+  /* ThemePicker zaten applyTheme + Firestore'a kaydeder — burada sadece state güncelle */
+  const handleThemeChange = (id: string) => {
+    setTheme(id);
   };
 
   /* Yükleniyor */
@@ -65,6 +60,7 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true); setMsg("");
     try {
+      /* Tema ThemePicker tarafından zaten kaydedildi; sadece navbar + bildirimler */
       await updateUserProfile(user.uid, {
         settings: { navbarPosition: navPos, theme },
         notifications: { email: notifEmail, newMessage: notifMessage, system: notifSystem },
@@ -96,13 +92,14 @@ export default function SettingsPage() {
 
           {/* ── Görünüm ── */}
           <SettingCard title="Görünüm">
-            <SettingRow label="Tema" desc="Anında önizlenir, kaydet ile kalıcı olur.">
-              <ToggleGroup
-                options={[{ value: "dark", label: "🌑 Karanlık" }, { value: "light", label: "☀️ Aydınlık" }]}
-                value={theme}
-                onChange={(v) => handleThemeChange(v as "dark" | "light")}
+            <div style={{ marginBottom: "4px" }}>
+              <p style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text)", marginBottom: "16px" }}>Tema</p>
+              <ThemePicker
+                currentTheme={theme}
+                uid={user?.uid}
+                onThemeChange={handleThemeChange}
               />
-            </SettingRow>
+            </div>
 
             <Divider />
 

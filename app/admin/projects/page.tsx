@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   getProjectsList, addProject, updateProject, deleteProject,
-  getProjectsPageConfig, setProjectsPageConfig,
+  getProjectsPageConfig, setProjectsPageConfig, markProjectsInitialized,
 } from "@/lib/firestore";
 import type { Project, ProjectsPageConfig } from "@/lib/firestore";
 import { uploadFile } from "@/lib/storage";
@@ -28,21 +28,22 @@ export default function AdminProjectsPage() {
   const [busy,      setBusy]      = useState<string | null>(null);
   const [msgGlobal, setMsgGlobal] = useState("");
   const [savingCfg, setSavingCfg] = useState(false);
-  const loadedRef = useRef(false);
 
   const load = async () => {
     setLoading(true);
     const [data, cfg] = await Promise.all([getProjectsList(), getProjectsPageConfig()]);
-    if (data.length === 0) {
-      setProjects(DEFAULT_PROJECTS.map((p, i) => ({ ...p, id: `default-${i}` })));
-    } else {
-      setProjects([...data].sort((a, b) => a.order - b.order));
-    }
+    const raw = (data.length === 0 && !cfg?.initialized)
+      ? DEFAULT_PROJECTS.map((p) => ({ ...p, id: `default-${p.slug}` }))
+      : [...data].sort((a, b) => a.order - b.order);
+    /* Duplicate ID'leri temizle — StrictMode çift çalışmasına karşı güvenli */
+    const seen = new Set<string>();
+    const deduped = raw.filter((p) => seen.has(p.id) ? false : (seen.add(p.id), true));
+    setProjects(deduped);
     setPageCfg(cfg ?? DEFAULT_PROJECTS_PAGE);
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleToggle = async (proj: Project, field: "pinned" | "active") => {
     if (proj.id.startsWith("default-")) {
@@ -60,13 +61,21 @@ export default function AdminProjectsPage() {
     if (!confirm(`"${proj.title}" projesini silmek istediğinden emin misin?`)) return;
     if (proj.id.startsWith("default-")) {
       setProjects(prev => prev.filter(p => p.id !== proj.id));
+      /* Default silindi → Firestore'a initialized yaz, defaults bir daha geri gelmesin */
+      await markProjectsInitialized();
       return;
     }
     setBusy(proj.id);
-    await deleteProject(proj.id);
-    setProjects(prev => prev.filter(p => p.id !== proj.id));
-    if (expanded === proj.id) setExpanded(null);
-    setBusy(null);
+    try {
+      await deleteProject(proj.id);
+      setProjects(prev => prev.filter(p => p.id !== proj.id));
+      if (expanded === proj.id) setExpanded(null);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      alert(`Silme hatası: ${msg}`);
+    } finally {
+      setBusy(null);
+    }
   };
 
   const saveOrder = async () => {

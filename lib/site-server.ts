@@ -77,16 +77,17 @@ export async function getLifeEventsServer(): Promise<LifeEvent[]> {
 
 export async function getProjectsServer(): Promise<Project[]> {
   try {
-    const snap = await adminDb
-      .collection("projects")
-      .orderBy("order", "asc")
-      .get();
+    const [snap, metaSnap] = await Promise.all([
+      adminDb.collection("projects").orderBy("order", "asc").get(),
+      adminDb.doc("site_config/projects_page").get(),
+    ]);
+    const initialized = metaSnap.data()?.initialized === true;
     if (snap.empty) {
-      /* Henüz Firestore'da proje yoksa varsayılanları döndür */
-      return DEFAULT_PROJECTS.map((p, i) => ({ ...p, id: `default-${i}` }));
+      /* Kullanıcı bilerek sildiyse boş döndür, hiç dokunmadıysa defaults göster */
+      return initialized ? [] : DEFAULT_PROJECTS.map((p) => ({ ...p, id: `default-${p.slug}` }));
     }
     return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Project));
   } catch {
-    return DEFAULT_PROJECTS.map((p, i) => ({ ...p, id: `default-${i}` }));
+    return DEFAULT_PROJECTS.map((p) => ({ ...p, id: `default-${p.slug}` }));
   }
 }

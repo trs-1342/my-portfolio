@@ -29,25 +29,97 @@
   --font-mono:     'JetBrains Mono', monospace;
 }
 
-/* Light: "Frosted Glass" */
+/* ── Koyu Temalar ── */
+
+/* Siyah · Beyaz */
+html[data-theme="dark-white"] {
+  --border-hover: rgba(228,228,231,0.5);
+  --accent:       #E4E4E7;
+  --accent-dim:   rgba(228,228,231,0.1);
+  --accent-glow:  rgba(228,228,231,0.15);
+  --shadow-hover: 0 8px 40px rgba(228,228,231,0.12), 0 4px 24px rgba(0,0,0,0.55);
+  --ambient-3:    #E4E4E7;
+}
+
+/* Siyah · Kırmızı */
+html[data-theme="dark-red"] {
+  --border-hover: rgba(239,68,68,0.5);
+  --accent:       #EF4444;
+  --accent-dim:   rgba(239,68,68,0.12);
+  --accent-glow:  rgba(239,68,68,0.22);
+  --shadow-hover: 0 8px 40px rgba(239,68,68,0.18), 0 4px 24px rgba(0,0,0,0.55);
+  --ambient-3:    #EF4444;
+}
+
+/* Siyah · Mavi */
+html[data-theme="dark-blue"] {
+  --border-hover: rgba(59,130,246,0.5);
+  --accent:       #3B82F6;
+  --accent-dim:   rgba(59,130,246,0.12);
+  --accent-glow:  rgba(59,130,246,0.22);
+  --shadow-hover: 0 8px 40px rgba(59,130,246,0.18), 0 4px 24px rgba(0,0,0,0.55);
+  --ambient-3:    #3B82F6;
+}
+
+/* ── Açık Temalar (ortak altyapı) ── */
+
+html[data-theme="light-green"],
+html[data-theme="light-black"],
+html[data-theme="light-red"],
+html[data-theme="light-blue"],
 html.light {
-  --bg:            #FAFAFA;
-  --bg-2:          #F3F4F6;
-  --panel:         rgba(255, 255, 255, 0.55);
-  --panel-hover:   rgba(255, 255, 255, 0.75);
-  --border:        rgba(0, 0, 0, 0.06);
-  --border-hover:  rgba(5, 150, 105, 0.4);
-  --text:          #0A0A0B;
-  --text-2:        #52525B;
-  --text-3:        #71717A;
-  --accent:        #059669;
-  --accent-dim:    rgba(5, 150, 105, 0.1);
-  --accent-glow:   rgba(5, 150, 105, 0.2);
-  --shadow-card:   0 4px 24px rgba(0, 0, 0, 0.07);
-  --shadow-hover:  0 8px 40px rgba(5, 150, 105, 0.14), 0 4px 24px rgba(0, 0, 0, 0.09);
-  --ambient-1:     #93C5FD;
-  --ambient-2:     #C4B5FD;
-  --ambient-3:     #6EE7B7;
+  --bg:         #FAFAFA;
+  --bg-2:       #F3F4F6;
+  --panel:      rgba(255,255,255,0.55);
+  --panel-hover:rgba(255,255,255,0.75);
+  --border:     rgba(0,0,0,0.06);
+  --text:       #0A0A0B;
+  --text-2:     #52525B;
+  --text-3:     #71717A;
+  --shadow-card:0 4px 24px rgba(0,0,0,0.07);
+  --ambient-1:  #93C5FD;
+  --ambient-2:  #C4B5FD;
+}
+
+/* Beyaz · Yeşil */
+html[data-theme="light-green"],
+html.light {
+  --border-hover: rgba(5,150,105,0.4);
+  --accent:       #059669;
+  --accent-dim:   rgba(5,150,105,0.1);
+  --accent-glow:  rgba(5,150,105,0.2);
+  --shadow-hover: 0 8px 40px rgba(5,150,105,0.14), 0 4px 24px rgba(0,0,0,0.09);
+  --ambient-3:    #6EE7B7;
+}
+
+/* Beyaz · Siyah */
+html[data-theme="light-black"] {
+  --border-hover: rgba(24,24,27,0.4);
+  --accent:       #18181B;
+  --accent-dim:   rgba(24,24,27,0.08);
+  --accent-glow:  rgba(24,24,27,0.15);
+  --shadow-hover: 0 8px 40px rgba(24,24,27,0.12), 0 4px 24px rgba(0,0,0,0.09);
+  --ambient-3:    #A1A1AA;
+}
+
+/* Beyaz · Kırmızı */
+html[data-theme="light-red"] {
+  --border-hover: rgba(220,38,38,0.4);
+  --accent:       #DC2626;
+  --accent-dim:   rgba(220,38,38,0.08);
+  --accent-glow:  rgba(220,38,38,0.15);
+  --shadow-hover: 0 8px 40px rgba(220,38,38,0.12), 0 4px 24px rgba(0,0,0,0.09);
+  --ambient-3:    #FCA5A5;
+}
+
+/* Beyaz · Mavi */
+html[data-theme="light-blue"] {
+  --border-hover: rgba(37,99,235,0.4);
+  --accent:       #2563EB;
+  --accent-dim:   rgba(37,99,235,0.08);
+  --accent-glow:  rgba(37,99,235,0.15);
+  --shadow-hover: 0 8px 40px rgba(37,99,235,0.12), 0 4px 24px rgba(0,0,0,0.09);
+  --ambient-3:    #93C5FD;
 }
 
 /* ================================================

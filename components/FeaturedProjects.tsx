@@ -63,7 +63,11 @@ export default async function FeaturedProjects() {
               <span className="project-lang-badge">{p.lang}</span>
             </div>
 
-            <a href="#" className="btn btn-ghost btn-full" style={{ marginTop: "auto" }}>
+            <a
+              href={p.slug ? `/my-projects/${p.slug}` : "/my-projects"}
+              className="btn btn-ghost btn-full"
+              style={{ marginTop: "auto" }}
+            >
               Detaylar →
             </a>
           </article>

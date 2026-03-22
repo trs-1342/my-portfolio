@@ -3,6 +3,7 @@ import {
   serverTimestamp, deleteDoc,
   collection, addDoc,
   getDocs, query, orderBy, where,
+  arrayUnion, arrayRemove,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -18,7 +19,7 @@ export interface UserProfile {
   blockedPages?: string[]; // engellenmiş sayfa path'leri
   settings: {
     navbarPosition: "top" | "bottom";
-    theme: "dark" | "light";
+    theme: string; // tema ID: "dark-green", "dark-red", "light-blue" vb.
   };
   notifications: {
     email:      boolean;
@@ -135,6 +136,12 @@ export async function saveContactMessage(data: {
   });
 }
 
+/* Kullanıcının tema tercihini kaydet */
+export async function updateUserTheme(uid: string, themeId: string): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, "users", uid), { "settings.theme": themeId });
+}
+
 /* Kullanıcı durumunu güncelle (admin) */
 export async function updateUserStatus(uid: string, status: "active" | "banned") {
   if (!db) return;
@@ -240,6 +247,7 @@ export interface Project {
 
 export interface ProjectsPageConfig {
   subtitle: string;
+  initialized?: boolean; // true → kullanıcı en az bir kez proje ekledi/sildi; defaults gösterme
 }
 
 export interface MenuItem {
@@ -300,6 +308,8 @@ export async function getProjectsList(): Promise<Project[]> {
 export async function addProject(data: Omit<Project, "id">): Promise<string> {
   if (!db) return "";
   const ref = await addDoc(collection(db, "projects"), data);
+  /* Kullanıcı projeleri yönetmeye başladı — defaults artık gösterilmez */
+  await setDoc(doc(db, "site_config", "projects_page"), { initialized: true }, { merge: true });
   return ref.id;
 }
 
@@ -311,6 +321,14 @@ export async function updateProject(id: string, data: Partial<Omit<Project, "id"
 export async function deleteProject(id: string): Promise<void> {
   if (!db) return;
   await deleteDoc(doc(db, "projects", id));
+  /* Silme de bir yönetim aksiyonu — initialized flag'ini koru */
+  await setDoc(doc(db, "site_config", "projects_page"), { initialized: true }, { merge: true });
+}
+
+/** Admin proje yönetimine başladığında çağrılır — defaults bir daha gösterilmez */
+export async function markProjectsInitialized(): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "site_config", "projects_page"), { initialized: true }, { merge: true });
 }
 
 export async function getProjectsPageConfig(): Promise<ProjectsPageConfig | null> {
@@ -335,10 +353,23 @@ export async function getUnreadContactCount(): Promise<number> {
 
 /* ── About Config Types ── */
 
-export interface PhotoItem {
+/* About sayfası profil/slider fotoğrafı (site_config/about içinde saklanır) */
+export interface AboutPhoto {
   id: string;
   url: string;
   order: number;
+}
+
+/* Galeri fotoğrafı (photos collection'ında saklanır) */
+export interface PhotoItem {
+  id: string;
+  url: string;         // Firebase Storage download URL
+  storagePath: string; // Firebase Storage path (silme için)
+  title: string;
+  caption: string;
+  order: number;
+  favorites: string[]; // favori yapan kullanıcıların UID listesi
+  createdAt: unknown;
 }
 
 export interface CvFile {
@@ -365,7 +396,7 @@ export interface AboutConfig {
   aboutText: string;
   bioText: string;
   buttons: HeroButton[];
-  photos: PhotoItem[];
+  photos: AboutPhoto[];
   cvFiles: CvFile[];
 }
 
@@ -381,6 +412,39 @@ export async function getAboutConfig(): Promise<AboutConfig | null> {
 export async function setAboutConfig(data: AboutConfig): Promise<void> {
   if (!db) return;
   await setDoc(doc(db, "site_config", "about"), data);
+}
+
+/* ── Photos CRUD ── */
+
+export async function getPhotos(): Promise<PhotoItem[]> {
+  if (!db) return [];
+  const q = query(collection(db, "photos"), orderBy("order", "asc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as PhotoItem));
+}
+
+export async function addPhoto(data: Omit<PhotoItem, "id">): Promise<string> {
+  if (!db) return "";
+  const ref2 = await addDoc(collection(db, "photos"), data);
+  return ref2.id;
+}
+
+export async function updatePhoto(id: string, data: Partial<Omit<PhotoItem, "id">>): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, "photos", id), data as Record<string, unknown>);
+}
+
+export async function deletePhoto(id: string): Promise<void> {
+  if (!db) return;
+  await deleteDoc(doc(db, "photos", id));
+}
+
+/* Favori ekle/çıkar */
+export async function togglePhotoFavorite(photoId: string, uid: string, add: boolean): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, "photos", photoId), {
+    favorites: add ? arrayUnion(uid) : arrayRemove(uid),
+  });
 }
 
 export async function getLifeEvents(): Promise<LifeEvent[] | null> {

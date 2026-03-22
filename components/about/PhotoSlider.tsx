@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import type { PhotoItem } from "@/lib/firestore";
+import type { AboutPhoto } from "@/lib/firestore";
 
 interface Props {
-  photos: PhotoItem[];
+  photos: AboutPhoto[];
   name: string;
 }
 

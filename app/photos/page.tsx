@@ -1,29 +1,45 @@
-import { readdirSync } from "fs";
-import { join } from "path";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { getPhotos } from "@/lib/firestore";
+import type { PhotoItem } from "@/lib/firestore";
 import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MasonryGallery from "@/components/photos/MasonryGallery";
 
-export const metadata = {
-  title: "Fotoğraflar — trs",
-  description: "Fotoğraf galerisi.",
-};
-
-function getPhotos(): string[] {
-  try {
-    const dir = join(process.cwd(), "public", "myphotos");
-    return readdirSync(dir)
-      .filter((f) => /\.(jpe?g|png|webp|avif|gif)$/i.test(f))
-      .sort()
-      .map((f) => `/myphotos/${f}`);
-  } catch {
-    return [];
-  }
-}
-
 export default function PhotosPage() {
-  const photos = getPhotos();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+
+    getPhotos().then((data) => {
+      setPhotos(data);
+      setFetching(false);
+    });
+  }, [user, loading, router]);
+
+  if (loading || fetching) {
+    return (
+      <>
+        <AmbientGlow />
+        <div style={{ minHeight: "100svh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <p className="mono" style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>Yükleniyor...</p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -31,8 +47,6 @@ export default function PhotosPage() {
       <Navbar />
 
       <div className="page-content" style={{ paddingTop: "100px" }}>
-
-        {/* Başlık */}
         <header style={{ marginBottom: "48px" }}>
           <p
             className="mono anim-fade-up"
@@ -82,17 +96,13 @@ export default function PhotosPage() {
           </div>
           <p
             className="anim-fade-up d3"
-            style={{
-              color: "var(--text-2)",
-              fontSize: "0.9rem",
-              lineHeight: 1.6,
-            }}
+            style={{ color: "var(--text-2)", fontSize: "0.9rem", lineHeight: 1.6 }}
           >
             Anlık kareler.
           </p>
         </header>
 
-        <MasonryGallery photos={photos} />
+        <MasonryGallery photos={photos} uid={user!.uid} />
 
         <Footer />
       </div>

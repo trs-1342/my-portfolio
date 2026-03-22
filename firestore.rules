@@ -42,5 +42,19 @@ service cloud.firestore {
       allow write: if request.auth != null &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
     }
+
+    // Fotoğraf galerisi
+    match /photos/{docId} {
+      // Sadece giriş yapanlar okuyabilir
+      allow read: if request.auth != null;
+      // Favori güncellemesi: giriş yapan herkes kendi UID'ini favorites array'ine ekleyip çıkarabilir
+      allow update: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin" ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(["favorites"]))
+      );
+      // Oluşturma ve silme sadece admin
+      allow create, delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
   }
 }

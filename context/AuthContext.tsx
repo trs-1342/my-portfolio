@@ -15,6 +15,7 @@ import {
 } from "firebase/auth";
 import { auth, googleProvider, firebaseReady } from "@/lib/firebase";
 import { getUserProfile, ensureAdminRole, UserProfile } from "@/lib/firestore";
+import { applyTheme, normalizeThemeId } from "@/lib/themes";
 
 interface AuthContextValue {
   user:    User | null;
@@ -62,8 +63,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (u) {
         const p = await getUserProfile(u.uid);
         setProfile(p);
+        /* Kullanıcının kayıtlı temasını uygula */
+        if (p?.settings?.theme) {
+          applyTheme(normalizeThemeId(p.settings.theme));
+        }
       } else {
         setProfile(null);
+        /* Çıkışta localStorage temasına dön */
+        const saved = localStorage.getItem("theme");
+        applyTheme(normalizeThemeId(saved));
       }
       setLoading(false);
     });
