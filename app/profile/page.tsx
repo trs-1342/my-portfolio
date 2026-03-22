@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { updateUserProfile, updateUsername, deleteUserData } from "@/lib/firestore";
 import { deleteUser } from "firebase/auth";
+import { normalizeThemeId } from "@/lib/themes";
+import ThemePicker from "@/components/ThemePicker";
 import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -17,6 +19,7 @@ export default function ProfilePage() {
   const [newUsername,  setNewUsername]  = useState("");
   const [currentPwd,   setCurrentPwd]   = useState("");
   const [newPwd,       setNewPwd]       = useState("");
+  const [theme,        setTheme]        = useState("dark-green");
   const [saving,       setSaving]       = useState(false);
   const [pwdSaving,    setPwdSaving]    = useState(false);
   const [msg,          setMsg]          = useState("");
@@ -28,6 +31,7 @@ export default function ProfilePage() {
     if (profile) {
       setDisplayName(profile.displayName ?? "");
       setNewUsername(profile.username ?? "");
+      setTheme(normalizeThemeId(profile.settings?.theme));
     }
   }, [profile]);
 
@@ -186,6 +190,16 @@ export default function ProfilePage() {
             </div>
           </div>
 
+        </div>
+
+        {/* ── Tema ── */}
+        <div className="glass anim-fade-up d5" style={{ borderRadius: "20px", padding: "28px", maxWidth: "880px", marginTop: "24px" }}>
+          <SectionTitle>Görünüm</SectionTitle>
+          <ThemePicker
+            currentTheme={theme}
+            uid={user.uid}
+            onThemeChange={setTheme}
+          />
         </div>
 
         <Footer />
