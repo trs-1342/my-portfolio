@@ -142,6 +142,54 @@ export async function updateUserTheme(uid: string, themeId: string): Promise<voi
   await updateDoc(doc(db, "users", uid), { "settings.theme": themeId });
 }
 
+/* ── Footer Types & CRUD ── */
+
+export interface FooterLink {
+  id: string;
+  label: string;
+  href: string;
+  icon?: string;
+  order: number;
+}
+
+export interface FooterConfig {
+  motto: string;
+  copyright: string;
+  socials: FooterLink[];
+  pages: FooterLink[];
+}
+
+const FOOTER_DEFAULTS: FooterConfig = {
+  motto:     "I defend the moral concept in software.",
+  copyright: "© 2026 — trs. Tüm hakları saklıdır.",
+  socials: [
+    { id: "gh", label: "GitHub",    href: "https://github.com/trs-1342",          icon: "⌨️", order: 0 },
+    { id: "ig", label: "Instagram", href: "https://instagram.com/trs.1342",       icon: "📸", order: 1 },
+    { id: "li", label: "LinkedIn",  href: "https://linkedin.com/in/halilhattabh", icon: "💼", order: 2 },
+    { id: "em", label: "Email",     href: "mailto:hattab1342@gmail.com",           icon: "✉️", order: 3 },
+  ],
+  pages: [
+    { id: "p1", label: "Hakkımda",    href: "/about",       order: 0 },
+    { id: "p2", label: "Projeler",    href: "/my-projects", order: 1 },
+    { id: "p3", label: "Fotoğraflar", href: "/photos",      order: 2 },
+    { id: "p4", label: "Hsounds",     href: "/hsounds",     order: 3 },
+    { id: "p5", label: "Teşekkürler", href: "/thanks",      order: 4 },
+    { id: "p6", label: "İletişim",    href: "/contact",     order: 5 },
+  ],
+};
+
+export async function getFooterConfig(): Promise<FooterConfig> {
+  if (!db) return FOOTER_DEFAULTS;
+  const snap = await getDoc(doc(db, "site_config", "footer"));
+  if (!snap.exists()) return FOOTER_DEFAULTS;
+  return snap.data() as FooterConfig;
+}
+
+export async function setFooterConfig(data: FooterConfig): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "site_config", "footer"), data);
+}
+
 /* ── Thanks (Teşekkürler) Types & CRUD ── */
 
 export interface ThanksPerson {
