@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { getThanksCategories, ThanksCategory } from "@/lib/firestore";
 import ThanksGrid, { Group } from "./ThanksGrid";
 
-/* ThanksCategory → ThanksGrid Group formatına dönüştür */
 function toGroup(cat: ThanksCategory): Group {
   return {
     id:     cat.id,
@@ -24,33 +23,25 @@ function toGroup(cat: ThanksCategory): Group {
   };
 }
 
-export default function ThanksContent({ fallback }: { fallback: Group[] }) {
-  const [groups, setGroups] = useState<Group[]>(fallback);
-  const [loaded, setLoaded] = useState(false);
+export default function ThanksContent() {
+  const [groups,  setGroups]  = useState<Group[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getThanksCategories().then((cats) => {
       if (cats.length > 0) {
         setGroups(cats.slice().sort((a, b) => a.order - b.order).map(toGroup));
       }
-      setLoaded(true);
+      setLoading(false);
     });
   }, []);
 
-  if (!loaded && fallback.length === 0) {
-    return (
-      <p className="mono" style={{ fontSize: "0.82rem", color: "var(--text-3)", paddingBottom: "80px" }}>
-        Yükleniyor...
-      </p>
-    );
+  if (loading) {
+    return <p className="mono" style={{ fontSize: "0.82rem", color: "var(--text-3)", paddingBottom: "80px" }}>Yükleniyor...</p>;
   }
 
-  if (loaded && groups.length === 0) {
-    return (
-      <p style={{ fontSize: "0.9rem", color: "var(--text-3)", paddingBottom: "80px" }}>
-        Henüz içerik eklenmemiş.
-      </p>
-    );
+  if (groups.length === 0) {
+    return <p style={{ fontSize: "0.9rem", color: "var(--text-3)", paddingBottom: "80px" }}>Henüz içerik eklenmemiş.</p>;
   }
 
   return <ThanksGrid groups={groups} />;

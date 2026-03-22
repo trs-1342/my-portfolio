@@ -149,7 +149,7 @@ export interface ThanksPerson {
   name: string;
   message: string;
   color: string;       // hex (#ef4444)
-  url?: string;
+  url?: string | null; // null → Firestore'da undefined sorununu önler
   highlight: boolean;
   order: number;
 }

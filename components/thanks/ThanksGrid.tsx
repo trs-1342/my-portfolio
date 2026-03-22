@@ -2,7 +2,7 @@ export interface Person {
   id?: string;
   name: string;
   message: string;
-  url?: string;
+  url?: string | null;
   color: string;
   highlight: boolean;
 }

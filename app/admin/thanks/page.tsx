@@ -38,10 +38,12 @@ interface PersonForm {
 
 /* ══════════════════════════════════════════ */
 export default function AdminThanksPage() {
-  const [cats,    setCats]    = useState<ThanksCategory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving,  setSaving]  = useState(false);
-  const [error,   setError]   = useState("");
+  const [cats,       setCats]       = useState<ThanksCategory[]>([]);
+  const [loading,    setLoading]    = useState(true);
+  const [saving,     setSaving]     = useState(false);
+  const [error,      setError]      = useState("");
+  const [importing,  setImporting]  = useState(false);
+  const [importMsg,  setImportMsg]  = useState("");
 
   /* Modal state'leri */
   const [catModal, setCatModal] = useState<{
@@ -64,6 +66,26 @@ export default function AdminThanksPage() {
       setExpanded(new Set(data.map((c) => c.id)));
     });
   }, []);
+
+  /* ── JSON İçe Aktar ── */
+  const handleImport = async () => {
+    if (!confirm("thanks-old.json'daki tüm veri Firestore'a aktarılacak. Mevcut verinin üzerine yazılacak. Devam et?")) return;
+    setImporting(true); setImportMsg(""); setError("");
+    try {
+      const res  = await fetch("/api/admin/import-thanks", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Hata");
+      setImportMsg(`✓ ${data.categories} kategori, ${data.people} kişi aktarıldı.`);
+      /* Listeyi yenile */
+      const fresh = await getThanksCategories();
+      setCats(fresh);
+      setExpanded(new Set(fresh.map((c) => c.id)));
+    } catch (e: unknown) {
+      setError((e as Error).message ?? "İçe aktarma başarısız.");
+    } finally {
+      setImporting(false);
+    }
+  };
 
   /* ── Kaydetme ── */
   const persist = async (next: ThanksCategory[]) => {
@@ -128,7 +150,7 @@ export default function AdminThanksPage() {
     if (personModal.mode === "add") {
       const person: ThanksPerson = {
         id: genId(), name: name.trim(), message: message.trim(),
-        color: c, url: url.trim() || undefined, highlight, order: 0,
+        color: c, url: url.trim() || null, highlight, order: 0,
       };
       next = cats.map((cat) => {
         if (cat.id !== personModal.catId) return cat;
@@ -142,7 +164,7 @@ export default function AdminThanksPage() {
           ...cat,
           people: cat.people.map((p) =>
             p.id !== personModal.personId ? p
-              : { ...p, name: name.trim(), message: message.trim(), color: c, url: url.trim() || undefined, highlight }
+              : { ...p, name: name.trim(), message: message.trim(), color: c, url: url.trim() || null, highlight }
           ),
         };
       });
@@ -199,17 +221,30 @@ export default function AdminThanksPage() {
             Teşekkürler
           </h1>
         </div>
-        <button
-          onClick={() => setCatModal({ mode: "add", form: { title: "", icon: "🤍" } })}
-          className="btn btn-accent"
-          style={{ padding: "9px 18px", fontSize: "0.85rem" }}
-        >
-          + Kategori Ekle
-        </button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={handleImport}
+            disabled={importing || saving}
+            className="btn btn-ghost"
+            style={{ padding: "9px 16px", fontSize: "0.82rem" }}
+            title="thanks-old.json verisini Firebase'e aktar"
+          >
+            ↓ JSON Aktar
+          </button>
+          <button
+            onClick={() => setCatModal({ mode: "add", form: { title: "", icon: "🤍" } })}
+            className="btn btn-accent"
+            style={{ padding: "9px 18px", fontSize: "0.85rem" }}
+          >
+            + Kategori Ekle
+          </button>
+        </div>
       </header>
 
-      {saving && <p className="mono" style={{ fontSize: "0.75rem", color: "var(--text-3)", marginBottom: "12px" }}>Kaydediliyor...</p>}
-      {error  && <p style={{ fontSize: "0.82rem", color: "#ef4444", marginBottom: "12px" }}>{error}</p>}
+      {saving    && <p className="mono" style={{ fontSize: "0.75rem", color: "var(--text-3)", marginBottom: "12px" }}>Kaydediliyor...</p>}
+      {importing && <p className="mono" style={{ fontSize: "0.75rem", color: "var(--text-3)", marginBottom: "12px" }}>Aktarılıyor...</p>}
+      {importMsg && <p style={{ fontSize: "0.82rem", color: "#10B981", marginBottom: "12px" }}>{importMsg}</p>}
+      {error     && <p style={{ fontSize: "0.82rem", color: "#ef4444", marginBottom: "12px" }}>{error}</p>}
 
       {/* Kategori listesi */}
       {cats.length === 0 ? (
