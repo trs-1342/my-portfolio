@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useAccessGuard } from "@/hooks/useAccessGuard";
 import { updateUserProfile } from "@/lib/firestore";
 import { normalizeThemeId } from "@/lib/themes";
 import ThemePicker from "@/components/ThemePicker";
@@ -11,8 +11,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function SettingsPage() {
-  const { user, profile, loading, refreshProfile } = useAuth();
-  const router = useRouter();
+  const { refreshProfile } = useAuth();
+  const { user, profile, loading, ready } = useAccessGuard();
 
   const [navPos,   setNavPos]   = useState<"top" | "bottom">("top");
   const [theme,    setTheme]    = useState<string>("dark-green");
@@ -32,20 +32,13 @@ export default function SettingsPage() {
     setNotifSystem(profile.notifications?.system  ?? true);
   }, [profile]);
 
-  /* Auth sonuçlanınca yönlendir */
-  useEffect(() => {
-    if (loading) return;
-    if (!user) router.push("/login");
-    else if (!profile) router.push("/setup-username");
-  }, [loading, user, profile, router]);
-
   /* ThemePicker zaten applyTheme + Firestore'a kaydeder — burada sadece state güncelle */
   const handleThemeChange = (id: string) => {
     setTheme(id);
   };
 
   /* Yükleniyor */
-  if (loading || !user || !profile) {
+  if (loading || !ready) {
     return (
       <>
         <AmbientGlow />

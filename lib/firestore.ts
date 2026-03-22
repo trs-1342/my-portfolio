@@ -541,6 +541,63 @@ export async function togglePhotoFavorite(photoId: string, uid: string, add: boo
   });
 }
 
+/* ── HSounds Types & CRUD (client-side) ── */
+
+export interface HsArticle {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;      // HTML string
+  created_at: string;   // ISO 8601
+  read_time: number;    // dakika
+  is_published: boolean;
+}
+
+export interface HsRssFeed {
+  id: string;
+  source_name: string;
+  source_icon: string;  // emoji
+  title: string;
+  link: string;
+  published_date: string; // ISO 8601
+}
+
+export async function getHsArticles(): Promise<HsArticle[]> {
+  if (!db) return [];
+  const q = query(collection(db, "hsounds_articles"), orderBy("created_at", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as HsArticle));
+}
+
+export async function addHsArticle(data: Omit<HsArticle, "id">): Promise<string> {
+  if (!db) return "";
+  const ref = await addDoc(collection(db, "hsounds_articles"), data);
+  return ref.id;
+}
+
+export async function updateHsArticle(id: string, data: Partial<Omit<HsArticle, "id">>): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, "hsounds_articles", id), data as Record<string, unknown>);
+}
+
+export async function deleteHsArticle(id: string): Promise<void> {
+  if (!db) return;
+  await deleteDoc(doc(db, "hsounds_articles", id));
+}
+
+export async function getHsFeeds(): Promise<HsRssFeed[]> {
+  if (!db) return [];
+  const snap = await getDoc(doc(db, "site_config", "hsounds_feeds"));
+  if (!snap.exists()) return [];
+  return (snap.data()?.feeds ?? []) as HsRssFeed[];
+}
+
+export async function setHsFeeds(feeds: HsRssFeed[]): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "site_config", "hsounds_feeds"), { feeds });
+}
+
 export async function getLifeEvents(): Promise<LifeEvent[] | null> {
   if (!db) return null;
   const snap = await getDoc(doc(db, "site_config", "life_events"));

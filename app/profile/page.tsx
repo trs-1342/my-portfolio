@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useAccessGuard } from "@/hooks/useAccessGuard";
 import { updateUserProfile, updateUsername, deleteUserData } from "@/lib/firestore";
 import { deleteUser } from "firebase/auth";
 import { normalizeThemeId } from "@/lib/themes";
@@ -12,8 +12,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function ProfilePage() {
-  const { user, profile, loading, logout, changePassword, refreshProfile } = useAuth();
-  const router = useRouter();
+  const { logout, changePassword, refreshProfile } = useAuth();
+  const { user, profile, loading, ready } = useAccessGuard();
 
   const [displayName,  setDisplayName]  = useState("");
   const [newUsername,  setNewUsername]  = useState("");
@@ -35,15 +35,8 @@ export default function ProfilePage() {
     }
   }, [profile]);
 
-  /* Auth sonuçlanınca yönlendir */
-  useEffect(() => {
-    if (loading) return;
-    if (!user) router.push("/login");
-    else if (!profile) router.push("/setup-username");
-  }, [loading, user, profile, router]);
-
   /* Yükleniyor */
-  if (loading || !user || !profile) {
+  if (loading || !ready) {
     return (
       <>
         <AmbientGlow />

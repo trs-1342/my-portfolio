@@ -3,13 +3,9 @@ import Link from "next/link";
 import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { getArticleBySlug, getArticles } from "@/lib/hsounds";
+import { getArticleBySlug } from "@/lib/hsounds";
 
-/* ── Static params için slug listesi ─────────────────────── */
-export async function generateStaticParams() {
-  const articles = await getArticles();
-  return articles.map((a) => ({ slug: a.slug }));
-}
+export const dynamic = "force-dynamic";
 
 /* ── Metadata ─────────────────────────────────────────────── */
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {

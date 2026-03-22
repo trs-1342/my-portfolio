@@ -18,6 +18,7 @@ const PAGES_NAV = [
   { href: "/admin/projects", label: "Projeler",    icon: "📁" },
   { href: "/admin/photos",   label: "Fotoğraflar", icon: "📷" },
   { href: "/admin/thanks",   label: "Teşekkürler",  icon: "🙏" },
+  { href: "/admin/hsounds",  label: "HSounds",      icon: "🎵" },
   { href: "/admin/footer",   label: "Footer",       icon: "📋" },
   { href: "/admin/theme",    label: "Tema",         icon: "🎨" },
   { href: "/admin/pages",    label: "Menü",         icon: "⚙️" },

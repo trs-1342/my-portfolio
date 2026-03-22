@@ -5,6 +5,8 @@ import Waveform from "@/components/hsounds/Waveform";
 import ContentToggle from "@/components/hsounds/ContentToggle";
 import { getArticles, getRssFeeds } from "@/lib/hsounds";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "HSounds — trs",
   description: "Halil'in Sesleri — makaleler ve RSS akışları.",

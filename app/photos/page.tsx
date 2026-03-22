@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useAccessGuard } from "@/hooks/useAccessGuard";
 import { getPhotos } from "@/lib/firestore";
 import type { PhotoItem } from "@/lib/firestore";
 import AmbientGlow from "@/components/AmbientGlow";
@@ -11,26 +10,19 @@ import Footer from "@/components/Footer";
 import MasonryGallery from "@/components/photos/MasonryGallery";
 
 export default function PhotosPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+  const { user, loading, ready } = useAccessGuard();
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
-    if (loading) return;
-
-    if (!user) {
-      router.replace("/login");
-      return;
-    }
-
+    if (!ready) return;
     getPhotos().then((data) => {
       setPhotos(data);
       setFetching(false);
     });
-  }, [user, loading, router]);
+  }, [ready]);
 
-  if (loading || fetching) {
+  if (loading || !ready || fetching) {
     return (
       <>
         <AmbientGlow />

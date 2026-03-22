@@ -22,8 +22,10 @@ function LoginForm() {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
-      await loginEmail(email, password);
-      router.push(redirect);
+      const u = await loginEmail(email, password);
+      /* Profil tamamlanmamışsa setup-username'e yönlendir */
+      const profile = await getUserProfile(u.uid);
+      router.push(profile?.username ? redirect : "/setup-username");
     } catch {
       setError("Email veya şifre hatalı.");
     } finally {

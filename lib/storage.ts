@@ -13,13 +13,13 @@ export async function uploadFile(storagePath: string, file: File): Promise<strin
   return getDownloadURL(fileRef);
 }
 
-/** URL'den path çıkar ve Storage'dan sil (opsiyonel, hata yutulur) */
-export async function deleteFileByUrl(url: string): Promise<void> {
-  if (!storage) return;
+/** Storage path ile dosyayı sil (opsiyonel, hata yutulur) */
+export async function deleteFileByPath(storagePath: string): Promise<void> {
+  if (!storage || !storagePath) return;
   try {
-    const fileRef = ref(storage, url);
+    const fileRef = ref(storage, storagePath);
     await deleteObject(fileRef);
   } catch {
-    // Dosya zaten silinmiş ya da harici URL — sessizce geç
+    // Dosya zaten silinmiş — sessizce geç
   }
 }

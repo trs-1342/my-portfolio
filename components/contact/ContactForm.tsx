@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 type Category = "bug" | "feedback" | "collab" | "hi" | "rec";
@@ -29,7 +30,8 @@ const QUICK_LINKS = [
 ];
 
 export default function ContactForm() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const router = useRouter();
 
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
@@ -39,6 +41,20 @@ export default function ContactForm() {
   const [termLines, setTermLines] = useState<string[]>([]);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  /* Ban / sayfa engeli kontrolü */
+  useEffect(() => {
+    if (!profile) return;
+    if (profile.status === "banned") {
+      const pages = (profile.blockedPages ?? []).join(",");
+      router.replace(`/blocked?banned=1&pages=${encodeURIComponent(pages)}`);
+      return;
+    }
+    if (profile.blockedPages?.includes("/contact")) {
+      const pages = (profile.blockedPages ?? []).join(",");
+      router.replace(`/blocked?path=/contact&pages=${encodeURIComponent(pages)}`);
+    }
+  }, [profile, router]);
 
   /* Oturum açıksa email'i otomatik doldur */
   useEffect(() => {

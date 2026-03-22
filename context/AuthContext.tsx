@@ -22,7 +22,7 @@ interface AuthContextValue {
   profile: UserProfile | null;
   loading: boolean;
   ready:   boolean;
-  loginEmail:  (email: string, password: string) => Promise<void>;
+  loginEmail:  (email: string, password: string) => Promise<User>;
   loginGoogle: () => Promise<User>;
   register:    (email: string, password: string) => Promise<User>;
   logout:      () => Promise<void>;
@@ -83,11 +83,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsub;
   }, []);
 
-  const loginEmail = async (email: string, password: string) => {
+  const loginEmail = async (email: string, password: string): Promise<User> => {
     if (!auth) throw new Error("Firebase yapılandırılmamış.");
     const { user: u } = await signInWithEmailAndPassword(auth, email, password);
     await ensureAdminRole(u.uid, u.email ?? "");
     await setSessionCookie(u);
+    return u;
   };
 
   const loginGoogle = async (): Promise<User> => {
