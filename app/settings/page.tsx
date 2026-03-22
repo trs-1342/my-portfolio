@@ -38,7 +38,7 @@ export default function SettingsPage() {
   };
 
   /* Yükleniyor */
-  if (loading || !ready) {
+  if (loading || !ready || !user || !profile) {
     return (
       <>
         <AmbientGlow />

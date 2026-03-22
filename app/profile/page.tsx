@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useAccessGuard } from "@/hooks/useAccessGuard";
 import { updateUserProfile, updateUsername, deleteUserData } from "@/lib/firestore";
@@ -14,6 +15,7 @@ import Footer from "@/components/Footer";
 export default function ProfilePage() {
   const { logout, changePassword, refreshProfile } = useAuth();
   const { user, profile, loading, ready } = useAccessGuard();
+  const router = useRouter();
 
   const [displayName,  setDisplayName]  = useState("");
   const [newUsername,  setNewUsername]  = useState("");
@@ -36,7 +38,7 @@ export default function ProfilePage() {
   }, [profile]);
 
   /* Yükleniyor */
-  if (loading || !ready) {
+  if (loading || !ready || !user || !profile) {
     return (
       <>
         <AmbientGlow />
