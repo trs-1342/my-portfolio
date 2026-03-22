@@ -115,7 +115,7 @@ export default function Navbar() {
                 fontSize: "0.75rem",
                 color: "var(--accent)",
                 textDecoration: "none",
-                border: "1px solid rgba(16,185,129,0.3)",
+                border: "1px solid var(--border-hover)",
                 background: "var(--accent-dim)",
               }}
             >

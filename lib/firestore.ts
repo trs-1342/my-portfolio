@@ -142,6 +142,38 @@ export async function updateUserTheme(uid: string, themeId: string): Promise<voi
   await updateDoc(doc(db, "users", uid), { "settings.theme": themeId });
 }
 
+/* ── Thanks (Teşekkürler) Types & CRUD ── */
+
+export interface ThanksPerson {
+  id: string;
+  name: string;
+  message: string;
+  color: string;       // hex (#ef4444)
+  url?: string;
+  highlight: boolean;
+  order: number;
+}
+
+export interface ThanksCategory {
+  id: string;
+  title: string;
+  icon: string;
+  order: number;
+  people: ThanksPerson[];
+}
+
+export async function getThanksCategories(): Promise<ThanksCategory[]> {
+  if (!db) return [];
+  const snap = await getDoc(doc(db, "site_config", "thanks"));
+  if (!snap.exists()) return [];
+  return (snap.data()?.categories ?? []) as ThanksCategory[];
+}
+
+export async function setThanksCategories(categories: ThanksCategory[]): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "site_config", "thanks"), { categories });
+}
+
 /* Site varsayılan temasını getir (giriş yapmayan ziyaretçiler için) */
 export async function getSiteTheme(): Promise<string | null> {
   if (!db) return null;

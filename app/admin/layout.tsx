@@ -17,6 +17,7 @@ const PAGES_NAV = [
   { href: "/admin/about",    label: "Hakkımda",    icon: "👤" },
   { href: "/admin/projects", label: "Projeler",    icon: "📁" },
   { href: "/admin/photos",   label: "Fotoğraflar", icon: "📷" },
+  { href: "/admin/thanks",   label: "Teşekkürler",  icon: "🙏" },
   { href: "/admin/theme",    label: "Tema",         icon: "🎨" },
   { href: "/admin/pages",    label: "Menü",         icon: "⚙️" },
 ];
@@ -157,7 +158,7 @@ function NavItem({
         fontSize: sub ? "0.82rem" : "0.85rem", fontWeight: 500,
         color: active ? "var(--accent)" : "var(--text-2)",
         background: active ? "var(--accent-dim)" : "transparent",
-        border: active ? "1px solid rgba(16,185,129,0.2)" : "1px solid transparent",
+        border: active ? "1px solid var(--border-hover)" : "1px solid transparent",
         transition: "all 0.15s",
       }}
     >
