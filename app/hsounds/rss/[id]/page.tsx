@@ -17,21 +17,36 @@ function formatPubDate(raw: string) {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const feed = await getRssFeedById(id);
-  if (!feed) return { title: "Kaynak bulunamadı — trs" };
-  return {
-    title: `${feed.source_name} — HSounds · trs`,
-    description: `${feed.source_name} RSS kaynağından son gönderiler.`,
-  };
+  try {
+    const { id } = await params;
+    const feed = await getRssFeedById(id);
+    if (!feed) return { title: "Kaynak bulunamadı — trs" };
+    return {
+      title: `${feed.source_name} — HSounds · trs`,
+      description: `${feed.source_name} RSS kaynağından son gönderiler.`,
+    };
+  } catch {
+    return { title: "HSounds · trs" };
+  }
 }
 
 export default async function RssFeedPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const feed  = await getRssFeedById(id);
+
+  let feed;
+  try {
+    feed = await getRssFeedById(id);
+  } catch {
+    notFound();
+  }
   if (!feed) notFound();
 
-  const posts = await fetchRssPosts(feed.feed_url);
+  let posts: Awaited<ReturnType<typeof fetchRssPosts>> = [];
+  try {
+    posts = await fetchRssPosts(feed.feed_url);
+  } catch {
+    posts = [];
+  }
 
   return (
     <>

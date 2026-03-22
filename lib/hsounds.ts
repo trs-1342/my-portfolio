@@ -81,10 +81,11 @@ function stripHtml(html: string): string {
 }
 
 export async function fetchRssPosts(feedUrl: string): Promise<RssPost[]> {
+  if (!feedUrl) return [];
   try {
     const res = await fetch(feedUrl, {
-      next: { revalidate: 3600 },
-      headers: { "User-Agent": "trs-portfolio/1.0" },
+      cache: "no-store",
+      headers: { "User-Agent": "trs-portfolio/1.0", "Accept": "application/rss+xml, application/xml, text/xml, */*" },
     });
     if (!res.ok) return [];
     const xml = await res.text();
