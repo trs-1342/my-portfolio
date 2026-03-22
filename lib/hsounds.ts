@@ -9,7 +9,7 @@ export interface Article {
   slug: string;
   title: string;
   excerpt: string;
-  content: string;   // HTML string
+  content: string;      // HTML string
   created_at: string;   // ISO 8601
   read_time: number;    // dakika
   is_published: boolean;
@@ -18,15 +18,21 @@ export interface Article {
 export interface RssFeed {
   id: string;
   source_name: string;
-  source_icon: string;  // emoji veya URL
-  title: string;
-  link: string;
-  published_date: string; // ISO 8601
+  source_icon: string;  // emoji, varsayılan '🌐'
+  feed_url: string;     // RSS feed URL'si
 }
 
+export interface RssPost {
+  title: string;
+  link: string;
+  pubDate: string;
+  description: string;
+  guid: string;
+}
+
+/* ── Makale CRUD ── */
+
 export async function getArticles(): Promise<Article[]> {
-  /* is_published + created_at composite index gerektirmemek için
-     tüm makaleleri çek, sonra filtrele ve sırala */
   const snap = await adminDb.collection("hsounds_articles").get();
   return snap.docs
     .map((d) => ({ id: d.id, ...d.data() } as Article))
@@ -46,8 +52,62 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
   return article.is_published ? article : null;
 }
 
+/* ── RSS Kaynakları ── */
+
 export async function getRssFeeds(): Promise<RssFeed[]> {
   const snap = await adminDb.doc("site_config/hsounds_feeds").get();
   if (!snap.exists) return [];
   return ((snap.data()?.feeds ?? []) as RssFeed[]);
+}
+
+export async function getRssFeedById(id: string): Promise<RssFeed | null> {
+  const feeds = await getRssFeeds();
+  return feeds.find((f) => f.id === id) ?? null;
+}
+
+/* ── RSS XML Parser ── */
+
+function extractCdata(raw: string): string {
+  return raw.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").trim();
+}
+
+function extractTag(xml: string, tag: string): string {
+  const m = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
+  return m ? extractCdata(m[1].trim()) : "";
+}
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+export async function fetchRssPosts(feedUrl: string): Promise<RssPost[]> {
+  try {
+    const res = await fetch(feedUrl, {
+      next: { revalidate: 3600 },
+      headers: { "User-Agent": "trs-portfolio/1.0" },
+    });
+    if (!res.ok) return [];
+    const xml = await res.text();
+
+    const items: RssPost[] = [];
+    const itemRe = /<item>([\s\S]*?)<\/item>/gi;
+    let m: RegExpExecArray | null;
+
+    while ((m = itemRe.exec(xml)) !== null) {
+      const block = m[1];
+      const title = extractTag(block, "title");
+      const link  = extractTag(block, "link") || extractTag(block, "guid");
+      const pubDate     = extractTag(block, "pubDate");
+      const description = stripHtml(extractTag(block, "description")).slice(0, 280);
+      const guid        = extractTag(block, "guid") || link;
+
+      if (title && link) {
+        items.push({ title, link, pubDate, description, guid });
+      }
+    }
+
+    return items.slice(0, 20);
+  } catch {
+    return [];
+  }
 }

@@ -1,25 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   HsArticle, HsRssFeed,
-  getHsArticles, addHsArticle, updateHsArticle, deleteHsArticle,
+  getHsArticles, deleteHsArticle,
   getHsFeeds, setHsFeeds,
 } from "@/lib/firestore";
 
 function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-}
-
-function slugify(text: string) {
-  return text
-    .toLowerCase()
-    .replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ş/g, "s")
-    .replace(/ı/g, "i").replace(/ö/g, "o").replace(/ç/g, "c")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim();
 }
 
 function formatDate(iso: string) {
@@ -28,41 +18,24 @@ function formatDate(iso: string) {
 
 type Tab = "articles" | "feeds";
 
-/* ── Article form tipi ── */
-interface ArticleForm {
-  title: string; slug: string; excerpt: string; content: string;
-  read_time: string; is_published: boolean; created_at: string;
-}
-const emptyArticle = (): ArticleForm => ({
-  title: "", slug: "", excerpt: "", content: "",
-  read_time: "5", is_published: true,
-  created_at: new Date().toISOString().slice(0, 16),
-});
-
-/* ── Feed form tipi ── */
 interface FeedForm {
-  source_name: string; source_icon: string; title: string;
-  link: string; published_date: string;
+  source_name: string;
+  source_icon: string;
+  feed_url: string;
 }
-const emptyFeed = (): FeedForm => ({
-  source_name: "", source_icon: "", title: "", link: "",
-  published_date: new Date().toISOString().slice(0, 16),
-});
+const emptyFeed = (): FeedForm => ({ source_name: "", source_icon: "", feed_url: "" });
 
 /* ══════════════════════════════════════════════════════ */
 export default function AdminHsoundsPage() {
   const [tab, setTab] = useState<Tab>("articles");
 
-  /* ── Articles state ── */
-  const [articles, setArticles] = useState<HsArticle[]>([]);
+  /* ── Articles ── */
+  const [articles, setArticles]     = useState<HsArticle[]>([]);
   const [artLoading, setArtLoading] = useState(true);
-  const [artModal, setArtModal] = useState<{
-    mode: "add" | "edit"; id?: string; form: ArticleForm;
-  } | null>(null);
-  const [artDelete, setArtDelete] = useState<HsArticle | null>(null);
+  const [artDelete, setArtDelete]   = useState<HsArticle | null>(null);
 
-  /* ── Feeds state ── */
-  const [feeds, setFeeds] = useState<HsRssFeed[]>([]);
+  /* ── Feeds ── */
+  const [feeds, setFeeds]             = useState<HsRssFeed[]>([]);
   const [feedsLoading, setFeedsLoading] = useState(true);
   const [feedModal, setFeedModal] = useState<{
     mode: "add" | "edit"; id?: string; form: FeedForm;
@@ -71,129 +44,54 @@ export default function AdminHsoundsPage() {
 
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
-  const [importing, setImporting] = useState(false);
 
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(""), 3000); };
 
-  /* ── Verileri yükle ── */
   useEffect(() => {
     getHsArticles().then((a) => { setArticles(a); setArtLoading(false); });
-    getHsFeeds().then((f) => { setFeeds(f); setFeedsLoading(false); });
+    getHsFeeds().then((f)    => { setFeeds(f);    setFeedsLoading(false); });
   }, []);
 
-  /* ════ ARTICLES ════ */
-
-  const saveArticle = async () => {
-    if (!artModal) return;
-    const { title, slug, excerpt, content, read_time, is_published, created_at } = artModal.form;
-    if (!title.trim() || !slug.trim() || !excerpt.trim() || !content.trim()) return;
-
-    setSaving(true);
-    try {
-      const data = {
-        title: title.trim(),
-        slug: slug.trim(),
-        excerpt: excerpt.trim(),
-        content: content.trim(),
-        read_time: parseInt(read_time) || 5,
-        is_published,
-        created_at: new Date(created_at).toISOString(),
-      };
-
-      if (artModal.mode === "add") {
-        const id = await addHsArticle(data);
-        setArticles((prev) => [{ id, ...data }, ...prev]);
-      } else if (artModal.id) {
-        await updateHsArticle(artModal.id, data);
-        setArticles((prev) => prev.map((a) => a.id === artModal.id ? { ...a, ...data } : a));
-      }
-      setArtModal(null);
-      flash("Kaydedildi.");
-    } catch {
-      flash("Hata oluştu.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
+  /* ── Makale sil ── */
   const confirmDeleteArticle = async () => {
     if (!artDelete) return;
     setSaving(true);
     try {
       await deleteHsArticle(artDelete.id);
-      setArticles((prev) => prev.filter((a) => a.id !== artDelete.id));
+      setArticles((p) => p.filter((a) => a.id !== artDelete.id));
       setArtDelete(null);
       flash("Silindi.");
-    } catch {
-      flash("Hata oluştu.");
-    } finally {
-      setSaving(false);
-    }
+    } catch { flash("Hata oluştu."); }
+    finally { setSaving(false); }
   };
 
-  /* ════ FEEDS ════ */
-
+  /* ── Feed CRUD ── */
   const persistFeeds = async (next: HsRssFeed[]) => {
     setSaving(true);
-    try {
-      await setHsFeeds(next);
-      setFeeds(next);
-      flash("Kaydedildi.");
-    } catch {
-      flash("Hata oluştu.");
-    } finally {
-      setSaving(false);
-    }
+    try { await setHsFeeds(next); setFeeds(next); flash("Kaydedildi."); }
+    catch { flash("Hata oluştu."); }
+    finally { setSaving(false); }
   };
 
   const saveFeed = async () => {
     if (!feedModal) return;
-    const { source_name, source_icon, title, link, published_date } = feedModal.form;
-    if (!source_name.trim() || !title.trim() || !link.trim()) return;
+    const { source_name, source_icon, feed_url } = feedModal.form;
+    if (!source_name.trim() || !feed_url.trim()) return;
 
     const data: Omit<HsRssFeed, "id"> = {
       source_name: source_name.trim(),
-      source_icon: source_icon.trim() || "📡",
-      title: title.trim(),
-      link: link.trim(),
-      published_date: new Date(published_date).toISOString(),
+      source_icon: source_icon.trim() || "🌐",
+      feed_url: feed_url.trim(),
     };
 
     let next: HsRssFeed[];
     if (feedModal.mode === "add") {
-      next = [{ id: genId(), ...data }, ...feeds];
+      next = [...feeds, { id: genId(), ...data }];
     } else {
       next = feeds.map((f) => f.id === feedModal.id ? { ...f, ...data } : f);
     }
     setFeedModal(null);
     await persistFeeds(next);
-  };
-
-  const confirmDeleteFeed = async () => {
-    if (!feedDelete) return;
-    const next = feeds.filter((f) => f.id !== feedDelete.id);
-    setFeedDelete(null);
-    await persistFeeds(next);
-  };
-
-  /* ── Mock veri aktarımı ── */
-  const importMockData = async () => {
-    if (!confirm("Mock veriler Firestore'a aktarılacak. Mevcut veriler silinmez. Devam?")) return;
-    setImporting(true);
-    try {
-      const res = await fetch("/api/admin/import-hsounds", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      /* Sayfayı yenile */
-      const [a, f] = await Promise.all([getHsArticles(), getHsFeeds()]);
-      setArticles(a);
-      setFeeds(f);
-      flash(`Aktarıldı: ${data.articles} makale, ${data.feeds} RSS.`);
-    } catch {
-      flash("Aktarım hatası.");
-    } finally {
-      setImporting(false);
-    }
   };
 
   const loading = artLoading || feedsLoading;
@@ -205,19 +103,9 @@ export default function AdminHsoundsPage() {
         <p className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "8px" }}>
           /admin/hsounds
         </p>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
-          <h1 style={{ fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" }}>
-            HSounds
-          </h1>
-          <button
-            onClick={importMockData}
-            disabled={importing}
-            className="btn btn-ghost"
-            style={{ fontSize: "0.78rem", padding: "7px 14px" }}
-          >
-            {importing ? "Aktarılıyor..." : "↓ Mock Veriyi Aktar"}
-          </button>
-        </div>
+        <h1 style={{ fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" }}>
+          HSounds
+        </h1>
       </header>
 
       {msg && (
@@ -240,7 +128,7 @@ export default function AdminHsoundsPage() {
               transition: "all 0.2s",
             }}
           >
-            {t === "articles" ? "📝 Makaleler" : "📡 RSS Akışları"}
+            {t === "articles" ? "📝 Makaleler" : "📡 RSS Kaynakları"}
           </button>
         ))}
       </div>
@@ -256,17 +144,13 @@ export default function AdminHsoundsPage() {
                 <p className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                   Makaleler ({articles.length})
                 </p>
-                <button
-                  onClick={() => setArtModal({ mode: "add", form: emptyArticle() })}
-                  className="btn btn-accent"
-                  style={{ padding: "7px 14px", fontSize: "0.8rem" }}
-                >
-                  + Ekle
-                </button>
+                <Link href="/admin/hsounds/articles/new" className="btn btn-accent" style={{ padding: "7px 14px", fontSize: "0.8rem" }}>
+                  + Yeni Makale
+                </Link>
               </div>
 
               {articles.length === 0 ? (
-                <p style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>Henüz makale yok. "Mock Veriyi Aktar" ile başlayabilirsin.</p>
+                <p style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>Henüz makale yok.</p>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {articles.map((a) => (
@@ -289,10 +173,11 @@ export default function AdminHsoundsPage() {
                         {a.is_published ? "Yayında" : "Taslak"}
                       </span>
                       <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
-                        <IBtn title="Düzenle" onClick={() => setArtModal({
-                          mode: "edit", id: a.id,
-                          form: { title: a.title, slug: a.slug, excerpt: a.excerpt, content: a.content, read_time: String(a.read_time), is_published: a.is_published, created_at: a.created_at.slice(0, 16) },
-                        })}>✎</IBtn>
+                        <Link href={`/admin/hsounds/articles/${a.id}`} title="Düzenle" style={{
+                          width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center",
+                          borderRadius: "7px", border: "1px solid var(--border)", background: "transparent",
+                          color: "var(--text-3)", fontSize: "0.82rem", textDecoration: "none",
+                        }}>✎</Link>
                         <IBtn title="Sil" danger onClick={() => setArtDelete(a)}>🗑</IBtn>
                       </div>
                     </div>
@@ -302,12 +187,12 @@ export default function AdminHsoundsPage() {
             </section>
           )}
 
-          {/* ── RSS Akışları ── */}
+          {/* ── RSS Kaynakları ── */}
           {tab === "feeds" && (
             <section className="glass" style={{ borderRadius: "16px", padding: "24px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
                 <p className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                  RSS Akışları ({feeds.length})
+                  RSS Kaynakları ({feeds.length})
                 </p>
                 <button
                   onClick={() => setFeedModal({ mode: "add", form: emptyFeed() })}
@@ -319,24 +204,24 @@ export default function AdminHsoundsPage() {
               </div>
 
               {feeds.length === 0 ? (
-                <p style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>Henüz RSS akışı yok. "Mock Veriyi Aktar" ile başlayabilirsin.</p>
+                <p style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>Henüz RSS kaynağı eklenmedi.</p>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {feeds.map((f) => (
                     <div key={f.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "10px", background: "var(--bg-2)" }}>
-                      <span style={{ fontSize: "1.2rem", flexShrink: 0 }}>{f.source_icon}</span>
+                      <span style={{ fontSize: "1.3rem", flexShrink: 0 }}>{f.source_icon}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text)", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {f.title}
+                        <p style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text)", marginBottom: "2px" }}>
+                          {f.source_name}
                         </p>
-                        <p className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)" }}>
-                          {f.source_name} · {formatDate(f.published_date)}
+                        <p className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {f.feed_url}
                         </p>
                       </div>
                       <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
                         <IBtn title="Düzenle" onClick={() => setFeedModal({
                           mode: "edit", id: f.id,
-                          form: { source_name: f.source_name, source_icon: f.source_icon, title: f.title, link: f.link, published_date: f.published_date.slice(0, 16) },
+                          form: { source_name: f.source_name, source_icon: f.source_icon, feed_url: f.feed_url },
                         })}>✎</IBtn>
                         <IBtn title="Sil" danger onClick={() => setFeedDelete(f)}>🗑</IBtn>
                       </div>
@@ -347,98 +232,6 @@ export default function AdminHsoundsPage() {
             </section>
           )}
         </>
-      )}
-
-      {/* ── Makale Modal ── */}
-      {artModal && (
-        <Modal
-          title={artModal.mode === "add" ? "Makale Ekle" : "Makaleyi Düzenle"}
-          onClose={() => setArtModal(null)}
-          wide
-        >
-          <form
-            onSubmit={(e) => { e.preventDefault(); saveArticle(); }}
-            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
-          >
-            <Field label="Başlık">
-              <input
-                autoFocus required value={artModal.form.title}
-                onChange={(e) => {
-                  const title = e.target.value;
-                  setArtModal((p) => p ? {
-                    ...p,
-                    form: {
-                      ...p.form,
-                      title,
-                      slug: p.mode === "add" ? slugify(title) : p.form.slug,
-                    },
-                  } : null);
-                }}
-                style={inputStyle}
-              />
-            </Field>
-
-            <Field label="Slug">
-              <input
-                required value={artModal.form.slug}
-                onChange={(e) => setArtModal((p) => p ? { ...p, form: { ...p.form, slug: slugify(e.target.value) } } : null)}
-                style={inputStyle}
-              />
-            </Field>
-
-            <Field label="Özet">
-              <textarea
-                required value={artModal.form.excerpt}
-                onChange={(e) => setArtModal((p) => p ? { ...p, form: { ...p.form, excerpt: e.target.value } } : null)}
-                rows={2}
-                style={{ ...inputStyle, resize: "vertical", fontFamily: "var(--font-sans)" }}
-              />
-            </Field>
-
-            <Field label="İçerik (HTML)">
-              <textarea
-                required value={artModal.form.content}
-                onChange={(e) => setArtModal((p) => p ? { ...p, form: { ...p.form, content: e.target.value } } : null)}
-                rows={10}
-                style={{ ...inputStyle, resize: "vertical", fontFamily: "var(--font-mono)", fontSize: "0.8rem", lineHeight: 1.6 }}
-              />
-            </Field>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-              <Field label="Okuma Süresi (dk)">
-                <input
-                  type="number" min={1} max={120} value={artModal.form.read_time}
-                  onChange={(e) => setArtModal((p) => p ? { ...p, form: { ...p.form, read_time: e.target.value } } : null)}
-                  style={inputStyle}
-                />
-              </Field>
-              <Field label="Tarih">
-                <input
-                  type="datetime-local" value={artModal.form.created_at}
-                  onChange={(e) => setArtModal((p) => p ? { ...p, form: { ...p.form, created_at: e.target.value } } : null)}
-                  style={inputStyle}
-                />
-              </Field>
-            </div>
-
-            <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", fontSize: "0.85rem", color: "var(--text-2)" }}>
-              <input
-                type="checkbox" checked={artModal.form.is_published}
-                onChange={(e) => setArtModal((p) => p ? { ...p, form: { ...p.form, is_published: e.target.checked } } : null)}
-              />
-              Yayında
-            </label>
-
-            <div style={{ display: "flex", gap: "10px", paddingTop: "4px" }}>
-              <button type="submit" disabled={saving} className="btn btn-accent" style={{ flex: 1, padding: "10px", fontSize: "0.85rem", justifyContent: "center" }}>
-                {saving ? "Kaydediliyor..." : "Kaydet"}
-              </button>
-              <button type="button" onClick={() => setArtModal(null)} className="btn btn-ghost" style={{ padding: "10px 16px", fontSize: "0.85rem" }}>
-                İptal
-              </button>
-            </div>
-          </form>
-        </Modal>
       )}
 
       {/* ── Makale Silme Onayı ── */}
@@ -457,48 +250,31 @@ export default function AdminHsoundsPage() {
       {/* ── Feed Modal ── */}
       {feedModal && (
         <Modal
-          title={feedModal.mode === "add" ? "RSS Akışı Ekle" : "RSS Akışını Düzenle"}
+          title={feedModal.mode === "add" ? "RSS Kaynağı Ekle" : "RSS Kaynağını Düzenle"}
           onClose={() => setFeedModal(null)}
         >
-          <form
-            onSubmit={(e) => { e.preventDefault(); saveFeed(); }}
-            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
-          >
+          <form onSubmit={(e) => { e.preventDefault(); saveFeed(); }} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             <Field label="Kaynak Adı">
               <input
                 autoFocus required value={feedModal.form.source_name}
                 onChange={(e) => setFeedModal((p) => p ? { ...p, form: { ...p.form, source_name: e.target.value } } : null)}
-                placeholder="Hacker News"
+                placeholder="The Pragmatic Engineer"
                 style={inputStyle}
               />
             </Field>
-            <Field label="İkon (emoji)">
+            <Field label="İkon (emoji, boş bırakılırsa 🌐)">
               <input
                 value={feedModal.form.source_icon} maxLength={4}
                 onChange={(e) => setFeedModal((p) => p ? { ...p, form: { ...p.form, source_icon: e.target.value } } : null)}
-                placeholder="🟠"
+                placeholder="🌐"
                 style={{ ...inputStyle, width: "80px" }}
               />
             </Field>
-            <Field label="Başlık">
+            <Field label="Feed URL">
               <input
-                required value={feedModal.form.title}
-                onChange={(e) => setFeedModal((p) => p ? { ...p, form: { ...p.form, title: e.target.value } } : null)}
-                style={inputStyle}
-              />
-            </Field>
-            <Field label="Bağlantı">
-              <input
-                required value={feedModal.form.link}
-                onChange={(e) => setFeedModal((p) => p ? { ...p, form: { ...p.form, link: e.target.value } } : null)}
-                placeholder="https://..."
-                style={inputStyle}
-              />
-            </Field>
-            <Field label="Yayın Tarihi">
-              <input
-                type="datetime-local" value={feedModal.form.published_date}
-                onChange={(e) => setFeedModal((p) => p ? { ...p, form: { ...p.form, published_date: e.target.value } } : null)}
+                required value={feedModal.form.feed_url}
+                onChange={(e) => setFeedModal((p) => p ? { ...p, form: { ...p.form, feed_url: e.target.value } } : null)}
+                placeholder="https://example.com/rss"
                 style={inputStyle}
               />
             </Field>
@@ -517,12 +293,12 @@ export default function AdminHsoundsPage() {
 
       {/* ── Feed Silme Onayı ── */}
       {feedDelete && (
-        <Modal title="Akışı Sil?" onClose={() => setFeedDelete(null)}>
+        <Modal title="Kaynağı Sil?" onClose={() => setFeedDelete(null)}>
           <p style={{ fontSize: "0.88rem", color: "var(--text-2)", marginBottom: "20px" }}>
-            <strong style={{ color: "var(--text)" }}>{feedDelete.title}</strong> kalıcı olarak silinecek.
+            <strong style={{ color: "var(--text)" }}>{feedDelete.source_name}</strong> kalıcı olarak silinecek.
           </p>
           <div style={{ display: "flex", gap: "10px" }}>
-            <button onClick={confirmDeleteFeed} disabled={saving} style={dangerBtnStyle}>Sil</button>
+            <button onClick={async () => { await persistFeeds(feeds.filter((f) => f.id !== feedDelete!.id)); setFeedDelete(null); }} disabled={saving} style={dangerBtnStyle}>Sil</button>
             <button onClick={() => setFeedDelete(null)} className="btn btn-ghost" style={{ padding: "9px 16px", fontSize: "0.85rem" }}>İptal</button>
           </div>
         </Modal>
@@ -558,15 +334,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Modal({ title, onClose, children, wide }: {
-  title: string; onClose: () => void; children: React.ReactNode; wide?: boolean;
-}) {
+function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div
       style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="glass" style={{ borderRadius: "20px", padding: "28px", width: "100%", maxWidth: wide ? "640px" : "440px", maxHeight: "90vh", overflowY: "auto" }}>
+      <div className="glass" style={{ borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "440px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "22px" }}>
           <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text)", margin: 0 }}>{title}</h2>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-3)", fontSize: "1.1rem", cursor: "pointer", padding: "4px 8px" }}>✕</button>
@@ -581,15 +355,11 @@ function IBtn({ children, title, onClick, danger }: {
   children: React.ReactNode; title: string; onClick: () => void; danger?: boolean;
 }) {
   return (
-    <button
-      title={title} onClick={onClick}
-      style={{
-        width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center",
-        borderRadius: "7px", border: "1px solid var(--border)", background: "transparent",
-        color: danger ? "#ef4444" : "var(--text-3)",
-        fontSize: "0.82rem", cursor: "pointer", transition: "all 0.12s",
-      }}
-    >
+    <button title={title} onClick={onClick} style={{
+      width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center",
+      borderRadius: "7px", border: "1px solid var(--border)", background: "transparent",
+      color: danger ? "#ef4444" : "var(--text-3)", fontSize: "0.82rem", cursor: "pointer", transition: "all 0.12s",
+    }}>
       {children}
     </button>
   );

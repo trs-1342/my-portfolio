@@ -557,10 +557,8 @@ export interface HsArticle {
 export interface HsRssFeed {
   id: string;
   source_name: string;
-  source_icon: string;  // emoji
-  title: string;
-  link: string;
-  published_date: string; // ISO 8601
+  source_icon: string;  // emoji, varsayılan '🌐'
+  feed_url: string;     // RSS feed URL'si
 }
 
 export async function getHsArticles(): Promise<HsArticle[]> {
@@ -568,6 +566,13 @@ export async function getHsArticles(): Promise<HsArticle[]> {
   const q = query(collection(db, "hsounds_articles"), orderBy("created_at", "desc"));
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as HsArticle));
+}
+
+export async function getHsArticle(id: string): Promise<HsArticle | null> {
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "hsounds_articles", id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as HsArticle;
 }
 
 export async function addHsArticle(data: Omit<HsArticle, "id">): Promise<string> {

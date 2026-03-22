@@ -6,11 +6,7 @@ import type { Article, RssFeed } from "@/lib/hsounds";
 type Tab = "articles" | "rss";
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("tr-TR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return new Date(iso).toLocaleDateString("tr-TR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 function readTimeLabel(min: number): string {
@@ -67,9 +63,7 @@ function ArticleRow({ article, index }: { article: Article; index: number }) {
 function RssRow({ feed, index }: { feed: RssFeed; index: number }) {
   return (
     <a
-      href={feed.link}
-      target="_blank"
-      rel="noopener noreferrer"
+      href={`/hsounds/rss/${feed.id}`}
       className="hsounds-row anim-fade-up"
       style={{ animationDelay: `${index * 0.06}s` }}
     >
@@ -78,18 +72,15 @@ function RssRow({ feed, index }: { feed: RssFeed; index: number }) {
         {feed.source_icon}
       </div>
 
-      {/* Orta: başlık + kaynak */}
+      {/* Orta: kaynak adı */}
       <div className="hsounds-row__body">
-        <p className="hsounds-row__title">{feed.title}</p>
-        <p className="hsounds-row__sub">{feed.source_name}</p>
+        <p className="hsounds-row__title">{feed.source_name}</p>
+        <p className="hsounds-row__sub">RSS Kaynağı</p>
       </div>
 
-      {/* Sağ: external link + tarih */}
+      {/* Sağ: ok */}
       <div className="hsounds-row__meta">
-        <span style={{ fontSize: "0.95rem", color: "var(--accent)" }}>↗</span>
-        <span style={{ fontSize: "0.7rem", color: "var(--text-3)" }}>
-          {formatDate(feed.published_date)}
-        </span>
+        <span style={{ fontSize: "0.95rem", color: "var(--accent)" }}>→</span>
       </div>
     </a>
   );
