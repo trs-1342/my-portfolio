@@ -67,7 +67,7 @@ export default function RegisterPage() {
           </h2>
           <p style={{ fontSize: "0.85rem", color: "var(--text-2)", lineHeight: 1.7, marginBottom: "28px" }}>
             <strong style={{ color: "var(--text)" }}>{email}</strong> adresine doğrulama bağlantısı gönderildi.
-            Gelen kutunu kontrol et ve bağlantıya tıkla.
+            Gelen kutunu kontrol et ve bağlantıya tıkla. Email gelmezse <strong style={{ color: "var(--text)" }}>spam / gereksiz</strong> klasörüne de bak.
           </p>
           <button
             onClick={() => router.push("/setup-username")}
