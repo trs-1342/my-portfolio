@@ -9,13 +9,13 @@ import { getMenuItems } from "@/lib/firestore";
 import type { MenuItem } from "@/lib/firestore";
 
 const DEFAULT_LINKS: MenuItem[] = [
-  { id: "m1", href: "/about",       label: "Hakkımda",    icon: "👤", order: 0 },
-  { id: "m2", href: "/my-projects", label: "Projeler",    icon: "⚡", order: 1 },
-  { id: "m3", href: "/photos",      label: "Fotoğraflar", icon: "📷", order: 2 },
-  { id: "m4", href: "/hsounds",     label: "Hsounds",     icon: "🎵", order: 3 },
-  { id: "m5", href: "/thanks",      label: "Teşekkürler", icon: "💫", order: 4 },
-  { id: "m6", href: "/contact",     label: "İletişim",    icon: "✉️", order: 5 },
-  { id: "m7", href: "/solar-system",     label: "Güneş Sistemi",    icon: "🌍", order: 6 },
+  { id: "m1", href: "/about",        label: "Hakkımda",      icon: "🪪", order: 0 },
+  { id: "m2", href: "/my-projects",  label: "Projeler",      icon: "⚡", order: 1 },
+  { id: "m3", href: "/photos",       label: "Fotoğraflar",   icon: "📷", order: 2 },
+  { id: "m4", href: "/hsounds",      label: "Hsounds",       icon: "🎵", order: 3 },
+  { id: "m5", href: "/thanks",       label: "Teşekkürler",   icon: "💫", order: 4 },
+  { id: "m6", href: "/contact",      label: "İletişim",      icon: "✉️", order: 5 },
+  { id: "m7", href: "/solar-system", label: "Güneş Sistemi", icon: "🌍", order: 6 },
 ];
 
 export default function Navbar() {
@@ -91,6 +91,7 @@ export default function Navbar() {
               <a
                 key={l.id}
                 href={l.href}
+                title={l.label}
                 className={`nav-link${isActive ? " nav-link--active" : ""}`}
               >
                 <span className="nav-icon">{l.icon}</span>
