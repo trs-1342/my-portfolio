@@ -1,17 +1,21 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
-import { readFile } from "fs/promises";
-import path from "path";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 /* Font — public/fonts/Inter.ttf */
 let fontData: ArrayBuffer | null = null;
-async function getFont(): Promise<ArrayBuffer> {
+async function getFont(baseUrl: string): Promise<ArrayBuffer> {
   if (fontData) return fontData;
-  const buf = await readFile(path.join(process.cwd(), "public/fonts/Inter.ttf"));
-  fontData = buf.buffer as ArrayBuffer;
+  const res = await fetch(`${baseUrl}/fonts/Inter.ttf`);
+  fontData = await res.arrayBuffer();
   return fontData;
+}
+
+function getBaseUrl(req: NextRequest): string {
+  const host = req.headers.get("host") ?? "localhost:3000";
+  const proto = host.startsWith("localhost") ? "http" : "https";
+  return `${proto}://${host}`;
 }
 
 /* Tür etiketleri */
@@ -37,7 +41,7 @@ export async function GET(req: NextRequest) {
 
   const { label, icon } = TYPE_META[type] ?? TYPE_META.page;
 
-  const font = await getFont();
+  const font = await getFont(getBaseUrl(req));
 
   return new ImageResponse(
     (
