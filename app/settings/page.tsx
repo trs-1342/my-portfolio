@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useAccessGuard } from "@/hooks/useAccessGuard";
 import { updateUserProfile } from "@/lib/firestore";
@@ -82,13 +83,28 @@ export default function SettingsPage() {
       <AmbientGlow />
       <Navbar />
       <div className="page-content" style={{ paddingTop: "100px", paddingBottom: "80px" }}>
-        <header style={{ marginBottom: "48px" }}>
-          <p className="mono anim-fade-up" style={{ fontSize: "0.72rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>
-            /settings
-          </p>
-          <h1 className="anim-fade-up d2" style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--text)" }}>
-            Ayarlar
-          </h1>
+        <header style={{ marginBottom: "48px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+          <div>
+            <p className="mono anim-fade-up" style={{ fontSize: "0.72rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>
+              /settings
+            </p>
+            <h1 className="anim-fade-up d2" style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--text)" }}>
+              Ayarlar
+            </h1>
+          </div>
+          <Link
+            href="/profile"
+            className="anim-fade-up d3"
+            style={{
+              padding: "9px 18px", borderRadius: "10px",
+              border: "1px solid var(--border)", background: "var(--panel)",
+              color: "var(--text-2)", fontSize: "0.82rem", fontWeight: 500,
+              textDecoration: "none", backdropFilter: "blur(12px)",
+              display: "inline-flex", alignItems: "center", gap: "6px",
+            }}
+          >
+            👤 Profil
+          </Link>
         </header>
 
         <div style={{ maxWidth: "540px", display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -144,43 +160,6 @@ export default function SettingsPage() {
 
             <SettingRow label="Sistem Bildirimleri" desc="Bakım, güncelleme ve önemli duyurular.">
               <Toggle value={notifSystem} onChange={setNotifSystem} />
-            </SettingRow>
-          </SettingCard>
-
-          {/* ── Hesap Bilgisi ── */}
-          <SettingCard title="Hesap">
-            <SettingRow label="Rol" desc="Hesap türü.">
-              <span
-                className="mono"
-                style={{
-                  fontSize: "0.75rem",
-                  padding: "4px 12px",
-                  borderRadius: "999px",
-                  background: profile.role === "admin" ? "rgba(16,185,129,0.12)" : "var(--bg-2)",
-                  border: `1px solid ${profile.role === "admin" ? "rgba(16,185,129,0.3)" : "var(--border)"}`,
-                  color: profile.role === "admin" ? "var(--accent)" : "var(--text-3)",
-                }}
-              >
-                {profile.role === "admin" ? "🔑 admin" : "👤 user"}
-              </span>
-            </SettingRow>
-
-            <Divider />
-
-            <SettingRow label="Durum" desc="Hesap durumu.">
-              <span
-                className="mono"
-                style={{
-                  fontSize: "0.75rem",
-                  padding: "4px 12px",
-                  borderRadius: "999px",
-                  background: "rgba(16,185,129,0.08)",
-                  border: "1px solid rgba(16,185,129,0.2)",
-                  color: "var(--accent)",
-                }}
-              >
-                ● {profile.status}
-              </span>
             </SettingRow>
           </SettingCard>
 
