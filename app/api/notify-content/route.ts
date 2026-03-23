@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import nodemailer from "nodemailer";
 import { adminAuth, adminDb } from "@/lib/firebase-admin";
 
 /* POST /api/notify-content — yeni makale veya RSS kaynağı için abonelere email gönder */
 export async function POST(req: NextRequest) {
   try {
-    /* Admin session doğrula */
-    const cookieStore = await cookies();
-    const token = cookieStore.get("session")?.value;
+    /* Admin doğrula — Authorization: Bearer <fresh-id-token> */
+    const authHeader = req.headers.get("authorization") ?? "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
     if (!token) return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
 
-    const decoded = await adminAuth.verifyIdToken(token);
+    let decoded: { uid: string };
+    try {
+      decoded = await adminAuth.verifyIdToken(token);
+    } catch {
+      return NextResponse.json({ error: "Geçersiz veya süresi dolmuş token." }, { status: 401 });
+    }
+
     const userDoc = await adminDb.collection("users").doc(decoded.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== "admin") {
       return NextResponse.json({ error: "Yetkisiz." }, { status: 403 });

@@ -7,6 +7,7 @@ import {
   getHsArticles, deleteHsArticle,
   getHsFeeds, setHsFeeds,
 } from "@/lib/firestore";
+import { auth } from "@/lib/firebase";
 
 function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -98,15 +99,21 @@ export default function AdminHsoundsPage() {
     /* Yeni kaynak eklendiyse abonelere bildirim gönder */
     if (isNew) {
       try {
-        await fetch("/api/notify-content", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: "rssFeed",
-            title: data.source_name,
-            url: "/hsounds",
-          }),
-        });
+        const idToken = await auth?.currentUser?.getIdToken(true);
+        if (idToken) {
+          await fetch("/api/notify-content", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({
+              type: "rssFeed",
+              title: data.source_name,
+              url: "/hsounds",
+            }),
+          });
+        }
       } catch {
         /* bildirim hatası sessizce geçilir */
       }

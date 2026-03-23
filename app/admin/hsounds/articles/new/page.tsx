@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { addHsArticle } from "@/lib/firestore";
+import { auth } from "@/lib/firebase";
 
 function slugify(text: string) {
   return text
@@ -52,16 +53,22 @@ export default function NewArticlePage() {
       /* Yayındaysa abonelere bildirim gönder (hata baskılı — yönlendirmeyi engellememeli) */
       if (isPublished) {
         try {
-          await fetch("/api/notify-content", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: "article",
-              title: title.trim(),
-              url: `/hsounds/${slug.trim()}`,
-              description: excerpt.trim(),
-            }),
-          });
+          const idToken = await auth?.currentUser?.getIdToken(true);
+          if (idToken) {
+            await fetch("/api/notify-content", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${idToken}`,
+              },
+              body: JSON.stringify({
+                type: "article",
+                title: title.trim(),
+                url: `/hsounds/${slug.trim()}`,
+                description: excerpt.trim(),
+              }),
+            });
+          }
         } catch {
           /* bildirim hatası sessizce geçilir */
         }
