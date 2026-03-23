@@ -124,7 +124,7 @@ export default async function RssFeedPage({ params }: { params: Promise<{ id: st
                 href={post.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="glass anim-fade-up"
+                className="rss-post-card glass anim-fade-up"
                 style={{
                   display: "block", padding: "24px 28px",
                   borderRadius: "16px", textDecoration: "none",
@@ -132,14 +132,6 @@ export default async function RssFeedPage({ params }: { params: Promise<{ id: st
                   transition: "border-color 0.2s, box-shadow 0.2s",
                   animationDelay: `${i * 0.04}s`,
                   position: "relative", overflow: "hidden",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border-hover)";
-                  (e.currentTarget as HTMLAnchorElement).style.boxShadow = "var(--shadow-hover)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border)";
-                  (e.currentTarget as HTMLAnchorElement).style.boxShadow = "none";
                 }}
               >
                 {/* Sol accent bar */}
@@ -186,6 +178,13 @@ export default async function RssFeedPage({ params }: { params: Promise<{ id: st
             ))}
           </div>
         )}
+
+        <style>{`
+          .rss-post-card:hover {
+            border-color: var(--border-hover) !important;
+            box-shadow: var(--shadow-hover) !important;
+          }
+        `}</style>
 
         <Footer />
       </div>
