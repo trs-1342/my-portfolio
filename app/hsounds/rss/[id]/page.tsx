@@ -121,9 +121,7 @@ export default async function RssFeedPage({ params }: { params: Promise<{ id: st
             {posts.map((post, i) => (
               <a
                 key={post.guid || post.link}
-                href={post.link}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`/hsounds/rss/${id}/post?guid=${encodeURIComponent(post.guid || post.link)}`}
                 className="rss-post-card glass anim-fade-up"
                 style={{
                   display: "block", padding: "24px 28px",
