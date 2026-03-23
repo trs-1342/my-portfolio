@@ -20,13 +20,14 @@ const DEFAULT_LINKS: MenuItem[] = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { user, profile, logout } = useAuth();
+  const { user, profile } = useAuth();
   const hideProgress = useRef(0);
-  const lastY = useRef(0);
-  const [style, setStyle]     = useState<React.CSSProperties>({});
-  const [links, setLinks]     = useState<MenuItem[]>(DEFAULT_LINKS);
+  const lastY        = useRef(0);
+  const [navStyle, setNavStyle] = useState<React.CSSProperties>({});
+  const [links,    setLinks]    = useState<MenuItem[]>(DEFAULT_LINKS);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  /* Menü öğelerini Firestore'dan yükle (varsa override et) */
+  /* Menü öğelerini Firestore'dan yükle */
   useEffect(() => {
     getMenuItems().then((items) => {
       if (items && items.length > 0) {
@@ -35,9 +36,19 @@ export default function Navbar() {
     });
   }, []);
 
+  /* Route değişince mobil menüyü kapat */
+  useEffect(() => { setMenuOpen(false); }, [pathname]);
+
+  /* Menü açıkken body scroll kilitle */
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
+
+  /* Scroll hide animasyonu */
   useEffect(() => {
     const onScroll = () => {
-      const y = window.scrollY;
+      const y     = window.scrollY;
       const delta = y - lastY.current;
       lastY.current = y;
 
@@ -50,89 +61,332 @@ export default function Navbar() {
       }
 
       const p = hideProgress.current;
-      setStyle({
+      setNavStyle({
         opacity: 1 - p * 0.95,
         transform: `translateX(-50%) translateY(${-p * 18}px) scale(${1 - p * 0.06})`,
         pointerEvents: p > 0.85 ? "none" : "auto",
       });
     };
-
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const filteredLinks = links.filter((l) => !(l.href === "/photos" && !user));
+
   return (
-    <nav className="navbar" style={style} aria-label="Ana navigasyon">
-      <div className="navbar-pill">
-        {/* Site adı / logo */}
-        <Link
-          href="/"
-          style={{
-            padding: "7px 12px",
-            borderRadius: "999px",
-            fontFamily: "var(--font-mono)",
-            fontWeight: 700,
-            fontSize: "0.85rem",
-            color: "var(--accent)",
-            textDecoration: "none",
-            letterSpacing: "0.04em",
-          }}
-        >
-          trs
-        </Link>
+    <>
+      {/* ── Mobil tam ekran menü overlay ── */}
+      <div className={`mob-menu${menuOpen ? " mob-menu--open" : ""}`} aria-hidden={!menuOpen}>
+        {/* Üst bar: logo + kapat */}
+        <div className="mob-menu__header">
+          <Link href="/" className="mob-menu__logo" onClick={() => setMenuOpen(false)}>
+            trs
+          </Link>
+          <button
+            className="mob-menu__close"
+            onClick={() => setMenuOpen(false)}
+            aria-label="Menüyü kapat"
+          >
+            ✕
+          </button>
+        </div>
 
-        <div className="nav-divider" />
-
-        {links
-          .filter((l) => !(l.href === "/photos" && !user))
-          .map((l) => {
+        {/* Nav linkleri */}
+        <nav className="mob-menu__nav">
+          {filteredLinks.map((l, i) => {
             const isActive = pathname === l.href || pathname.startsWith(l.href + "/");
             return (
-              <a
+              <Link
                 key={l.id}
                 href={l.href}
-                title={l.label}
-                className={`nav-link${isActive ? " nav-link--active" : ""}`}
+                className={`mob-menu__item${isActive ? " mob-menu__item--active" : ""}`}
+                style={{ animationDelay: menuOpen ? `${i * 0.04}s` : "0s" }}
               >
-                <span className="nav-icon">{l.icon}</span>
-                <span className="nav-label">{l.label}</span>
-              </a>
+                <span className="mob-menu__icon">{l.icon}</span>
+                <span className="mob-menu__label">{l.label}</span>
+                <span className="mob-menu__arrow">→</span>
+              </Link>
             );
           })}
+        </nav>
 
-        <div className="nav-divider" />
-
-        <ThemeToggle />
-
-        {/* Auth butonu */}
-        {user ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        {/* Alt: profil + tema */}
+        <div className="mob-menu__footer">
+          {user ? (
             <Link
               href="/profile"
-              className="mono"
-              style={{
-                padding: "6px 11px",
-                borderRadius: "999px",
-                fontSize: "0.75rem",
-                color: "var(--accent)",
-                textDecoration: "none",
-                border: "1px solid var(--border-hover)",
-                background: "var(--accent-dim)",
-              }}
+              className="mob-menu__profile"
+              onClick={() => setMenuOpen(false)}
             >
+              <span style={{ fontSize: "1rem" }}>👤</span>
+              <span>{profile?.username ?? "Profil"}</span>
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="mob-menu__profile"
+              onClick={() => setMenuOpen(false)}
+            >
+              <span style={{ fontSize: "1rem" }}>🔑</span>
+              <span>Giriş Yap</span>
+            </Link>
+          )}
+          <ThemeToggle />
+        </div>
+      </div>
+
+      {/* ── Pill navbar ── */}
+      <nav className="navbar" style={navStyle} aria-label="Ana navigasyon">
+        <div className="navbar-pill">
+
+          {/* Logo */}
+          <Link href="/" className="nav-logo">trs</Link>
+
+          <div className="nav-divider" />
+
+          {/* Masaüstü linkler */}
+          <div className="nav-desktop-links">
+            {filteredLinks.map((l) => {
+              const isActive = pathname === l.href || pathname.startsWith(l.href + "/");
+              return (
+                <a
+                  key={l.id}
+                  href={l.href}
+                  title={l.label}
+                  className={`nav-link${isActive ? " nav-link--active" : ""}`}
+                >
+                  {l.label}
+                </a>
+              );
+            })}
+          </div>
+
+          <div className="nav-divider nav-divider--desktop" />
+
+          <ThemeToggle />
+
+          {/* Auth */}
+          {user ? (
+            <Link href="/profile" className="nav-profile-pill mono">
               {profile?.username ?? "profil"}
             </Link>
-          </div>
-        ) : (
-          <Link
-            href="/login"
-            className="mono nav-link"
-            style={{ fontSize: "0.78rem" }}
+          ) : (
+            <Link href="/login" className="mono nav-link" style={{ fontSize: "0.78rem" }}>
+              Giriş
+            </Link>
+          )}
+
+          {/* Mobil: hamburger */}
+          <button
+            className="nav-hamburger"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Menüyü aç"
+            aria-expanded={menuOpen}
           >
-            Giriş
-          </Link>
-        )}
-      </div>
-    </nav>
+            <span /><span /><span />
+          </button>
+        </div>
+      </nav>
+
+      <style>{`
+        /* ── Logo ── */
+        .nav-logo {
+          padding: 7px 12px;
+          border-radius: 999px;
+          font-family: var(--font-mono);
+          font-weight: 700;
+          font-size: 0.85rem;
+          color: var(--accent);
+          text-decoration: none;
+          letter-spacing: 0.04em;
+          flex-shrink: 0;
+        }
+
+        /* ── Profil pill ── */
+        .nav-profile-pill {
+          padding: 6px 11px;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          color: var(--accent);
+          text-decoration: none;
+          border: 1px solid var(--border-hover);
+          background: var(--accent-dim);
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+
+        /* ── Hamburger ── */
+        .nav-hamburger {
+          display: none;
+          flex-direction: column;
+          gap: 4px;
+          align-items: center;
+          justify-content: center;
+          padding: 8px 10px;
+          border-radius: 999px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+        }
+        .nav-hamburger span {
+          display: block;
+          width: 16px;
+          height: 1.5px;
+          background: var(--text-2);
+          border-radius: 2px;
+          transition: background 0.15s;
+        }
+        .nav-hamburger:hover span { background: var(--text); }
+
+        /* ── Masaüstü link grubu ── */
+        .nav-desktop-links {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+        }
+
+        /* ── Mobil overlay menü ── */
+        .mob-menu {
+          position: fixed;
+          inset: 0;
+          z-index: 2000;
+          background: var(--bg);
+          display: flex;
+          flex-direction: column;
+          padding: 0;
+          transform: translateY(100%);
+          transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: transform;
+          pointer-events: none;
+        }
+        .mob-menu--open {
+          transform: translateY(0);
+          pointer-events: auto;
+        }
+
+        .mob-menu__header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 20px 24px;
+          border-bottom: 1px solid var(--border);
+        }
+        .mob-menu__logo {
+          font-family: var(--font-mono);
+          font-weight: 700;
+          font-size: 1.1rem;
+          color: var(--accent);
+          text-decoration: none;
+          letter-spacing: 0.05em;
+        }
+        .mob-menu__close {
+          width: 36px;
+          height: 36px;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--panel);
+          color: var(--text-2);
+          font-size: 0.9rem;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .mob-menu__nav {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          padding: 16px 20px;
+          gap: 4px;
+          overflow-y: auto;
+        }
+        .mob-menu__item {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 16px 18px;
+          border-radius: 14px;
+          text-decoration: none;
+          border: 1px solid transparent;
+          transition: background 0.15s, border-color 0.15s;
+          animation: mobItemIn 0.3s var(--ease-out) both;
+        }
+        @keyframes mobItemIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .mob-menu__item:hover {
+          background: var(--panel-hover);
+          border-color: var(--border);
+        }
+        .mob-menu__item--active {
+          background: var(--accent-dim);
+          border-color: var(--border-hover);
+        }
+        .mob-menu__icon {
+          font-size: 1.4rem;
+          width: 36px;
+          text-align: center;
+          flex-shrink: 0;
+        }
+        .mob-menu__label {
+          flex: 1;
+          font-size: 1.05rem;
+          font-weight: 600;
+          color: var(--text);
+          letter-spacing: -0.01em;
+        }
+        .mob-menu__item--active .mob-menu__label {
+          color: var(--accent);
+        }
+        .mob-menu__arrow {
+          font-size: 0.9rem;
+          color: var(--text-3);
+        }
+        .mob-menu__item--active .mob-menu__arrow {
+          color: var(--accent);
+        }
+
+        .mob-menu__footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 24px 32px;
+          border-top: 1px solid var(--border);
+        }
+        .mob-menu__profile {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 16px;
+          border-radius: 12px;
+          border: 1px solid var(--border-hover);
+          background: var(--accent-dim);
+          text-decoration: none;
+          font-size: 0.92rem;
+          font-weight: 600;
+          color: var(--accent);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+          /* Masaüstü linkler gizli, hamburger görünür */
+          .nav-desktop-links   { display: none; }
+          .nav-divider--desktop { display: none; }
+          .nav-hamburger       { display: flex; }
+          /* Profil pill navbar'da gizli (menü içinde var) */
+          .nav-profile-pill    { display: none; }
+          /* Giriş linki de gizli */
+          .navbar-pill .nav-link[href="/login"] { display: none; }
+        }
+
+        @media (min-width: 641px) {
+          /* Masaüstünde mobil menü hiç render edilmez */
+          .mob-menu { display: none !important; }
+          .nav-hamburger { display: none !important; }
+        }
+      `}</style>
+    </>
   );
 }

@@ -530,15 +530,7 @@ body {
    MOBİL
    ================================================ */
 
-/* Nav ikonu masaüstünde gizli — sadece küçük ekranda gösterilir */
-.nav-icon { display: none; }
-
 @media (max-width: 768px) {
-  .navbar-pill .nav-link {
-    padding: 7px 10px;
-    font-size: 0.78rem;
-  }
-
   .ambient-orb-1 { width: 320px; height: 320px; }
   .ambient-orb-2 { width: 260px; height: 260px; }
   .ambient-orb-3 { width: 220px; height: 220px; }
@@ -566,11 +558,7 @@ body {
 }
 
 @media (max-width: 640px) {
-  /* Navbar: etiket gizle, ikon göster */
-  .nav-label { display: none; }
-  .nav-icon  { display: inline-block; }
-
-  /* Navbar pill genişliği ve hizalama */
+  /* Navbar pill: sadece logo + hamburger + tema göster */
   .navbar {
     width: calc(100% - 24px);
   }
@@ -578,15 +566,6 @@ body {
   .navbar-pill {
     width: 100%;
     justify-content: space-between;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .navbar-pill::-webkit-scrollbar { display: none; }
-
-  .navbar-pill .nav-link {
-    padding: 6px 9px;
-    font-size: 1rem; /* ikon boyutu */
   }
 
   /* Sabitlenmiş projeler grid — 2 sütundan 1 sütuna */
