@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { adminAuth, adminDb } from "@/lib/firebase-admin";
 
 /* POST /api/admin/delete-user — kullanıcıyı Auth + Firestore'dan sil */
 export async function POST(req: NextRequest) {
   try {
-    /* Session cookie'den admin doğrulaması */
-    const cookieStore = await cookies();
-    const token = cookieStore.get("session")?.value;
+    /* Authorization: Bearer <fresh-id-token> ile admin doğrula */
+    const authHeader = req.headers.get("authorization") ?? "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
     if (!token) return NextResponse.json({ error: "Oturum yok." }, { status: 401 });
 
-    const decoded = await adminAuth.verifyIdToken(token);
+    let decoded: { uid: string };
+    try {
+      decoded = await adminAuth.verifyIdToken(token);
+    } catch {
+      return NextResponse.json({ error: "Geçersiz veya süresi dolmuş token." }, { status: 401 });
+    }
+
     const adminSnap = await adminDb.doc(`users/${decoded.uid}`).get();
     if (!adminSnap.exists || adminSnap.data()?.role !== "admin") {
       return NextResponse.json({ error: "Yetki yok." }, { status: 403 });

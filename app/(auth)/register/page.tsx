@@ -25,9 +25,14 @@ export default function RegisterPage() {
     if (password.length < 6)   { setError("Şifre en az 6 karakter olmalı."); return; }
     setLoading(true);
     try {
+      /* displayName'i setup-username sayfasına taşı */
+      if (displayName.trim()) {
+        sessionStorage.setItem("pending_display_name", displayName.trim());
+      }
       await register(email, password);
       setSent(true);
     } catch (err: unknown) {
+      sessionStorage.removeItem("pending_display_name");
       const msg = (err as { code?: string }).code;
       if (msg === "auth/email-already-in-use") setError("Bu email zaten kayıtlı.");
       else setError("Kayıt başarısız. Tekrar dene.");

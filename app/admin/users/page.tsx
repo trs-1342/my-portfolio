@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getAllUsers, updateUserStatus, updateUserBlockedPages } from "@/lib/firestore";
 import type { UserProfile } from "@/lib/firestore";
+import { auth } from "@/lib/firebase";
 
 /* Engellenebilir sayfalar */
 const BLOCKABLE = [
@@ -56,9 +57,13 @@ export default function AdminUsersPage() {
     if (u.role === "admin") { alert("Admin hesabı silinemez."); return; }
     if (!confirm(`@${u.username} kullanıcısını silmek istediğinden emin misin?\nBu işlem geri alınamaz.`)) return;
     setBusy(u.uid);
+    const idToken = await auth?.currentUser?.getIdToken(true);
     const res = await fetch("/api/admin/delete-user", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(idToken ? { "Authorization": `Bearer ${idToken}` } : {}),
+      },
       body: JSON.stringify({ uid: u.uid, username: u.username }),
     });
     if (res.ok) {

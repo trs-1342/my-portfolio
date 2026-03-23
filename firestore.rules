@@ -46,8 +46,14 @@ service cloud.firestore {
     // HSounds makaleleri
     match /hsounds_articles/{docId} {
       allow read: if true;
-      allow write: if request.auth != null &&
+      // Admin tam yazma hakkı
+      allow create, delete: if request.auth != null &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+      // Admin her alanı güncelleyebilir; giriş yapan kullanıcılar sadece likes alanını güncelleyebilir
+      allow update: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin" ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["likes"])
+      );
     }
 
     // Fotoğraf galerisi

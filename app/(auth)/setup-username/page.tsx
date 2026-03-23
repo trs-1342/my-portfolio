@@ -46,12 +46,17 @@ export default function SetupUsernamePage() {
     if (!user || !available) return;
     setSaving(true);
     try {
+      /* Email ile kayıtta girilen displayName sessionStorage'dan okunur */
+      const pendingName = sessionStorage.getItem("pending_display_name");
+      const resolvedDisplayName = user.displayName || pendingName || username;
+
       await createUserProfile(user.uid, {
         email:       user.email ?? "",
         username,
-        displayName: user.displayName ?? username,
+        displayName: resolvedDisplayName,
         photoURL:    user.photoURL,
       });
+      sessionStorage.removeItem("pending_display_name");
       await refreshProfile();
       router.push("/");
     } catch {
