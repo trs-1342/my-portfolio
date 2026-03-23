@@ -8,14 +8,38 @@ import { getArticleBySlug } from "@/lib/hsounds";
 
 export const dynamic = "force-dynamic";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hattab.vercel.app";
+
 /* ── Metadata ─────────────────────────────────────────────── */
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article) return { title: "Makale bulunamadı — trs" };
+
+  const metaStr = `${article.read_time} dk okuma  ·  ${new Date(article.created_at).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}`;
+  const ogUrl   = `${BASE_URL}/api/og?` + new URLSearchParams({
+    title: article.title,
+    desc:  article.excerpt,
+    type:  "article",
+    meta:  metaStr,
+  }).toString();
+
   return {
     title: `${article.title} — trs`,
     description: article.excerpt,
+    openGraph: {
+      title:       `${article.title} — trs`,
+      description: article.excerpt,
+      url:         `${BASE_URL}/hsounds/${slug}`,
+      type:        "article",
+      images: [{ url: ogUrl, width: 1200, height: 630, alt: article.title }],
+    },
+    twitter: {
+      card:        "summary_large_image",
+      title:       `${article.title} — trs`,
+      description: article.excerpt,
+      images:      [ogUrl],
+    },
   };
 }
 

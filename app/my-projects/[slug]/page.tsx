@@ -17,12 +17,31 @@ export async function generateStaticParams() {
 }
 
 /* ── Metadata ── */
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hattab.vercel.app";
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const projects = await getProjectsServer();
   const project = projects.find((p) => (p.slug || toSlug(p.title)) === slug);
   if (!project) return { title: "Proje bulunamadı — trs" };
-  return { title: `${project.title} — trs`, description: project.desc };
+
+  const ogUrl = `${BASE_URL}/api/og?` + new URLSearchParams({
+    title: project.title,
+    desc:  project.desc,
+    type:  "project",
+    meta:  project.lang,
+  }).toString();
+
+  return {
+    title:       `${project.title} — trs`,
+    description: project.desc,
+    openGraph: {
+      title: `${project.title} — trs`, description: project.desc,
+      url: `${BASE_URL}/my-projects/${slug}`,
+      images: [{ url: ogUrl, width: 1200, height: 630 }],
+    },
+    twitter: { card: "summary_large_image" as const, title: `${project.title} — trs`, images: [ogUrl] },
+  };
 }
 
 /* ── TAG renk haritası ── */

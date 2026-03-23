@@ -5,9 +5,14 @@ import Terminal from "@/components/projects/Terminal";
 import ProjectCard from "@/components/projects/ProjectCard";
 import { getProjectsServer, getProjectsPageConfigServer } from "@/lib/site-server";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hattab.vercel.app";
+const _ogUrl   = `${BASE_URL}/api/og?` + new URLSearchParams({ title: "Projeler", desc: "trs'nin açık kaynak ve kişisel projeleri.", type: "project" }).toString();
+
 export const metadata = {
   title: "Projeler — trs",
   description: "trs'nin açık kaynak ve kişisel projeleri.",
+  openGraph: { title: "Projeler — trs", description: "trs'nin açık kaynak ve kişisel projeleri.", url: `${BASE_URL}/my-projects`, images: [{ url: _ogUrl, width: 1200, height: 630 }] },
+  twitter:    { card: "summary_large_image" as const, title: "Projeler — trs", images: [_ogUrl] },
 };
 
 export default async function ProjectsPage() {

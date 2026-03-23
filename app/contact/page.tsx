@@ -3,9 +3,14 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContactForm from "@/components/contact/ContactForm";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hattab.vercel.app";
+const _ogUrl   = `${BASE_URL}/api/og?` + new URLSearchParams({ title: "İletişim", desc: "Hata bildirimi, geri bildirim veya işbirliği için iletişim.", type: "contact" }).toString();
+
 export const metadata = {
   title: "İletişim — trs",
   description: "Hata bildirimi, geri bildirim veya işbirliği için iletişim.",
+  openGraph: { title: "İletişim — trs", description: "Hata bildirimi, geri bildirim veya işbirliği.", url: `${BASE_URL}/contact`, images: [{ url: _ogUrl, width: 1200, height: 630 }] },
+  twitter:    { card: "summary_large_image" as const, title: "İletişim — trs", images: [_ogUrl] },
 };
 
 export default function ContactPage() {

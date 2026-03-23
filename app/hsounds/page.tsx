@@ -7,9 +7,19 @@ import { getArticles, getRssFeeds } from "@/lib/hsounds";
 
 export const dynamic = "force-dynamic";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hattab.vercel.app";
+const _ogUrl   = `${BASE_URL}/api/og?` + new URLSearchParams({ title: "HSounds", desc: "Halil'in Sesleri — makaleler ve RSS akışları.", type: "hsounds" }).toString();
+
 export const metadata = {
   title: "HSounds — trs",
   description: "Halil'in Sesleri — makaleler ve RSS akışları.",
+  openGraph: {
+    title: "HSounds — trs",
+    description: "Halil'in Sesleri — makaleler ve RSS akışları.",
+    url: `${BASE_URL}/hsounds`,
+    images: [{ url: _ogUrl, width: 1200, height: 630 }],
+  },
+  twitter: { card: "summary_large_image", title: "HSounds — trs", images: [_ogUrl] },
 };
 
 export default async function HSoundsPage() {
