@@ -13,6 +13,7 @@ export interface Article {
   created_at: string;   // ISO 8601
   read_time: number;    // dakika
   is_published: boolean;
+  likes?: string[];     // beğenen kullanıcıların UID listesi
 }
 
 export interface RssFeed {

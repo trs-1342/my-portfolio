@@ -22,9 +22,11 @@ export interface UserProfile {
     theme: string; // tema ID: "dark-green", "dark-red", "light-blue" vb.
   };
   notifications: {
-    email:      boolean;
-    newMessage: boolean;
-    system:      boolean;
+    email:        boolean;
+    newMessage:   boolean;
+    system:       boolean;
+    newArticle?:  boolean; // yeni makale yayınlandığında
+    newRssFeed?:  boolean; // yeni RSS kaynağı eklendiğinde
   };
 }
 
@@ -53,9 +55,11 @@ export async function createUserProfile(
       theme:          "dark",
     },
     notifications: {
-      email:      true,
-      newMessage: true,
-      system:     true,
+      email:        true,
+      newMessage:   true,
+      system:       true,
+      newArticle:   true,
+      newRssFeed:   true,
     },
   });
 
@@ -82,7 +86,7 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   const data = snap.data() as UserProfile;
 
   if (!data.notifications) {
-    data.notifications = { email: true, newMessage: true, system: true };
+    data.notifications = { email: true, newMessage: true, system: true, newArticle: true, newRssFeed: true };
   }
   return data;
 }
@@ -533,6 +537,14 @@ export async function deletePhoto(id: string): Promise<void> {
   await deleteDoc(doc(db, "photos", id));
 }
 
+/* Makale beğeni ekle/çıkar */
+export async function toggleArticleLike(articleId: string, uid: string, add: boolean): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, "hsounds_articles", articleId), {
+    likes: add ? arrayUnion(uid) : arrayRemove(uid),
+  });
+}
+
 /* Favori ekle/çıkar */
 export async function togglePhotoFavorite(photoId: string, uid: string, add: boolean): Promise<void> {
   if (!db) return;
@@ -552,6 +564,7 @@ export interface HsArticle {
   created_at: string;   // ISO 8601
   read_time: number;    // dakika
   is_published: boolean;
+  likes?: string[];     // beğenen kullanıcıların UID listesi
 }
 
 export interface HsRssFeed {

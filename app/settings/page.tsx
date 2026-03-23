@@ -16,9 +16,11 @@ export default function SettingsPage() {
 
   const [navPos,   setNavPos]   = useState<"top" | "bottom">("top");
   const [theme,    setTheme]    = useState<string>("dark-green");
-  const [notifEmail,   setNotifEmail]   = useState(true);
-  const [notifMessage, setNotifMessage] = useState(true);
-  const [notifSystem,  setNotifSystem]  = useState(true);
+  const [notifEmail,      setNotifEmail]      = useState(true);
+  const [notifMessage,    setNotifMessage]    = useState(true);
+  const [notifSystem,     setNotifSystem]     = useState(true);
+  const [notifNewArticle, setNotifNewArticle] = useState(true);
+  const [notifNewRssFeed, setNotifNewRssFeed] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg,    setMsg]    = useState("");
 
@@ -27,9 +29,11 @@ export default function SettingsPage() {
     if (!profile) return;
     setNavPos(profile.settings.navbarPosition);
     setTheme(normalizeThemeId(profile.settings.theme));
-    setNotifEmail(profile.notifications?.email   ?? true);
-    setNotifMessage(profile.notifications?.newMessage ?? true);
-    setNotifSystem(profile.notifications?.system  ?? true);
+    setNotifEmail(profile.notifications?.email        ?? true);
+    setNotifMessage(profile.notifications?.newMessage  ?? true);
+    setNotifSystem(profile.notifications?.system       ?? true);
+    setNotifNewArticle(profile.notifications?.newArticle ?? true);
+    setNotifNewRssFeed(profile.notifications?.newRssFeed ?? true);
   }, [profile]);
 
   /* ThemePicker zaten applyTheme + Firestore'a kaydeder — burada sadece state güncelle */
@@ -56,7 +60,13 @@ export default function SettingsPage() {
       /* Tema ThemePicker tarafından zaten kaydedildi; sadece navbar + bildirimler */
       await updateUserProfile(user.uid, {
         settings: { navbarPosition: navPos, theme },
-        notifications: { email: notifEmail, newMessage: notifMessage, system: notifSystem },
+        notifications: {
+          email:        notifEmail,
+          newMessage:   notifMessage,
+          system:       notifSystem,
+          newArticle:   notifNewArticle,
+          newRssFeed:   notifNewRssFeed,
+        },
       });
       await refreshProfile();
       setMsg("Ayarlar kaydedildi.");
@@ -108,8 +118,20 @@ export default function SettingsPage() {
 
           {/* ── Bildirimler ── */}
           <SettingCard title="Bildirimler">
-            <SettingRow label="Email Bildirimleri" desc="Genel bildirimler email olarak gönderilir.">
+            <SettingRow label="Email Bildirimleri" desc="Tüm email bildirimlerinin ana anahtarı.">
               <Toggle value={notifEmail} onChange={setNotifEmail} />
+            </SettingRow>
+
+            <Divider />
+
+            <SettingRow label="Yeni Makale" desc="HSounds'a yeni bir makale eklendiğinde.">
+              <Toggle value={notifNewArticle} onChange={setNotifNewArticle} />
+            </SettingRow>
+
+            <Divider />
+
+            <SettingRow label="Yeni RSS Kaynağı" desc="Takip listesine yeni bir RSS kaynağı eklendiğinde.">
+              <Toggle value={notifNewRssFeed} onChange={setNotifNewRssFeed} />
             </SettingRow>
 
             <Divider />

@@ -78,6 +78,8 @@ export default function AdminHsoundsPage() {
     const { source_name, source_icon, feed_url } = feedModal.form;
     if (!source_name.trim() || !feed_url.trim()) return;
 
+    const isNew = feedModal.mode === "add";
+
     const data: Omit<HsRssFeed, "id"> = {
       source_name: source_name.trim(),
       source_icon: source_icon.trim() || "🌐",
@@ -85,13 +87,30 @@ export default function AdminHsoundsPage() {
     };
 
     let next: HsRssFeed[];
-    if (feedModal.mode === "add") {
+    if (isNew) {
       next = [...feeds, { id: genId(), ...data }];
     } else {
       next = feeds.map((f) => f.id === feedModal.id ? { ...f, ...data } : f);
     }
     setFeedModal(null);
     await persistFeeds(next);
+
+    /* Yeni kaynak eklendiyse abonelere bildirim gönder */
+    if (isNew) {
+      try {
+        await fetch("/api/notify-content", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "rssFeed",
+            title: data.source_name,
+            url: "/hsounds",
+          }),
+        });
+      } catch {
+        /* bildirim hatası sessizce geçilir */
+      }
+    }
   };
 
   const loading = artLoading || feedsLoading;

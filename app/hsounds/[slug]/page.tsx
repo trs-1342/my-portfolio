@@ -3,6 +3,7 @@ import Link from "next/link";
 import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ArticleLikeButton from "@/components/hsounds/ArticleLikeButton";
 import { getArticleBySlug } from "@/lib/hsounds";
 
 export const dynamic = "force-dynamic";
@@ -174,9 +175,15 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               </div>
             </div>
 
-            <Link href="/hsounds" className="btn btn-ghost" style={{ fontSize: "0.82rem" }}>
-              ← Tüm Yazılar
-            </Link>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <ArticleLikeButton
+                articleId={article.id}
+                initialLikes={article.likes ?? []}
+              />
+              <Link href="/hsounds" className="btn btn-ghost" style={{ fontSize: "0.82rem" }}>
+                ← Tüm Yazılar
+              </Link>
+            </div>
           </div>
 
         </article>

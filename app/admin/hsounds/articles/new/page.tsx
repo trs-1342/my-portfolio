@@ -48,6 +48,25 @@ export default function NewArticlePage() {
         is_published: isPublished,
         created_at: new Date(createdAt).toISOString(),
       });
+
+      /* Yayındaysa abonelere bildirim gönder (hata baskılı — yönlendirmeyi engellememeli) */
+      if (isPublished) {
+        try {
+          await fetch("/api/notify-content", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "article",
+              title: title.trim(),
+              url: `/hsounds/${slug.trim()}`,
+              description: excerpt.trim(),
+            }),
+          });
+        } catch {
+          /* bildirim hatası sessizce geçilir */
+        }
+      }
+
       router.push("/admin/hsounds");
     } catch {
       setError("Kaydetme sırasında hata oluştu.");
