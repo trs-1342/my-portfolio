@@ -5,9 +5,18 @@ export const runtime = "edge";
 
 /* Font — public/fonts/Inter.ttf */
 let fontData: ArrayBuffer | null = null;
-async function getFont(baseUrl: string): Promise<ArrayBuffer> {
+
+async function getFont(): Promise<ArrayBuffer> {
   if (fontData) return fontData;
-  const res = await fetch(`${baseUrl}/fonts/Inter.ttf`);
+
+  const res = await fetch(
+    "https://hattab.vercel.app/fonts/Inter.ttf"
+  );
+
+  if (!res.ok) {
+    throw new Error("Font fetch failed");
+  }
+
   fontData = await res.arrayBuffer();
   return fontData;
 }
