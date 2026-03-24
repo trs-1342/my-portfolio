@@ -15,13 +15,16 @@ export const metadata = {
   twitter:    { card: "summary_large_image" as const, title: "Projeler — trs", images: [_ogUrl] },
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ProjectsPage() {
   const [projects, pageConfig] = await Promise.all([
     getProjectsServer(),
     getProjectsPageConfigServer(),
   ]);
 
-  const activeProjects = projects.filter((p) => p.active);
+  const activeProjects  = projects.filter((p) => p.active);
+  const restProjects    = projects.filter((p) => !p.active);
 
   return (
     <>
@@ -62,6 +65,22 @@ export default async function ProjectsPage() {
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
               {activeProjects.map((p, i) => (
+                <div key={p.id} className={`anim-fade-up d${Math.min(i + 1, 6)}`}>
+                  <ProjectCard project={p} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Diğer Projeler */}
+        {restProjects.length > 0 && (
+          <section style={{ marginBottom: "60px" }}>
+            <h2 className="mono" style={{ fontSize: "0.78rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "20px" }}>
+              Diğer Projeler
+            </h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
+              {restProjects.map((p, i) => (
                 <div key={p.id} className={`anim-fade-up d${Math.min(i + 1, 6)}`}>
                   <ProjectCard project={p} />
                 </div>

@@ -11,6 +11,14 @@ import { DEFAULT_PROJECTS, DEFAULT_PROJECTS_PAGE } from "@/lib/site-defaults";
 
 function genId() { return `id_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`; }
 function toSlug(t: string) { return t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+function normalizeRepo(raw: string): string {
+  const s = raw.trim();
+  if (!s) return s;
+  if (s.startsWith("http://") || s.startsWith("https://")) return s;
+  /* username/repo formatı */
+  if (/^[\w.-]+\/[\w.-]+$/.test(s)) return `https://github.com/${s}`;
+  return s;
+}
 
 const EMPTY_PROJECT: Omit<Project, "id"> = {
   slug: "", emoji: "🚀", imageUrl: null, title: "", desc: "",
@@ -271,9 +279,12 @@ function ProjectForm({ initial, onSave, onCancel }: {
   };
 
   const handleSave = () => {
+    const stack = stackStr.split(",").map(s => s.trim()).filter(Boolean);
     onSave({
       ...v,
-      stack:      stackStr.split(",").map(s => s.trim()).filter(Boolean),
+      repo:       normalizeRepo(v.repo),
+      stack,
+      lang:       stack.join(" | "),
       highlights: hiStr.split("\n").map(s => s.trim()).filter(Boolean),
     });
   };
@@ -322,11 +333,10 @@ function ProjectForm({ initial, onSave, onCancel }: {
       <div><FL>Öne Çıkanlar (her satır bir madde)</FL><textarea value={hiStr} onChange={e => setHiStr(e.target.value)} rows={3} style={{ ...IS, resize: "vertical" }} placeholder="Firebase Auth entegrasyonu&#10;Vercel deploy&#10;Admin paneli" /></div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-        <div><FL>Repo URL</FL><input value={v.repo} onChange={e => setV({ ...v, repo: e.target.value })} placeholder="https://github.com/..." style={IS} /></div>
+        <div><FL>Repo URL</FL><input value={v.repo} onChange={e => setV({ ...v, repo: e.target.value })} placeholder="username/repo veya https://github.com/..." style={IS} /></div>
         <div><FL>Canlı URL (opsiyonel)</FL><input value={v.live ?? ""} onChange={e => setV({ ...v, live: e.target.value || null })} placeholder="https://..." style={IS} /></div>
       </div>
-      <div><FL>Dil / Teknoloji (görünen etiket)</FL><input value={v.lang} onChange={e => setV({ ...v, lang: e.target.value })} placeholder="TypeScript | Next.js" style={IS} /></div>
-      <div><FL>Stack (virgülle ayır)</FL><input value={stackStr} onChange={e => setStackStr(e.target.value)} placeholder="Next.js, Firebase, TypeScript" style={IS} /></div>
+      <div><FL>Stack / Teknolojiler (virgülle ayır) — etiket otomatik oluşur</FL><input value={stackStr} onChange={e => setStackStr(e.target.value)} placeholder="Next.js, Firebase, TypeScript" style={IS} /></div>
 
       <div style={{ display: "flex", gap: "16px" }}>
         <CheckField label="📌 Sabitlenmiş (Anasayfa)" checked={v.pinned} onChange={c => setV({ ...v, pinned: c })} />

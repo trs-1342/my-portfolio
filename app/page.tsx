@@ -7,6 +7,8 @@ import ActiveProjects from "@/components/ActiveProjects";
 import GitHubStats from "@/components/GitHubStats";
 import Footer from "@/components/Footer";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <>
