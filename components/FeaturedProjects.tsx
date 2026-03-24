@@ -33,7 +33,7 @@ export default async function FeaturedProjects() {
             {/* Kapak */}
             <div className="project-cover">
               {p.imageUrl
-                ? <Image src={p.imageUrl} alt={p.title} fill style={{ objectFit: "cover" }} sizes="(max-width: 640px) 100vw, 300px" />
+                ? <Image src={p.imageUrl} alt={p.title} fill style={{ objectFit: "contain", padding: "12px" }} sizes="(max-width: 640px) 100vw, 300px" />
                 : <span>{p.emoji}</span>
               }
             </div>
