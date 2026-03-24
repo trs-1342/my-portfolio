@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getProjectsServer } from "@/lib/site-server";
 
 export default async function FeaturedProjects() {
@@ -31,7 +32,10 @@ export default async function FeaturedProjects() {
           >
             {/* Kapak */}
             <div className="project-cover">
-              <span>{p.emoji}</span>
+              {p.imageUrl
+                ? <Image src={p.imageUrl} alt={p.title} fill style={{ objectFit: "cover" }} sizes="(max-width: 640px) 100vw, 300px" />
+                : <span>{p.emoji}</span>
+              }
             </div>
 
             {/* Üst butonlar */}
