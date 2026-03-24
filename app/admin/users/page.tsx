@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAllUsers, updateUserStatus, updateUserBlockedPages } from "@/lib/firestore";
+import { getAllUsers, updateUserStatus, updateUserBlockedPages, approveUser } from "@/lib/firestore";
 import type { UserProfile } from "@/lib/firestore";
 import { auth } from "@/lib/firebase";
 
@@ -23,13 +23,47 @@ export default function AdminUsersPage() {
   const load = async () => {
     setLoading(true);
     const data = await getAllUsers();
-    /* Admin her zaman en üstte */
-    data.sort((a, b) => (a.role === "admin" ? -1 : b.role === "admin" ? 1 : 0));
+    /* Sıralama: pending → admin → active → banned */
+    data.sort((a, b) => {
+      const order = (u: UserProfile) =>
+        u.status === "pending" ? 0 : u.role === "admin" ? 1 : u.status === "active" ? 2 : 3;
+      return order(a) - order(b);
+    });
     setUsers(data);
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
+
+  /* Hesabı onayla */
+  const handleApprove = async (u: UserProfile) => {
+    setBusy(u.uid);
+    await approveUser(u.uid);
+    setUsers((prev) => prev.map((x) => x.uid === u.uid ? { ...x, status: "active" } : x));
+    setBusy(null);
+  };
+
+  /* Hesabı reddet (sil) */
+  const handleReject = async (u: UserProfile) => {
+    if (!confirm(`@${u.username} hesabını reddet ve sil?`)) return;
+    setBusy(u.uid);
+    const idToken = await auth?.currentUser?.getIdToken(true);
+    const res = await fetch("/api/admin/delete-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(idToken ? { "Authorization": `Bearer ${idToken}` } : {}),
+      },
+      body: JSON.stringify({ uid: u.uid, username: u.username }),
+    });
+    if (res.ok) {
+      setUsers((prev) => prev.filter((x) => x.uid !== u.uid));
+      if (expanded === u.uid) setExpanded(null);
+    } else {
+      alert("İşlem başarısız. Tekrar dene.");
+    }
+    setBusy(null);
+  };
 
   /* Ban / unban */
   const handleToggleBan = async (u: UserProfile) => {
@@ -75,8 +109,9 @@ export default function AdminUsersPage() {
     setBusy(null);
   };
 
-  const totalUsers = users.filter((u) => u.role !== "admin").length;
-  const bannedCount = users.filter((u) => u.status === "banned").length;
+  const totalUsers   = users.filter((u) => u.role !== "admin").length;
+  const bannedCount  = users.filter((u) => u.status === "banned").length;
+  const pendingCount = users.filter((u) => u.status === "pending").length;
 
   return (
     <div>
@@ -90,6 +125,11 @@ export default function AdminUsersPage() {
         </h1>
         <p style={{ fontSize: "0.82rem", color: "var(--text-3)", marginTop: "6px" }}>
           {totalUsers} kullanıcı · {bannedCount} engelli
+          {pendingCount > 0 && (
+            <span style={{ marginLeft: "10px", color: "#f59e0b", fontWeight: 600 }}>
+              · {pendingCount} onay bekliyor
+            </span>
+          )}
         </p>
       </header>
 
@@ -100,6 +140,7 @@ export default function AdminUsersPage() {
           {users.map((u) => {
             const isAdmin    = u.role === "admin";
             const isBanned   = u.status === "banned";
+            const isPending  = u.status === "pending";
             const isExpanded = expanded === u.uid;
             const isBusy     = busy === u.uid;
 
@@ -109,7 +150,9 @@ export default function AdminUsersPage() {
                 className="glass"
                 style={{
                   borderRadius: "14px",
-                  border: isBanned
+                  border: isPending
+                    ? "1px solid rgba(245,158,11,0.4)"
+                    : isBanned
                     ? "1px solid rgba(239,68,68,0.25)"
                     : isAdmin
                     ? "1px solid rgba(16,185,129,0.25)"
@@ -152,6 +195,11 @@ export default function AdminUsersPage() {
                           🔑 admin
                         </span>
                       )}
+                      {isPending && (
+                        <span style={{ fontSize: "0.65rem", padding: "2px 7px", borderRadius: "999px", background: "rgba(245,158,11,0.12)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.35)" }}>
+                          onay bekliyor
+                        </span>
+                      )}
                       {isBanned && (
                         <span style={{ fontSize: "0.65rem", padding: "2px 7px", borderRadius: "999px", background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.25)" }}>
                           engelli
@@ -172,6 +220,38 @@ export default function AdminUsersPage() {
                     </span>
                   )}
                 </div>
+
+                {/* Pending: Kabul Et / Reddet */}
+                {isPending && (
+                  <div style={{ padding: "14px 20px 14px 70px", borderTop: "1px solid rgba(245,158,11,0.2)", background: "rgba(245,158,11,0.04)", display: "flex", gap: "10px" }}>
+                    <button
+                      onClick={() => handleApprove(u)}
+                      disabled={isBusy}
+                      style={{
+                        padding: "8px 18px", borderRadius: "9px",
+                        border: "1px solid rgba(16,185,129,0.4)",
+                        background: "rgba(16,185,129,0.08)", color: "var(--accent)",
+                        fontSize: "0.82rem", fontWeight: 600,
+                        cursor: "pointer", fontFamily: "var(--font-sans)", transition: "all 0.15s",
+                      }}
+                    >
+                      ✓ Kabul Et
+                    </button>
+                    <button
+                      onClick={() => handleReject(u)}
+                      disabled={isBusy}
+                      style={{
+                        padding: "8px 18px", borderRadius: "9px",
+                        border: "1px solid rgba(239,68,68,0.35)",
+                        background: "rgba(239,68,68,0.06)", color: "#ef4444",
+                        fontSize: "0.82rem", fontWeight: 600,
+                        cursor: "pointer", fontFamily: "var(--font-sans)", transition: "all 0.15s",
+                      }}
+                    >
+                      ✕ Reddet
+                    </button>
+                  </div>
+                )}
 
                 {/* Detay paneli */}
                 {isExpanded && !isAdmin && (

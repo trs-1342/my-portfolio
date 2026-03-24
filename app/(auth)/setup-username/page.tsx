@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { createUserProfile, isUsernameAvailable } from "@/lib/firestore";
+import { sendEmailVerification } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 
@@ -16,7 +18,10 @@ export default function SetupUsernamePage() {
   const [available,  setAvailable]  = useState<boolean | null>(null);
   const [error,      setError]      = useState("");
   const [saving,     setSaving]     = useState(false);
+  const [waiting,    setWaiting]    = useState(false);
+  const [resent,     setResent]     = useState(false);
   const debounceRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollRef      = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /* Auth tamamlanınca kontrol et */
   useEffect(() => {
@@ -58,12 +63,37 @@ export default function SetupUsernamePage() {
       });
       sessionStorage.removeItem("pending_display_name");
       await refreshProfile();
-      router.push("/");
+
+      if (user.emailVerified) {
+        router.push("/awaiting-approval");
+      } else {
+        setWaiting(true);
+      }
     } catch {
       setError("Kayıt sırasında hata oluştu.");
     } finally {
       setSaving(false);
     }
+  };
+
+  /* Email doğrulaması polling */
+  useEffect(() => {
+    if (!waiting || !user) return;
+    pollRef.current = setInterval(async () => {
+      await user.reload();
+      if (auth?.currentUser?.emailVerified) {
+        clearInterval(pollRef.current!);
+        router.push("/awaiting-approval");
+      }
+    }, 3000);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [waiting, user, router]);
+
+  const handleResend = async () => {
+    if (!auth?.currentUser) return;
+    await sendEmailVerification(auth.currentUser);
+    setResent(true);
+    setTimeout(() => setResent(false), 30000);
   };
 
   const statusColor = checking ? "var(--text-3)"
@@ -75,6 +105,36 @@ export default function SetupUsernamePage() {
     : available === true  ? "✓ müsait"
     : available === false ? "✗ alınmış"
     : "";
+
+  if (waiting) {
+    return (
+      <div style={{ width: "min(440px, 100%)" }}>
+        <p className="mono" style={{ textAlign: "center", fontSize: "1.4rem", fontWeight: 700, color: "var(--accent)", marginBottom: "32px" }}>
+          trs
+        </p>
+        <div className="glass" style={{ borderRadius: "20px", padding: "40px 32px", textAlign: "center" }}>
+          <div style={{ fontSize: "2.5rem", marginBottom: "16px" }}>📧</div>
+          <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--text)", marginBottom: "8px" }}>
+            Email Doğrulaması Bekleniyor
+          </h2>
+          <p style={{ fontSize: "0.85rem", color: "var(--text-2)", lineHeight: 1.7, marginBottom: "28px" }}>
+            <strong style={{ color: "var(--text)" }}>{user?.email}</strong> adresine gönderilen bağlantıya tıkladıktan sonra otomatik olarak yönlendirileceksin.
+          </p>
+          <button
+            onClick={handleResend}
+            disabled={resent}
+            className="btn btn-accent"
+            style={{ justifyContent: "center", padding: "12px 24px", fontSize: "0.9rem", opacity: resent ? 0.6 : 1 }}
+          >
+            {resent ? "Gönderildi ✓" : "Tekrar Gönder"}
+          </button>
+          <p style={{ fontSize: "0.75rem", color: "var(--text-3)", marginTop: "20px" }}>
+            Email gelmezse <strong style={{ color: "var(--text)" }}>spam / gereksiz</strong> klasörüne bak.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ width: "min(400px, 100%)" }}>

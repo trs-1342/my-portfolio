@@ -4,6 +4,7 @@ import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ArticleLikeButton from "@/components/hsounds/ArticleLikeButton";
+import Comments from "@/components/hsounds/Comments";
 import { getArticleBySlug } from "@/lib/hsounds";
 
 export const dynamic = "force-dynamic";
@@ -211,6 +212,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </div>
 
         </article>
+
+        <Comments articleId={article.id} />
 
         <Footer />
       </div>

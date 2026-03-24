@@ -56,6 +56,22 @@ service cloud.firestore {
       );
     }
 
+    // Yorumlar
+    match /comments/{commentId} {
+      allow read: if true;
+      // Sadece giriş yapan kullanıcılar yorum yazabilir, kendi UID'leriyle
+      allow create: if request.auth != null
+        && request.resource.data.authorUid == request.auth.uid;
+      // Giriş yapanlar sadece likes alanını güncelleyebilir
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["likes"]);
+      // Kendi yorumunu veya admin her yorumu silebilir
+      allow delete: if request.auth != null && (
+        resource.data.authorUid == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
+      );
+    }
+
     // Fotoğraf galerisi
     match /photos/{docId} {
       // Sadece giriş yapanlar okuyabilir

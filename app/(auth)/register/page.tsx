@@ -74,7 +74,7 @@ export default function RegisterPage() {
             className="btn btn-accent"
             style={{ justifyContent: "center", padding: "12px 24px", fontSize: "0.9rem" }}
           >
-            Doğruladım, devam et →
+            Devam et →
           </button>
           <p style={{ fontSize: "0.78rem", color: "var(--text-3)", marginTop: "16px" }}>
             Email gelmedi mi?{" "}

@@ -14,7 +14,7 @@ export interface UserProfile {
   displayName: string;
   photoURL: string | null;
   role: "user" | "admin";
-  status: "active" | "banned";
+  status: "active" | "banned" | "pending";
   createdAt: unknown; // Firestore Timestamp
   blockedPages?: string[]; // engellenmiş sayfa path'leri
   settings: {
@@ -48,7 +48,7 @@ export async function createUserProfile(
     displayName: data.displayName,
     photoURL:    data.photoURL,
     role:        isAdmin ? "admin" : "user",
-    status:      "active",
+    status:      isAdmin ? "active" : "pending",
     createdAt:   serverTimestamp(),
     settings: {
       navbarPosition: "top",
@@ -241,9 +241,15 @@ export async function setSiteTheme(themeId: string): Promise<void> {
 }
 
 /* Kullanıcı durumunu güncelle (admin) */
-export async function updateUserStatus(uid: string, status: "active" | "banned") {
+export async function updateUserStatus(uid: string, status: "active" | "banned" | "pending") {
   if (!db) return;
   await updateDoc(doc(db, "users", uid), { status });
+}
+
+/* Hesabı onayla — pending → active (admin) */
+export async function approveUser(uid: string) {
+  if (!db) return;
+  await updateDoc(doc(db, "users", uid), { status: "active" });
 }
 
 /* Kullanıcının engellenmiş sayfalarını güncelle (admin) */
@@ -626,4 +632,58 @@ export async function getLifeEvents(): Promise<LifeEvent[] | null> {
 export async function setLifeEvents(items: LifeEvent[]): Promise<void> {
   if (!db) return;
   await setDoc(doc(db, "site_config", "life_events"), { items });
+}
+
+/* ── Yorum Sistemi ── */
+
+export interface Comment {
+  id: string;
+  articleId: string;
+  authorUid: string;
+  authorName: string;
+  authorUsername: string;
+  authorPhotoURL?: string | null;
+  text: string;
+  likes: string[];
+  parentId: string | null;
+  createdAt: { seconds: number; nanoseconds: number } | null;
+}
+
+export async function getComments(articleId: string): Promise<Comment[]> {
+  if (!db) return [];
+  const q = query(
+    collection(db, "comments"),
+    where("articleId", "==", articleId),
+    orderBy("createdAt", "asc"),
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Comment));
+}
+
+export async function addComment(
+  data: Omit<Comment, "id" | "createdAt" | "likes">,
+): Promise<string> {
+  if (!db) return "";
+  const ref = await addDoc(collection(db, "comments"), {
+    ...data,
+    likes: [],
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function deleteComment(commentId: string): Promise<void> {
+  if (!db) return;
+  await deleteDoc(doc(db, "comments", commentId));
+}
+
+export async function toggleCommentLike(
+  commentId: string,
+  uid: string,
+  add: boolean,
+): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, "comments", commentId), {
+    likes: add ? arrayUnion(uid) : arrayRemove(uid),
+  });
 }

@@ -23,9 +23,10 @@ function LoginForm() {
     setError(""); setLoading(true);
     try {
       const u = await loginEmail(email, password);
-      /* Profil tamamlanmamışsa setup-username'e yönlendir */
       const profile = await getUserProfile(u.uid);
-      router.push(profile?.username ? redirect : "/setup-username");
+      if (!profile?.username) router.push("/setup-username");
+      else if (profile.status === "pending") router.push("/awaiting-approval");
+      else router.push(redirect);
     } catch {
       setError("Email veya şifre hatalı.");
     } finally {
@@ -36,9 +37,11 @@ function LoginForm() {
   const handleGoogle = async () => {
     setError(""); setLoading(true);
     try {
-      const user = await loginGoogle();
-      const profile = await getUserProfile(user.uid);
-      router.push(profile?.username ? redirect : "/setup-username");
+      const u = await loginGoogle();
+      const profile = await getUserProfile(u.uid);
+      if (!profile?.username) router.push("/setup-username");
+      else if (profile.status === "pending") router.push("/awaiting-approval");
+      else router.push(redirect);
     } catch {
       setError("Google ile giriş başarısız.");
     } finally {
