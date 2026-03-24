@@ -21,11 +21,6 @@ async function getFont(): Promise<ArrayBuffer> {
   return fontData;
 }
 
-function getBaseUrl(req: NextRequest): string {
-  const host = req.headers.get("host") ?? "localhost:3000";
-  const proto = host.startsWith("localhost") ? "http" : "https";
-  return `${proto}://${host}`;
-}
 
 /* Tür etiketleri */
 const TYPE_META: Record<string, { label: string; icon: string }> = {
@@ -50,7 +45,7 @@ export async function GET(req: NextRequest) {
 
   const { label, icon } = TYPE_META[type] ?? TYPE_META.page;
 
-  const font = await getFont(getBaseUrl(req));
+  const font = await getFont();
 
   return new ImageResponse(
     (
