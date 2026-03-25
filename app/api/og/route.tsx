@@ -4,21 +4,15 @@ import { NextRequest } from "next/server";
 export const runtime = "edge";
 
 /* Font — public/fonts/Inter.ttf */
-let fontData: ArrayBuffer | null = null;
-
-async function getFont(): Promise<ArrayBuffer> {
-  if (fontData) return fontData;
-
-  const res = await fetch(
-    "https://hattab.vercel.app/fonts/Inter.ttf"
-  );
+async function getFont(baseUrl: string): Promise<ArrayBuffer> {
+  const fontUrl = new URL("/fonts/Inter.ttf", baseUrl).toString();
+  const res = await fetch(fontUrl);
 
   if (!res.ok) {
-    throw new Error("Font fetch failed");
+    throw new Error(`Font fetch failed: ${res.status} ${fontUrl}`);
   }
 
-  fontData = await res.arrayBuffer();
-  return fontData;
+  return res.arrayBuffer();
 }
 
 
@@ -45,7 +39,8 @@ export async function GET(req: NextRequest) {
 
   const { label, icon } = TYPE_META[type] ?? TYPE_META.page;
 
-  const font = await getFont();
+  const baseUrl = `${req.nextUrl.protocol}//${req.nextUrl.host}`;
+  const font = await getFont(baseUrl);
 
   return new ImageResponse(
     (
