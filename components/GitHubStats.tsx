@@ -96,17 +96,24 @@ async function getGitHubData(username: string): Promise<GitHubData | null> {
     // Yıldız ve Fork sayılarını toplama
     let totalStars = 0;
     let totalForks = 0;
-    user.repositories.nodes.forEach((repo: any) => {
+    user.repositories.nodes.forEach((repo: { stargazerCount: number; forkCount: number }) => {
       totalStars += repo.stargazerCount;
       totalForks += repo.forkCount;
     });
 
     // Takvim günlerini düz bir diziye çevirme
     const calendarDays = user.contributionsCollection.contributionCalendar.weeks
-      .flatMap((week: any) => week.contributionDays);
+      .flatMap((week: { contributionDays: unknown[] }) => week.contributionDays);
 
     // Son 5 güncel repoyu alıyoruz ve commit mesajlarını dahil ediyoruz
-    const recentRepos = user.repositories.nodes.slice(0, 5).map((repo: any) => ({
+    const recentRepos = user.repositories.nodes.slice(0, 5).map((repo: {
+      name: string;
+      description: string | null;
+      url: string;
+      pushedAt: string;
+      primaryLanguage: { name: string; color: string } | null;
+      defaultBranchRef?: { target?: { message?: string } };
+    }) => ({
       name: repo.name,
       description: repo.description,
       url: repo.url,

@@ -33,8 +33,6 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const noop = () => Promise.resolve() as never;
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user,    setUser]    = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -56,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /* Auth state listener — sadece Firebase yapılandırıldıysa */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!firebaseReady || !auth) { setLoading(false); return; }
 
     const unsub = onAuthStateChanged(auth, async (u) => {

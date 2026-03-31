@@ -145,7 +145,7 @@ export default function AdminPagesPage() {
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <ThemeToggle />
           <span style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>
-            Değişiklik anında uygulanır ve localStorage'e kaydedilir.
+            Değişiklik anında uygulanır ve localStorage{"'"}e kaydedilir.
           </span>
         </div>
       </div>

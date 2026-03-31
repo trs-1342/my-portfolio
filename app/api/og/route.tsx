@@ -3,15 +3,10 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
-/* Font — public/fonts/Inter.ttf */
-async function getFont(baseUrl: string): Promise<ArrayBuffer> {
-  const fontUrl = new URL("/fonts/Inter.ttf", baseUrl).toString();
-  const res = await fetch(fontUrl);
-
-  if (!res.ok) {
-    throw new Error(`Font fetch failed: ${res.status} ${fontUrl}`);
-  }
-
+/* Font — public/fonts/Inter.ttf / Inter-Bold.ttf */
+async function fetchFont(url: string): Promise<ArrayBuffer> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Font fetch failed: ${res.status} ${url}`);
   return res.arrayBuffer();
 }
 
@@ -40,7 +35,10 @@ export async function GET(req: NextRequest) {
   const { label, icon } = TYPE_META[type] ?? TYPE_META.page;
 
   const baseUrl = `${req.nextUrl.protocol}//${req.nextUrl.host}`;
-  const font = await getFont(baseUrl);
+  const [fontRegular, fontBold] = await Promise.all([
+    fetchFont(new URL("/fonts/Inter.ttf", baseUrl).toString()),
+    fetchFont(new URL("/fonts/Inter-Bold.ttf", baseUrl).toString()),
+  ]);
 
   return new ImageResponse(
     (
@@ -251,18 +249,8 @@ export async function GET(req: NextRequest) {
       width: 1200,
       height: 630,
       fonts: [
-        {
-          name: "Inter",
-          data: font,
-          weight: 400,
-          style: "normal",
-        },
-        {
-          name: "Inter",
-          data: font,
-          weight: 700,
-          style: "normal",
-        },
+        { name: "Inter", data: fontRegular, weight: 400, style: "normal" },
+        { name: "Inter", data: fontBold,    weight: 700, style: "normal" },
       ],
     },
   );

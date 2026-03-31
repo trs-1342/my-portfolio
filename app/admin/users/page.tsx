@@ -33,6 +33,7 @@ export default function AdminUsersPage() {
     setLoading(false);
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
 
   /* Hesabı onayla */
@@ -180,6 +181,7 @@ export default function AdminUsersPage() {
                     fontSize: "1rem",
                   }}>
                     {u.photoURL
+                      // eslint-disable-next-line @next/next/no-img-element
                       ? <img src={u.photoURL} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       : "👤"}
                   </div>

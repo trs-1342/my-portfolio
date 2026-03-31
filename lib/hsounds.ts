@@ -31,6 +31,30 @@ export interface RssPost {
   guid: string;
 }
 
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;      // HTML
+  excerpt: string;
+  is_published: boolean;
+  pinned: boolean;
+  created_at: string;   // ISO 8601
+}
+
+/* ── Duyurular ── */
+
+export async function getAnnouncements(): Promise<Announcement[]> {
+  const snap = await adminDb.collection("announcements").get();
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() } as Announcement))
+    .filter((a) => a.is_published)
+    .sort((a, b) => {
+      // Sabitlenmiş duyurular önce
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      return b.created_at.localeCompare(a.created_at);
+    });
+}
+
 /* ── Makale CRUD ── */
 
 export async function getArticles(): Promise<Article[]> {

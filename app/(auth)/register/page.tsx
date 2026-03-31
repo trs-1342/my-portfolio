@@ -4,10 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { createUserProfile, getUserProfile } from "@/lib/firestore";
+import { getUserProfile } from "@/lib/firestore";
 
 export default function RegisterPage() {
-  const { register, loginGoogle, user } = useAuth();
+  const { register, loginGoogle } = useAuth();
   const router = useRouter();
 
   const [displayName, setDisplayName] = useState("");

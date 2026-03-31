@@ -46,6 +46,7 @@ function Avatar({
   const color = avatarColor(uid);
   if (photoURL) {
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={photoURL}
         alt={displayName}

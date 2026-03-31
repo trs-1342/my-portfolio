@@ -139,6 +139,7 @@ export default function ConstellationTimeline({ events }: Props) {
 
     rafRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(rafRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawLines]);
 
   const handleHoverEnter = (id: number) => {

@@ -202,7 +202,7 @@ export default function AdminThanksPage() {
 
   /* ── Toggle expand ── */
   const toggle = (id: string) =>
-    setExpanded((p) => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s; });
+    setExpanded((p) => { const s = new Set(p); if (s.has(id)) { s.delete(id); } else { s.add(id); } return s; });
 
   /* ── Render ── */
   if (loading) {

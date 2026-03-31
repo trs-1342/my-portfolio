@@ -45,7 +45,7 @@ const NEOFETCH_ART = `                  -\`
 .\`                                 \`/\`
 `;
 
-function buildNeofetch(projectCount: number): Line[] {
+function buildNeofetch(_projectCount: number): Line[] {
   const art = NEOFETCH_ART.split("\n");
   const info = [
     "                          trs@arch-server",

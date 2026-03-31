@@ -15,7 +15,7 @@ function resolveColor(c: string): string {
   return COLOR_MAP[c.toLowerCase()] ?? "#10B981";
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   /* ── Admin yetkisi kontrolü ── */
   const cookieStore = await cookies();
   const token = cookieStore.get("session")?.value;

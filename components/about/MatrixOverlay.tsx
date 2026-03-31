@@ -19,6 +19,7 @@ export default function MatrixOverlay({ event, onClose }: Props) {
   useEffect(() => {
     const text = event.log;
     indexRef.current = 0;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDisplayed("");
 
     const id = setInterval(() => {

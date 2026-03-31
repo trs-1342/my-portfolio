@@ -3,9 +3,9 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toggleArticleLike } from "@/lib/firestore";
-import type { Article, RssFeed } from "@/lib/hsounds";
+import type { Article, RssFeed, Announcement } from "@/lib/hsounds";
 
-type Tab      = "articles" | "rss";
+type Tab      = "articles" | "rss" | "announcements";
 type ArtSort  = "date-desc" | "date-asc" | "time-asc" | "time-desc" | "az";
 type RssSort  = "az" | "za";
 
@@ -148,13 +148,90 @@ function RssRow({ feed, index }: { feed: RssFeed; index: number }) {
   );
 }
 
+/* ── Duyuru satırı ───────────────────────────────────────── */
+function AnnouncementRow({ announcement, index }: { announcement: Announcement; index: number }) {
+  return (
+    <div
+      className="hsounds-row anim-fade-up"
+      style={{ animationDelay: `${index * 0.06}s` }}
+    >
+      <div className="hsounds-row__link" style={{ flex: 1, display: "flex", alignItems: "center", gap: "16px", cursor: "default" }}>
+        {/* Sol ikon */}
+        <div className="hsounds-row__icon" style={{ fontSize: "1.1rem" }}>
+          {announcement.pinned ? "📌" : "📣"}
+        </div>
+
+        {/* Orta: başlık + özet */}
+        <div className="hsounds-row__body">
+          <p className="hsounds-row__title">
+            {announcement.pinned && (
+              <span className="mono" style={{ fontSize: "0.62rem", color: "var(--accent)", marginRight: "6px", verticalAlign: "middle" }}>
+                SABİT
+              </span>
+            )}
+            {announcement.title}
+          </p>
+          <p className="hsounds-row__sub">{announcement.excerpt}</p>
+        </div>
+
+        {/* Sağ: tarih */}
+        <div className="hsounds-row__meta">
+          <span style={{ fontSize: "0.7rem", color: "var(--text-3)" }}>
+            {formatDate(announcement.created_at)}
+          </span>
+        </div>
+      </div>
+
+      {/* İçerik genişletme butonu */}
+      <AnnouncementExpand content={announcement.content} />
+    </div>
+  );
+}
+
+/* ── Duyuru genişletme ───────────────────────────────────── */
+function AnnouncementExpand({ content }: { content: string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div style={{ width: "100%" }}>
+      <button
+        onClick={() => setOpen((p) => !p)}
+        style={{
+          background: "none", border: "none", cursor: "pointer",
+          padding: "0 18px 12px", fontSize: "0.75rem", color: "var(--text-3)",
+          fontFamily: "var(--font-sans)", display: "flex", alignItems: "center", gap: "4px",
+        }}
+      >
+        {open ? "▲ Gizle" : "▼ Detay"}
+      </button>
+      {open && (
+        <div
+          className="announcement-content"
+          dangerouslySetInnerHTML={{ __html: content }}
+          style={{
+            padding: "0 18px 18px",
+            fontSize: "0.88rem",
+            color: "var(--text-2)",
+            lineHeight: 1.75,
+            borderTop: "1px solid var(--border)",
+            paddingTop: "14px",
+            marginTop: "2px",
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 /* ── Ana bileşen ─────────────────────────────────────────── */
 export default function ContentToggle({
   articles,
   rssFeeds,
+  announcements,
 }: {
   articles: Article[];
   rssFeeds: RssFeed[];
+  announcements: Announcement[];
 }) {
   const { user } = useAuth();
   const uid = user?.uid ?? null;
@@ -211,25 +288,40 @@ export default function ContentToggle({
     return list;
   }, [rssFeeds, search, rssSort]);
 
+  /* Filtrelenmiş duyurular */
+  const filteredAnnouncements = useMemo(() => {
+    return announcements.filter((a) =>
+      search.trim() === "" ||
+      a.title.toLowerCase().includes(search.toLowerCase()) ||
+      a.excerpt.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [announcements, search]);
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "articles",      label: "📝 Makaleler" },
+    { key: "rss",           label: "📡 RSS Akışları" },
+    { key: "announcements", label: "📣 Duyurular" },
+  ];
+
   return (
     <div>
       {/* ── Pill toggle ── */}
       <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
-        <div className="glass" style={{ display: "inline-flex", padding: "5px", borderRadius: "999px", gap: "4px" }}>
-          {(["articles", "rss"] as Tab[]).map((t) => (
+        <div className="glass" style={{ display: "inline-flex", padding: "5px", borderRadius: "999px", gap: "4px", flexWrap: "wrap" }}>
+          {tabs.map(({ key, label }) => (
             <button
-              key={t}
-              onClick={() => { setTab(t); setSearch(""); }}
+              key={key}
+              onClick={() => { setTab(key); setSearch(""); }}
               style={{
                 padding: "8px 22px", borderRadius: "999px", border: "none", cursor: "pointer",
                 fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 600,
                 transition: "all 0.25s var(--spring)",
-                background: tab === t ? "var(--accent)" : "transparent",
-                color:      tab === t ? "#fff" : "var(--text-2)",
-                boxShadow:  tab === t ? "0 2px 12px var(--accent-glow)" : "none",
+                background: tab === key ? "var(--accent)" : "transparent",
+                color:      tab === key ? "#fff" : "var(--text-2)",
+                boxShadow:  tab === key ? "0 2px 12px var(--accent-glow)" : "none",
               }}
             >
-              {t === "articles" ? "📝 Makaleler" : "📡 RSS Akışları"}
+              {label}
             </button>
           ))}
         </div>
@@ -246,7 +338,11 @@ export default function ContentToggle({
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={tab === "articles" ? "Makale ara..." : "Kaynak ara..."}
+            placeholder={
+              tab === "articles"      ? "Makale ara..." :
+              tab === "rss"           ? "Kaynak ara..."  :
+                                       "Duyuru ara..."
+            }
             style={{
               width: "100%", padding: "9px 14px 9px 32px", borderRadius: "10px",
               border: "1px solid var(--border)", background: "var(--panel)",
@@ -256,7 +352,7 @@ export default function ContentToggle({
           />
         </div>
 
-        {/* Sıralama */}
+        {/* Sıralama — sadece makaleler ve RSS için */}
         {tab === "articles" ? (
           <select
             value={artSort}
@@ -274,7 +370,7 @@ export default function ContentToggle({
             <option value="time-desc">Okuma: Uzun → Kısa</option>
             <option value="az">Başlık: A → Z</option>
           </select>
-        ) : (
+        ) : tab === "rss" ? (
           <select
             value={rssSort}
             onChange={(e) => setRssSort(e.target.value as RssSort)}
@@ -288,13 +384,13 @@ export default function ContentToggle({
             <option value="az">Kaynak: A → Z</option>
             <option value="za">Kaynak: Z → A</option>
           </select>
-        )}
+        ) : null}
       </div>
 
       {/* ── İçerik listesi ── */}
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        {tab === "articles"
-          ? filteredArticles.length > 0
+        {tab === "articles" ? (
+          filteredArticles.length > 0
             ? filteredArticles.map((a, i) => (
                 <ArticleRow
                   key={a.id}
@@ -306,18 +402,22 @@ export default function ContentToggle({
                 />
               ))
             : <p style={{ fontSize: "0.84rem", color: "var(--text-3)", textAlign: "center", padding: "32px 0" }}>Sonuç bulunamadı.</p>
-          : filteredFeeds.length > 0
+        ) : tab === "rss" ? (
+          filteredFeeds.length > 0
             ? filteredFeeds.map((r, i) => <RssRow key={r.id} feed={r} index={i} />)
             : <p style={{ fontSize: "0.84rem", color: "var(--text-3)", textAlign: "center", padding: "32px 0" }}>Sonuç bulunamadı.</p>
-        }
+        ) : (
+          filteredAnnouncements.length > 0
+            ? filteredAnnouncements.map((a, i) => <AnnouncementRow key={a.id} announcement={a} index={i} />)
+            : <p style={{ fontSize: "0.84rem", color: "var(--text-3)", textAlign: "center", padding: "32px 0" }}>Henüz duyuru yok.</p>
+        )}
       </div>
 
       {/* ── Stiller ── */}
       <style>{`
         .hsounds-row {
           display: flex;
-          align-items: center;
-          gap: 0;
+          flex-direction: column;
           padding: 0;
           border-radius: 12px;
           border: 1px solid var(--border);
@@ -328,6 +428,18 @@ export default function ContentToggle({
           transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
           position: relative;
           overflow: hidden;
+        }
+        .hsounds-row > .hsounds-row__link,
+        .hsounds-row > a.hsounds-row__link {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+        }
+        /* Makale ve RSS satırları için tek satır layout */
+        .hsounds-row.article-row,
+        .hsounds-row.rss-row {
+          flex-direction: row;
+          align-items: center;
         }
         .hsounds-row::before {
           content: '';
@@ -359,7 +471,7 @@ export default function ContentToggle({
           color: inherit;
         }
         /* RSS satırı için link tam row */
-        a.hsounds-row { cursor: pointer; }
+        a.hsounds-row { cursor: pointer; flex-direction: row; }
         a.hsounds-row .hsounds-row__link { padding: 14px 18px; }
 
         .hsounds-row__icon {
@@ -382,6 +494,15 @@ export default function ContentToggle({
         .hsounds-row__meta {
           display: flex; flex-direction: column;
           align-items: flex-end; gap: 4px; flex-shrink: 0;
+        }
+        .announcement-content h1, .announcement-content h2, .announcement-content h3 {
+          color: var(--text); font-weight: 700; margin: 1em 0 0.5em;
+        }
+        .announcement-content p { margin: 0 0 0.75em; }
+        .announcement-content a { color: var(--accent); }
+        .announcement-content code {
+          font-family: var(--font-mono); font-size: 0.85em;
+          background: var(--bg-2); padding: 1px 5px; border-radius: 4px;
         }
         @media (max-width: 540px) {
           .hsounds-row__meta { display: none; }

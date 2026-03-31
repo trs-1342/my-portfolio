@@ -25,6 +25,7 @@ export default function AdminContactsPage() {
     setLoading(false);
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
 
   const handleToggle = async (msg: ContactMessage) => {

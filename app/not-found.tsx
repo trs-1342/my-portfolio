@@ -12,6 +12,7 @@ function useGlitch(text: string, active: boolean) {
   const frameRef = useRef(0);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!active) { setOutput(text); return; }
     let iter = 0;
     const id = setInterval(() => {
@@ -62,6 +63,7 @@ export default function NotFound() {
       "$ exit",
     ];
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGlitchActive(true);
     terminalBoot.forEach((line, i) => {
       setTimeout(() => {

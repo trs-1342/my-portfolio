@@ -37,6 +37,7 @@ export default function Navbar() {
   }, []);
 
   /* Route değişince mobil menüyü kapat */
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
   /* Menü açıkken body scroll kilitle */

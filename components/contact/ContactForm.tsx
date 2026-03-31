@@ -58,6 +58,7 @@ export default function ContactForm() {
 
   /* Oturum açıksa email'i otomatik doldur */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (user?.email) setEmail(user.email);
   }, [user]);
 

@@ -39,6 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   /* Route değişince sidebar'ı kapat (mobil) */
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setSidebarOpen(false); }, [pathname]);
 
   /* Auth kontrolü */

@@ -9,7 +9,6 @@ import type { Project, ProjectsPageConfig } from "@/lib/firestore";
 import { uploadFile } from "@/lib/storage";
 import { DEFAULT_PROJECTS, DEFAULT_PROJECTS_PAGE } from "@/lib/site-defaults";
 
-function genId() { return `id_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`; }
 function toSlug(t: string) { return t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
 function normalizeRepo(raw: string): string {
   const s = raw.trim();
@@ -51,7 +50,7 @@ export default function AdminProjectsPage() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { load(); }, []);
 
   const handleToggle = async (proj: Project, field: "pinned" | "active") => {
     if (proj.id.startsWith("default-")) {
@@ -219,7 +218,7 @@ export default function AdminProjectsPage() {
                             const id = await addProject({ ...data, order: i });
                             setProjects(prev => prev.map(p => p.id === proj.id ? { ...data, id } : p));
                           } else {
-                            const { id: _, ...rest } = data as Project;
+                            const { id: _id, ...rest } = data as Project;
                             await updateProject(proj.id, rest);
                             setProjects(prev => prev.map(p => p.id === proj.id ? { ...data, id: proj.id } : p));
                           }

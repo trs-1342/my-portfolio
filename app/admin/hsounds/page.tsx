@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  HsArticle, HsRssFeed,
+  HsArticle, HsRssFeed, HsAnnouncement,
   getHsArticles, deleteHsArticle,
   getHsFeeds, setHsFeeds,
+  getHsAnnouncements, deleteHsAnnouncement,
 } from "@/lib/firestore";
-import { auth } from "@/lib/firebase";
-
 function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
@@ -17,7 +16,7 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" });
 }
 
-type Tab = "articles" | "feeds";
+type Tab = "articles" | "feeds" | "announcements";
 
 interface FeedForm {
   source_name: string;
@@ -36,12 +35,17 @@ export default function AdminHsoundsPage() {
   const [artDelete, setArtDelete]   = useState<HsArticle | null>(null);
 
   /* ── Feeds ── */
-  const [feeds, setFeeds]             = useState<HsRssFeed[]>([]);
+  const [feeds, setFeeds]               = useState<HsRssFeed[]>([]);
   const [feedsLoading, setFeedsLoading] = useState(true);
   const [feedModal, setFeedModal] = useState<{
     mode: "add" | "edit"; id?: string; form: FeedForm;
   } | null>(null);
   const [feedDelete, setFeedDelete] = useState<HsRssFeed | null>(null);
+
+  /* ── Announcements ── */
+  const [announcements, setAnnouncements]       = useState<HsAnnouncement[]>([]);
+  const [annLoading, setAnnLoading]             = useState(true);
+  const [annDelete, setAnnDelete]               = useState<HsAnnouncement | null>(null);
 
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
@@ -51,6 +55,7 @@ export default function AdminHsoundsPage() {
   useEffect(() => {
     getHsArticles().then((a) => { setArticles(a); setArtLoading(false); });
     getHsFeeds().then((f)    => { setFeeds(f);    setFeedsLoading(false); });
+    getHsAnnouncements().then((a) => { setAnnouncements(a); setAnnLoading(false); });
   }, []);
 
   /* ── Makale sil ── */
@@ -79,8 +84,6 @@ export default function AdminHsoundsPage() {
     const { source_name, source_icon, feed_url } = feedModal.form;
     if (!source_name.trim() || !feed_url.trim()) return;
 
-    const isNew = feedModal.mode === "add";
-
     const data: Omit<HsRssFeed, "id"> = {
       source_name: source_name.trim(),
       source_icon: source_icon.trim() || "🌐",
@@ -88,39 +91,29 @@ export default function AdminHsoundsPage() {
     };
 
     let next: HsRssFeed[];
-    if (isNew) {
+    if (feedModal.mode === "add") {
       next = [...feeds, { id: genId(), ...data }];
     } else {
       next = feeds.map((f) => f.id === feedModal.id ? { ...f, ...data } : f);
     }
     setFeedModal(null);
     await persistFeeds(next);
-
-    /* Yeni kaynak eklendiyse abonelere bildirim gönder */
-    if (isNew) {
-      try {
-        const idToken = await auth?.currentUser?.getIdToken(true);
-        if (idToken) {
-          await fetch("/api/notify-content", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${idToken}`,
-            },
-            body: JSON.stringify({
-              type: "rssFeed",
-              title: data.source_name,
-              url: "/hsounds",
-            }),
-          });
-        }
-      } catch {
-        /* bildirim hatası sessizce geçilir */
-      }
-    }
   };
 
-  const loading = artLoading || feedsLoading;
+  /* ── Duyuru sil ── */
+  const confirmDeleteAnnouncement = async () => {
+    if (!annDelete) return;
+    setSaving(true);
+    try {
+      await deleteHsAnnouncement(annDelete.id);
+      setAnnouncements((p) => p.filter((a) => a.id !== annDelete.id));
+      setAnnDelete(null);
+      flash("Silindi.");
+    } catch { flash("Hata oluştu."); }
+    finally { setSaving(false); }
+  };
+
+  const loading = artLoading || feedsLoading || annLoading;
 
   return (
     <div style={{ maxWidth: "760px" }}>
@@ -141,8 +134,8 @@ export default function AdminHsoundsPage() {
       )}
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: "4px", marginBottom: "24px", padding: "4px", background: "var(--bg-2)", borderRadius: "12px", width: "fit-content" }}>
-        {(["articles", "feeds"] as Tab[]).map((t) => (
+      <div style={{ display: "flex", gap: "4px", marginBottom: "24px", padding: "4px", background: "var(--bg-2)", borderRadius: "12px", width: "fit-content", flexWrap: "wrap" }}>
+        {(["articles", "feeds", "announcements"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -154,7 +147,7 @@ export default function AdminHsoundsPage() {
               transition: "all 0.2s",
             }}
           >
-            {t === "articles" ? "📝 Makaleler" : "📡 RSS Kaynakları"}
+            {t === "articles" ? "📝 Makaleler" : t === "feeds" ? "📡 RSS Kaynakları" : "📣 Duyurular"}
           </button>
         ))}
       </div>
@@ -257,6 +250,57 @@ export default function AdminHsoundsPage() {
               )}
             </section>
           )}
+
+          {/* ── Duyurular ── */}
+          {tab === "announcements" && (
+            <section className="glass" style={{ borderRadius: "16px", padding: "24px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+                <p className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  Duyurular ({announcements.length})
+                </p>
+                <Link href="/admin/hsounds/announcements/new" className="btn btn-accent" style={{ padding: "7px 14px", fontSize: "0.8rem" }}>
+                  + Yeni Duyuru
+                </Link>
+              </div>
+
+              {announcements.length === 0 ? (
+                <p style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>Henüz duyuru yok.</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {announcements.map((a) => (
+                    <div key={a.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "10px", background: "var(--bg-2)" }}>
+                      <span style={{ fontSize: "1.1rem", flexShrink: 0 }}>{a.pinned ? "📌" : "📣"}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text)", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {a.title}
+                        </p>
+                        <p className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)" }}>
+                          {formatDate(a.created_at)}{a.pinned ? " · 📌 Sabitlenmiş" : ""}
+                        </p>
+                      </div>
+                      <span style={{
+                        fontSize: "0.7rem", padding: "2px 8px", borderRadius: "999px",
+                        background: a.is_published ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.1)",
+                        color: a.is_published ? "#10B981" : "#ef4444",
+                        border: `1px solid ${a.is_published ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}`,
+                        flexShrink: 0,
+                      }}>
+                        {a.is_published ? "Yayında" : "Taslak"}
+                      </span>
+                      <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
+                        <Link href={`/admin/hsounds/announcements/${a.id}`} title="Düzenle" style={{
+                          width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center",
+                          borderRadius: "7px", border: "1px solid var(--border)", background: "transparent",
+                          color: "var(--text-3)", fontSize: "0.82rem", textDecoration: "none",
+                        }}>✎</Link>
+                        <IBtn title="Sil" danger onClick={() => setAnnDelete(a)}>🗑</IBtn>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
         </>
       )}
 
@@ -326,6 +370,19 @@ export default function AdminHsoundsPage() {
           <div style={{ display: "flex", gap: "10px" }}>
             <button onClick={async () => { await persistFeeds(feeds.filter((f) => f.id !== feedDelete!.id)); setFeedDelete(null); }} disabled={saving} style={dangerBtnStyle}>Sil</button>
             <button onClick={() => setFeedDelete(null)} className="btn btn-ghost" style={{ padding: "9px 16px", fontSize: "0.85rem" }}>İptal</button>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Duyuru Silme Onayı ── */}
+      {annDelete && (
+        <Modal title="Duyuruyu Sil?" onClose={() => setAnnDelete(null)}>
+          <p style={{ fontSize: "0.88rem", color: "var(--text-2)", marginBottom: "20px" }}>
+            <strong style={{ color: "var(--text)" }}>{annDelete.title}</strong> kalıcı olarak silinecek.
+          </p>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button onClick={confirmDeleteAnnouncement} disabled={saving} style={dangerBtnStyle}>Sil</button>
+            <button onClick={() => setAnnDelete(null)} className="btn btn-ghost" style={{ padding: "9px 16px", fontSize: "0.85rem" }}>İptal</button>
           </div>
         </Modal>
       )}

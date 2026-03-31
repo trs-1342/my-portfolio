@@ -3,19 +3,19 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Waveform from "@/components/hsounds/Waveform";
 import ContentToggle from "@/components/hsounds/ContentToggle";
-import { getArticles, getRssFeeds } from "@/lib/hsounds";
+import { getArticles, getRssFeeds, getAnnouncements } from "@/lib/hsounds";
 
 export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hattab.vercel.app";
-const _ogUrl   = `${BASE_URL}/api/og?` + new URLSearchParams({ title: "HSounds", desc: "Halil'in Sesleri — makaleler ve RSS akışları.", type: "hsounds" }).toString();
+const _ogUrl   = `${BASE_URL}/api/og?` + new URLSearchParams({ title: "HSounds", desc: "Halil'in Sesleri — makaleler, RSS akışları ve duyurular.", type: "hsounds" }).toString();
 
 export const metadata = {
   title: "HSounds — trs",
-  description: "Halil'in Sesleri — makaleler ve RSS akışları.",
+  description: "Halil'in Sesleri — makaleler, RSS akışları ve duyurular.",
   openGraph: {
     title: "HSounds — trs",
-    description: "Halil'in Sesleri — makaleler ve RSS akışları.",
+    description: "Halil'in Sesleri — makaleler, RSS akışları ve duyurular.",
     url: `${BASE_URL}/hsounds`,
     images: [{ url: _ogUrl, width: 1200, height: 630 }],
   },
@@ -23,7 +23,11 @@ export const metadata = {
 };
 
 export default async function HSoundsPage() {
-  const [articles, rssFeeds] = await Promise.all([getArticles(), getRssFeeds()]);
+  const [articles, rssFeeds, announcements] = await Promise.all([
+    getArticles(),
+    getRssFeeds(),
+    getAnnouncements(),
+  ]);
 
   return (
     <>
@@ -84,7 +88,7 @@ export default async function HSoundsPage() {
             }}
           >
             Halil&apos;in Sesleri — yazılım, sistem programlama ve düşünceler üzerine makaleler;
-            takip ettiğim RSS akışları.
+            takip ettiğim RSS akışları ve duyurular.
           </p>
 
           {/* İstatistik rozetleri */}
@@ -95,6 +99,7 @@ export default async function HSoundsPage() {
             {[
               { label: "Makale", value: articles.length },
               { label: "RSS Kaynağı", value: rssFeeds.length },
+              { label: "Duyuru", value: announcements.length },
               {
                 label: "Toplam Okuma (Makaleler)",
                 value: `${articles.reduce((s, a) => s + a.read_time, 0)} dk`,
@@ -123,9 +128,9 @@ export default async function HSoundsPage() {
           </div>
         </header>
 
-        {/* Tab + Playlist içerik */}
+        {/* Tab + içerik */}
         <div className="anim-fade-up d5">
-          <ContentToggle articles={articles} rssFeeds={rssFeeds} />
+          <ContentToggle articles={articles} rssFeeds={rssFeeds} announcements={announcements} />
         </div>
 
         <Footer />

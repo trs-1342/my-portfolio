@@ -22,11 +22,13 @@ export interface UserProfile {
     theme: string; // tema ID: "dark-green", "dark-red", "light-blue" vb.
   };
   notifications: {
-    email:        boolean;
-    newMessage:   boolean;
-    system:       boolean;
-    newArticle?:  boolean; // yeni makale yayınlandığında
-    newRssFeed?:  boolean; // yeni RSS kaynağı eklendiğinde
+    email:              boolean;
+    newMessage:         boolean;
+    system:             boolean;
+    newArticle?:        boolean; // yeni makale yayınlandığında
+    newRssFeed?:        boolean; // (eski) yeni RSS kaynağı eklendiğinde — artık kullanılmıyor
+    newRssPost?:        boolean; // RSS akışında yeni yazı çıktığında
+    newAnnouncement?:   boolean; // yeni duyuru yayınlandığında
   };
 }
 
@@ -55,11 +57,12 @@ export async function createUserProfile(
       theme:          "dark",
     },
     notifications: {
-      email:        true,
-      newMessage:   true,
-      system:       true,
-      newArticle:   true,
-      newRssFeed:   true,
+      email:            true,
+      newMessage:       true,
+      system:           true,
+      newArticle:       true,
+      newRssPost:       true,
+      newAnnouncement:  true,
     },
   });
 
@@ -86,7 +89,11 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   const data = snap.data() as UserProfile;
 
   if (!data.notifications) {
-    data.notifications = { email: true, newMessage: true, system: true, newArticle: true, newRssFeed: true };
+    data.notifications = { email: true, newMessage: true, system: true, newArticle: true, newRssPost: true, newAnnouncement: true };
+  } else {
+    // Eski profillerde eksik olabilecek alanlar için varsayılan
+    data.notifications.newRssPost       ??= true;
+    data.notifications.newAnnouncement  ??= true;
   }
   return data;
 }
@@ -576,8 +583,20 @@ export interface HsArticle {
 export interface HsRssFeed {
   id: string;
   source_name: string;
-  source_icon: string;  // emoji, varsayılan '🌐'
-  feed_url: string;     // RSS feed URL'si
+  source_icon: string;   // emoji, varsayılan '🌐'
+  feed_url: string;      // RSS feed URL'si
+  lastChecked?: string;       // ISO — son kontrol zamanı (cron)
+  lastKnownGuids?: string[];  // bilinen son post GUID'leri (cron)
+}
+
+export interface HsAnnouncement {
+  id: string;
+  title: string;
+  content: string;      // HTML
+  excerpt: string;
+  is_published: boolean;
+  pinned: boolean;
+  created_at: string;   // ISO 8601
 }
 
 export async function getHsArticles(): Promise<HsArticle[]> {
@@ -620,6 +639,38 @@ export async function getHsFeeds(): Promise<HsRssFeed[]> {
 export async function setHsFeeds(feeds: HsRssFeed[]): Promise<void> {
   if (!db) return;
   await setDoc(doc(db, "site_config", "hsounds_feeds"), { feeds });
+}
+
+/* ── HSounds Duyurular CRUD (client-side) ── */
+
+export async function getHsAnnouncements(): Promise<HsAnnouncement[]> {
+  if (!db) return [];
+  const q = query(collection(db, "announcements"), orderBy("created_at", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as HsAnnouncement));
+}
+
+export async function getHsAnnouncement(id: string): Promise<HsAnnouncement | null> {
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "announcements", id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as HsAnnouncement;
+}
+
+export async function addHsAnnouncement(data: Omit<HsAnnouncement, "id">): Promise<string> {
+  if (!db) return "";
+  const ref = await addDoc(collection(db, "announcements"), data);
+  return ref.id;
+}
+
+export async function updateHsAnnouncement(id: string, data: Partial<Omit<HsAnnouncement, "id">>): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, "announcements", id), data as Record<string, unknown>);
+}
+
+export async function deleteHsAnnouncement(id: string): Promise<void> {
+  if (!db) return;
+  await deleteDoc(doc(db, "announcements", id));
 }
 
 export async function getLifeEvents(): Promise<LifeEvent[] | null> {

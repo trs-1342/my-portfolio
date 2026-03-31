@@ -14,6 +14,7 @@ export default function AdminThemePage() {
   /* Profile yüklenince kişisel temayı doldur */
   useEffect(() => {
     if (profile?.settings?.theme) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPersonalTheme(normalizeThemeId(profile.settings.theme));
     } else {
       setPersonalTheme(normalizeThemeId(localStorage.getItem("theme")));

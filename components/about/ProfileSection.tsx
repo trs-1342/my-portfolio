@@ -1,5 +1,4 @@
 /* Hakkımda sayfası üst bölüm — 50/50 split */
-import Image from "next/image";
 import PhotoSlider from "./PhotoSlider";
 import type { AboutConfig } from "@/lib/firestore";
 

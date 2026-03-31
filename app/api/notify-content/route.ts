@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { adminAuth, adminDb } from "@/lib/firebase-admin";
 
-/* POST /api/notify-content — yeni makale veya RSS kaynağı için abonelere email gönder */
+type NotifyType = "article" | "announcement" | "rssPost";
+
+/* POST /api/notify-content — yeni makale, duyuru veya RSS yazısı için abonelere email gönder */
 export async function POST(req: NextRequest) {
   try {
     /* Admin doğrula — Authorization: Bearer <fresh-id-token> */
@@ -23,7 +25,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { type, title, url, description } = await req.json() as {
-      type: "article" | "rssFeed";
+      type: NotifyType;
       title: string;
       url: string;
       description?: string;
@@ -33,66 +35,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Eksik alan." }, { status: 400 });
     }
 
-    /* Tüm kullanıcıları tara, bildirim açık olanları filtrele */
-    const usersSnap = await adminDb.collection("users").get();
-    const emailList: string[] = [];
-
-    for (const doc of usersSnap.docs) {
-      const data = doc.data();
-      if (!data.email) continue;
-      if (data.status === "banned") continue;
-
-      const notifs = data.notifications ?? {};
-
-      /* Master email switch — yoksa varsayılan açık */
-      if (notifs.email === false) continue;
-
-      /* İçerik türüne göre spesifik switch — yoksa varsayılan açık */
-      if (type === "article"  && notifs.newArticle  === false) continue;
-      if (type === "rssFeed"  && notifs.newRssFeed  === false) continue;
-
-      emailList.push(data.email as string);
-    }
-
-    if (emailList.length === 0) {
-      return NextResponse.json({ sent: 0 });
-    }
-
-    /* SMTP yapılandırılmamışsa çık */
-    const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
-    if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-      return NextResponse.json({ sent: 0, note: "SMTP yapılandırılmamış." });
-    }
-
-    const transporter = nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: Number(SMTP_PORT ?? 587),
-      secure: Number(SMTP_PORT ?? 587) === 465,
-      auth: { user: SMTP_USER, pass: SMTP_PASS },
-    });
-
-    const subject =
-      type === "article"
-        ? `[trs] Yeni Makale: ${title}`
-        : `[trs] Yeni RSS Kaynağı: ${title}`;
-
-    const html = buildEmailHtml(type, title, url, description ?? "", req);
-
-    let sent = 0;
-    for (const email of emailList) {
-      try {
-        await transporter.sendMail({
-          from: `"trs" <${SMTP_USER}>`,
-          to: email,
-          subject,
-          html,
-        });
-        sent++;
-      } catch (e) {
-        console.error("notify-content email hatası:", email, e);
-      }
-    }
-
+    const sent = await sendToSubscribers({ type, title, url, description: description ?? "", req });
     return NextResponse.json({ sent });
   } catch (err) {
     console.error("notify-content route hatası:", err);
@@ -100,16 +43,101 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/* Cron tarafından doğrudan çağrılmak üzere export edilen yardımcı fonksiyon */
+export async function sendToSubscribers({
+  type,
+  title,
+  url,
+  description = "",
+  req,
+}: {
+  type: NotifyType;
+  title: string;
+  url: string;
+  description?: string;
+  req: NextRequest;
+}): Promise<number> {
+  /* Tüm kullanıcıları tara, bildirim açık olanları filtrele */
+  const usersSnap = await adminDb.collection("users").get();
+  const emailList: string[] = [];
+
+  for (const doc of usersSnap.docs) {
+    const data = doc.data();
+    if (!data.email) continue;
+    if (data.status === "banned") continue;
+
+    const notifs = data.notifications ?? {};
+
+    /* Master email switch — yoksa varsayılan açık */
+    if (notifs.email === false) continue;
+
+    /* İçerik türüne göre spesifik switch — yoksa varsayılan açık */
+    if (type === "article"      && notifs.newArticle      === false) continue;
+    if (type === "rssPost"      && notifs.newRssPost       === false) continue;
+    if (type === "announcement" && notifs.newAnnouncement  === false) continue;
+
+    emailList.push(data.email as string);
+  }
+
+  if (emailList.length === 0) return 0;
+
+  /* SMTP yapılandırılmamışsa çık */
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
+  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) return 0;
+
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: Number(SMTP_PORT ?? 587),
+    secure: Number(SMTP_PORT ?? 587) === 465,
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
+  });
+
+  const subject =
+    type === "article"      ? `[trs] Yeni Makale: ${title}` :
+    type === "announcement" ? `[trs] Duyuru: ${title}`       :
+                              `[trs] Yeni RSS Yazısı: ${title}`;
+
+  const html = buildEmailHtml(type, title, url, description, req);
+
+  let sent = 0;
+  for (const email of emailList) {
+    try {
+      await transporter.sendMail({
+        from: `"trs" <${SMTP_USER}>`,
+        to: email,
+        subject,
+        html,
+      });
+      sent++;
+    } catch (e) {
+      console.error("notify-content email hatası:", email, e);
+    }
+  }
+
+  return sent;
+}
+
 function buildEmailHtml(
-  type: "article" | "rssFeed",
+  type: NotifyType,
   title: string,
   url: string,
   description: string,
   req: NextRequest,
 ): string {
-  const icon = type === "article" ? "📝" : "📡";
-  const typeLabel = type === "article" ? "Yeni Makale" : "Yeni RSS Kaynağı";
-  const ctaLabel = type === "article" ? "Makaleyi Oku →" : "Kaynağa Git →";
+  const icon =
+    type === "article"      ? "📝" :
+    type === "announcement" ? "📣" :
+                              "📡";
+
+  const typeLabel =
+    type === "article"      ? "Yeni Makale"   :
+    type === "announcement" ? "Duyuru"         :
+                              "Yeni RSS Yazısı";
+
+  const ctaLabel =
+    type === "article"      ? "Makaleyi Oku →"   :
+    type === "announcement" ? "Duyuruyu Gör →"   :
+                              "Yazıyı Oku →";
 
   const origin = req.headers.get("origin") ?? req.headers.get("host") ?? "";
   const settingsUrl = origin ? `${origin}/settings` : "/settings";

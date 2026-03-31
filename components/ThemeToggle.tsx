@@ -11,6 +11,7 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentTheme(normalizeThemeId(saved));
 
     /* ThemePicker veya başka yerden tema değişirse güncelle */
