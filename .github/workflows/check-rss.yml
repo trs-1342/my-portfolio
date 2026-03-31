@@ -1,0 +1,16 @@
+name: RSS Kontrol
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # Her saat başı
+  workflow_dispatch:        # Manuel tetikleme
+
+jobs:
+  check-rss:
+    runs-on: ubuntu-latest
+    steps:
+      - name: RSS beslemelerini kontrol et
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.SITE_URL }}/api/cron/check-rss"
