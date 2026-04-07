@@ -11,6 +11,11 @@ jobs:
     steps:
       - name: RSS beslemelerini kontrol et
         run: |
-          curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${{ secrets.SITE_URL }}/api/cron/check-rss"
+          HTTP_CODE=$(curl -s -o /tmp/rss_response.txt -w "%{http_code}" \
+            "${{ secrets.SITE_URL }}/api/cron/check-rss")
+          echo "HTTP status: $HTTP_CODE"
+          cat /tmp/rss_response.txt
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "Hata: API $HTTP_CODE döndü"
+            exit 1
+          fi
