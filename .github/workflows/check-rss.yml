@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: RSS beslemelerini kontrol et
         run: |
-          HTTP_CODE=$(curl -s -o /tmp/rss_response.txt -w "%{http_code}" \
+          HTTP_CODE=$(curl -sL -o /tmp/rss_response.txt -w "%{http_code}" \
             "${{ secrets.SITE_URL }}/api/cron/check-rss")
           echo "HTTP status: $HTTP_CODE"
           cat /tmp/rss_response.txt
