@@ -1,22 +1,16 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
+import { readFile } from "fs/promises";
+import path from "path";
 
-export const runtime = "edge";
+/* Node.js runtime — edge'den farklı olarak fs destekler, boyut limiti yok */
+export const runtime = "nodejs";
 
-/* Statik asset'ler — Vercel edge bundler build sırasında bundle eder */
-const regularFontP = fetch(new URL("./Inter.ttf", import.meta.url)).then((r) =>
-  r.arrayBuffer()
-);
-const boldFontP = fetch(new URL("./Inter-Bold.ttf", import.meta.url)).then(
-  (r) => r.arrayBuffer()
-);
-const photoP = fetch(new URL("./halil.jpg", import.meta.url)).then(
-  async (r) => {
-    const buf = await r.arrayBuffer();
-    const b64 = Buffer.from(buf).toString("base64");
-    return `data:image/jpeg;base64,${b64}`;
-  }
-);
+const cwd = process.cwd();
+
+async function loadAsset(rel: string): Promise<Buffer> {
+  return readFile(path.join(cwd, rel));
+}
 
 const TYPE_META: Record<string, { label: string }> = {
   article:  { label: "Makale"   },
@@ -40,11 +34,13 @@ export async function GET(req: NextRequest) {
 
   const { label } = TYPE_META[type] ?? TYPE_META.page;
 
-  const [regular, bold, photo] = await Promise.all([
-    regularFontP,
-    boldFontP,
-    photoP,
+  const [regular, bold, photoBuffer] = await Promise.all([
+    loadAsset("public/fonts/Inter.ttf"),
+    loadAsset("public/fonts/Inter-Bold.ttf"),
+    loadAsset("public/myphotos/halil.jpg"),
   ]);
+
+  const photo = `data:image/jpeg;base64,${photoBuffer.toString("base64")}`;
 
   return new ImageResponse(
     (
@@ -68,7 +64,8 @@ export async function GET(req: NextRequest) {
             width: 500,
             height: 500,
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(220,38,38,0.18) 0%, transparent 70%)",
+            background:
+              "radial-gradient(circle, rgba(220,38,38,0.18) 0%, transparent 70%)",
             display: "flex",
           }}
         />
@@ -82,12 +79,13 @@ export async function GET(req: NextRequest) {
             width: 400,
             height: 400,
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(220,38,38,0.10) 0%, transparent 70%)",
+            background:
+              "radial-gradient(circle, rgba(220,38,38,0.10) 0%, transparent 70%)",
             display: "flex",
           }}
         />
 
-        {/* Sol kenar çizgisi — kırmızı */}
+        {/* Sol kenar çizgisi */}
         <div
           style={{
             position: "absolute",
@@ -112,7 +110,6 @@ export async function GET(req: NextRequest) {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
-            gap: 0,
           }}
         >
           {/* Üst etiket */}
@@ -158,7 +155,7 @@ export async function GET(req: NextRequest) {
             </span>
           </div>
 
-          {/* Kullanıcı adı — büyük */}
+          {/* trs — büyük */}
           <div
             style={{
               fontSize: 120,
@@ -172,7 +169,7 @@ export async function GET(req: NextRequest) {
             trs
           </div>
 
-          {/* Başlık / açıklama */}
+          {/* Başlık (sayfa başlığı farklıysa) */}
           {title !== "trs" && (
             <div
               style={{
@@ -190,6 +187,7 @@ export async function GET(req: NextRequest) {
             </div>
           )}
 
+          {/* Açıklama */}
           <div
             style={{
               fontSize: 20,
@@ -203,6 +201,7 @@ export async function GET(req: NextRequest) {
             {desc.length > 100 ? desc.slice(0, 97) + "…" : desc}
           </div>
 
+          {/* Meta (opsiyonel) */}
           {meta && (
             <div
               style={{
@@ -221,13 +220,7 @@ export async function GET(req: NextRequest) {
                   display: "flex",
                 }}
               />
-              <span
-                style={{
-                  fontSize: 14,
-                  color: "#52525b",
-                  display: "flex",
-                }}
-              >
+              <span style={{ fontSize: 14, color: "#52525b", display: "flex" }}>
                 {meta}
               </span>
             </div>
@@ -264,7 +257,7 @@ export async function GET(req: NextRequest) {
           </div>
         </div>
 
-        {/* Sağ — fotoğraf */}
+        {/* Sağ — dairesel fotoğraf */}
         <div
           style={{
             position: "absolute",
@@ -272,11 +265,10 @@ export async function GET(req: NextRequest) {
             top: "50%",
             transform: "translateY(-50%)",
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          {/* Dış halka — kırmızı */}
           <div
             style={{
               width: 260,
@@ -289,7 +281,6 @@ export async function GET(req: NextRequest) {
               justifyContent: "center",
             }}
           >
-            {/* İç halka — koyu */}
             <div
               style={{
                 width: 254,
