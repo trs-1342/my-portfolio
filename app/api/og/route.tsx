@@ -3,45 +3,53 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
-/* Font — Google Fonts CDN üzerinden yükleniyor (edge runtime için güvenli) */
-async function fetchFont(url: string): Promise<ArrayBuffer> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Font fetch failed: ${res.status} ${url}`);
-  return res.arrayBuffer();
+/** Google Fonts üzerinden TTF/OTF font yükler — edge runtime için güvenli */
+async function loadGoogleFont(weight: 400 | 700): Promise<ArrayBuffer> {
+  const css = await fetch(
+    `https://fonts.googleapis.com/css2?family=Inter:wght@${weight}`,
+    {
+      headers: {
+        // Chrome UA ile Google Fonts TTF/OTF döner, WOFF2 değil
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      },
+    }
+  ).then((r) => r.text());
+
+  const match = css.match(/src: url\((.+?)\) format\('(opentype|truetype)'\)/);
+  if (!match) throw new Error(`Inter ${weight} font URL bulunamadı`);
+
+  return fetch(match[1]).then((r) => r.arrayBuffer());
 }
 
-const INTER_REGULAR_URL =
-  "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff";
-const INTER_BOLD_URL =
-  "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYAZ9hiJ-Ek-_EeA.woff";
-
-/* Tür etiketleri */
 const TYPE_META: Record<string, { label: string; icon: string }> = {
-  article:    { label: "/hsounds/makale",  icon: "📝" },
-  rss:        { label: "/hsounds/rss",     icon: "📡" },
-  project:    { label: "/my-projects",     icon: "⌨️" },
-  photos:     { label: "/photos",          icon: "📸" },
-  about:      { label: "/about",           icon: "👤" },
-  contact:    { label: "/contact",         icon: "✉️" },
-  hsounds:    { label: "/hsounds",         icon: "🎵" },
-  page:       { label: "/trs",             icon: "◈"  },
+  article:  { label: "Makale",    icon: "✍" },
+  rss:      { label: "RSS",       icon: "◉" },
+  project:  { label: "Proje",     icon: "⌨" },
+  photos:   { label: "Fotoğraf",  icon: "◻" },
+  about:    { label: "Hakkımda",  icon: "◈" },
+  contact:  { label: "İletişim",  icon: "✉" },
+  hsounds:  { label: "HSounds",   icon: "♫" },
+  page:     { label: "trs.dev",   icon: "◈" },
 };
 
-/* GET /api/og?title=...&desc=...&type=...&meta=... */
+/** GET /api/og?title=…&desc=…&type=…&meta=… */
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
 
-  const title    = searchParams.get("title")    ?? "trs";
-  const desc     = searchParams.get("desc")     ?? "Software Developer · C, Linux, Web";
-  const type     = searchParams.get("type")     ?? "page";
-  const meta     = searchParams.get("meta")     ?? ""; // örn: "8 dk okuma  ·  12 Mart 2026"
+  const title = searchParams.get("title") ?? "trs";
+  const desc  = searchParams.get("desc")  ?? "Software Developer · C, Linux, Web";
+  const type  = searchParams.get("type")  ?? "page";
+  const meta  = searchParams.get("meta")  ?? "";
 
   const { label, icon } = TYPE_META[type] ?? TYPE_META.page;
 
-  const [fontRegular, fontBold] = await Promise.all([
-    fetchFont(INTER_REGULAR_URL),
-    fetchFont(INTER_BOLD_URL),
+  const [regular, bold] = await Promise.all([
+    loadGoogleFont(400),
+    loadGoogleFont(700),
   ]);
+
+  const fontSize = title.length > 50 ? 44 : title.length > 30 ? 54 : 64;
 
   return new ImageResponse(
     (
@@ -50,211 +58,229 @@ export async function GET(req: NextRequest) {
           width: 1200,
           height: 630,
           display: "flex",
-          flexDirection: "column",
           background: "#09090f",
-          position: "relative",
           fontFamily: "Inter",
+          position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* Arka plan desen — soldan sağa gradient çizgiler */}
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          background: "radial-gradient(ellipse 80% 60% at 50% 120%, rgba(16,185,129,0.12) 0%, transparent 70%)",
-        }} />
+        {/* Radial glow */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            background:
+              "radial-gradient(ellipse 70% 50% at 50% 110%, rgba(16,185,129,0.15) 0%, transparent 70%)",
+          }}
+        />
 
-        {/* Sol accent çubuk */}
-        <div style={{
-          position: "absolute",
-          left: 0, top: 0, bottom: 0,
-          width: 4,
-          background: "linear-gradient(180deg, transparent 0%, #10B981 30%, #10B981 70%, transparent 100%)",
-          display: "flex",
-        }} />
-
-        {/* Sağ üst dekoratif waveform */}
-        <div style={{
-          position: "absolute",
-          right: 80,
-          top: 60,
-          display: "flex",
-          alignItems: "center",
-          gap: 5,
-          opacity: 0.15,
-        }}>
-          {[18, 40, 28, 56, 20, 48, 14, 36, 24, 52, 16, 44].map((h, i) => (
-            <div key={i} style={{
-              width: 8,
-              height: h,
-              borderRadius: 4,
-              background: "#10B981",
-              display: "flex",
-            }} />
-          ))}
-        </div>
+        {/* Sol kenar çizgisi */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 3,
+            display: "flex",
+            background:
+              "linear-gradient(180deg, transparent 0%, #10B981 25%, #10B981 75%, transparent 100%)",
+          }}
+        />
 
         {/* İçerik */}
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          flexDirection: "column",
-          padding: "60px 80px",
-          justifyContent: "space-between",
-        }}>
-
-          {/* Üst: logo + tür etiketi */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            padding: "56px 80px",
+            justifyContent: "space-between",
+          }}
+        >
+          {/* Üst satır */}
+          <div
+            style={{
               display: "flex",
               alignItems: "center",
-              gap: 12,
-            }}>
-              <div style={{
-                fontFamily: "Inter",
-                fontSize: 28,
-                fontWeight: 700,
-                color: "#10B981",
-                letterSpacing: "-0.02em",
+              justifyContent: "space-between",
+            }}
+          >
+            {/* Logo */}
+            <div
+              style={{
                 display: "flex",
-              }}>
+                alignItems: "center",
+                gap: 14,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 26,
+                  fontWeight: 700,
+                  color: "#10B981",
+                  letterSpacing: "-0.02em",
+                  display: "flex",
+                }}
+              >
                 trs
-              </div>
-              <div style={{
-                width: 1,
-                height: 20,
-                background: "#1e293b",
-                display: "flex",
-              }} />
-              <div style={{
-                fontFamily: "Inter",
-                fontSize: 13,
-                color: "#475569",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                display: "flex",
-              }}>
-                {label}
-              </div>
+              </span>
+              <span
+                style={{
+                  width: 1,
+                  height: 18,
+                  background: "#1e293b",
+                  display: "flex",
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 13,
+                  color: "#475569",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  display: "flex",
+                }}
+              >
+                hattab.vercel.app
+              </span>
             </div>
 
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "8px 16px",
-              borderRadius: 999,
-              background: "rgba(16,185,129,0.1)",
-              border: "1px solid rgba(16,185,129,0.25)",
-            }}>
-              <span style={{ fontSize: 18, display: "flex" }}>{icon}</span>
-              <span style={{
-                fontFamily: "Inter",
-                fontSize: 13,
-                color: "#10B981",
-                fontWeight: 600,
+            {/* Tür etiketi */}
+            <div
+              style={{
                 display: "flex",
-              }}>
-                {type === "page" ? "trs.dev" : type}
+                alignItems: "center",
+                gap: 8,
+                padding: "7px 16px",
+                borderRadius: 999,
+                border: "1px solid rgba(16,185,129,0.3)",
+                background: "rgba(16,185,129,0.08)",
+              }}
+            >
+              <span style={{ fontSize: 16, display: "flex" }}>{icon}</span>
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#10B981",
+                  display: "flex",
+                }}
+              >
+                {label}
               </span>
             </div>
           </div>
 
           {/* Orta: başlık + açıklama */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <div style={{
-              fontFamily: "Inter",
-              fontSize: title.length > 50 ? 48 : title.length > 30 ? 58 : 68,
-              fontWeight: 700,
-              color: "#f8fafc",
-              letterSpacing: "-0.03em",
-              lineHeight: 1.1,
-              display: "flex",
-              maxWidth: 960,
-            }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: 18 }}
+          >
+            <div
+              style={{
+                fontSize,
+                fontWeight: 700,
+                color: "#f1f5f9",
+                letterSpacing: "-0.03em",
+                lineHeight: 1.1,
+                maxWidth: 980,
+                display: "flex",
+              }}
+            >
               {title}
             </div>
 
             {desc && (
-              <div style={{
-                fontFamily: "Inter",
-                fontSize: 22,
-                color: "#64748b",
-                lineHeight: 1.5,
-                maxWidth: 800,
-                display: "flex",
-              }}>
-                {desc.length > 120 ? desc.slice(0, 117) + "..." : desc}
+              <div
+                style={{
+                  fontSize: 21,
+                  color: "#64748b",
+                  lineHeight: 1.5,
+                  maxWidth: 780,
+                  display: "flex",
+                }}
+              >
+                {desc.length > 120 ? desc.slice(0, 117) + "…" : desc}
               </div>
             )}
           </div>
 
-          {/* Alt: meta bilgi + domain */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}>
+          {/* Alt satır */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             {meta ? (
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-              }}>
-                <div style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: "#10B981",
+              <div
+                style={{
                   display: "flex",
-                }} />
-                <div style={{
-                  fontFamily: "Inter",
-                  fontSize: 16,
-                  color: "#64748b",
-                  display: "flex",
-                }}>
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
+                <div
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#10B981",
+                    display: "flex",
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: 15,
+                    color: "#64748b",
+                    display: "flex",
+                  }}
+                >
                   {meta}
-                </div>
+                </span>
               </div>
             ) : (
               <div style={{ display: "flex" }} />
             )}
 
-            <div style={{
-              fontFamily: "Inter",
-              fontSize: 15,
-              color: "#1e293b",
-              letterSpacing: "0.04em",
-              display: "flex",
-            }}>
-              hattab.vercel.app
-            </div>
+            <span
+              style={{
+                fontSize: 13,
+                color: "#1e293b",
+                letterSpacing: "0.04em",
+                display: "flex",
+              }}
+            >
+              © trs {new Date().getFullYear()}
+            </span>
           </div>
-
         </div>
 
         {/* Alt çizgi */}
-        <div style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 2,
-          background: "linear-gradient(90deg, #10B981 0%, rgba(16,185,129,0.2) 40%, transparent 100%)",
-          display: "flex",
-        }} />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 2,
+            display: "flex",
+            background:
+              "linear-gradient(90deg, #10B981 0%, rgba(16,185,129,0.3) 50%, transparent 100%)",
+          }}
+        />
       </div>
     ),
     {
       width: 1200,
       height: 630,
       fonts: [
-        { name: "Inter", data: fontRegular, weight: 400, style: "normal" },
-        { name: "Inter", data: fontBold,    weight: 700, style: "normal" },
+        { name: "Inter", data: regular, weight: 400, style: "normal" },
+        { name: "Inter", data: bold,    weight: 700, style: "normal" },
       ],
-    },
+    }
   );
 }
