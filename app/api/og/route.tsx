@@ -257,11 +257,11 @@ export async function GET(req: NextRequest) {
           </div>
         </div>
 
-        {/* Sağ — dairesel fotoğraf */}
+        {/* Sağ — fotoğraf (1:1, yumuşak köşe) */}
         <div
           style={{
             position: "absolute",
-            right: 80,
+            right: 160,
             top: "50%",
             transform: "translateY(-50%)",
             display: "flex",
@@ -271,9 +271,9 @@ export async function GET(req: NextRequest) {
         >
           <div
             style={{
-              width: 260,
-              height: 260,
-              borderRadius: "50%",
+              width: 264,
+              height: 264,
+              borderRadius: 28,
               padding: 3,
               background: "linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%)",
               display: "flex",
@@ -281,29 +281,16 @@ export async function GET(req: NextRequest) {
               justifyContent: "center",
             }}
           >
-            <div
+            <img
+              src={photo}
+              width={258}
+              height={258}
               style={{
-                width: 254,
-                height: 254,
-                borderRadius: "50%",
-                padding: 2,
-                background: "#09090b",
+                borderRadius: 24,
+                objectFit: "cover",
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
               }}
-            >
-              <img
-                src={photo}
-                width={250}
-                height={250}
-                style={{
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  display: "flex",
-                }}
-              />
-            </div>
+            />
           </div>
         </div>
 
