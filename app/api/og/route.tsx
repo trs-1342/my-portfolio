@@ -3,24 +3,13 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
-/** Google Fonts üzerinden TTF/OTF font yükler — edge runtime için güvenli */
-async function loadGoogleFont(weight: 400 | 700): Promise<ArrayBuffer> {
-  const css = await fetch(
-    `https://fonts.googleapis.com/css2?family=Inter:wght@${weight}`,
-    {
-      headers: {
-        // Chrome UA ile Google Fonts TTF/OTF döner, WOFF2 değil
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      },
-    }
-  ).then((r) => r.text());
-
-  const match = css.match(/src: url\((.+?)\) format\('(opentype|truetype)'\)/);
-  if (!match) throw new Error(`Inter ${weight} font URL bulunamadı`);
-
-  return fetch(match[1]).then((r) => r.arrayBuffer());
-}
+/** Font dosyaları route dizininde — Vercel edge bundler build sırasında bundle eder */
+const regularFontP = fetch(new URL("./Inter.ttf", import.meta.url)).then((r) =>
+  r.arrayBuffer()
+);
+const boldFontP = fetch(new URL("./Inter-Bold.ttf", import.meta.url)).then(
+  (r) => r.arrayBuffer()
+);
 
 const TYPE_META: Record<string, { label: string; icon: string }> = {
   article:  { label: "Makale",    icon: "✍" },
@@ -44,10 +33,7 @@ export async function GET(req: NextRequest) {
 
   const { label, icon } = TYPE_META[type] ?? TYPE_META.page;
 
-  const [regular, bold] = await Promise.all([
-    loadGoogleFont(400),
-    loadGoogleFont(700),
-  ]);
+  const [regular, bold] = await Promise.all([regularFontP, boldFontP]);
 
   const fontSize = title.length > 50 ? 44 : title.length > 30 ? 54 : 64;
 
