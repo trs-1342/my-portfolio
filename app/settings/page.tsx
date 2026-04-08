@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useAccessGuard } from "@/hooks/useAccessGuard";
 import { updateUserProfile } from "@/lib/firestore";
+import type { UserProfile } from "@/lib/firestore";
 import { normalizeThemeId } from "@/lib/themes";
 import ThemePicker from "@/components/ThemePicker";
 import AmbientGlow from "@/components/AmbientGlow";
@@ -23,6 +24,9 @@ export default function SettingsPage() {
   const [notifNewArticle,      setNotifNewArticle]      = useState(true);
   const [notifNewRssPost,      setNotifNewRssPost]      = useState(true);
   const [notifNewAnnouncement, setNotifNewAnnouncement] = useState(true);
+  const [featureRss,           setFeatureRss]           = useState(true);
+  const [featureArticles,      setFeatureArticles]      = useState(true);
+  const [featureAnnouncements, setFeatureAnnouncements] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg,    setMsg]    = useState("");
 
@@ -37,6 +41,9 @@ export default function SettingsPage() {
     setNotifNewArticle(profile.notifications?.newArticle     ?? true);
     setNotifNewRssPost(profile.notifications?.newRssPost     ?? true);
     setNotifNewAnnouncement(profile.notifications?.newAnnouncement ?? true);
+    setFeatureRss(profile.features?.rss           ?? true);
+    setFeatureArticles(profile.features?.articles ?? true);
+    setFeatureAnnouncements(profile.features?.announcements ?? true);
   }, [profile]);
 
   /* ThemePicker zaten applyTheme + Firestore'a kaydeder — burada sadece state güncelle */
@@ -71,7 +78,12 @@ export default function SettingsPage() {
           newRssPost:       notifNewRssPost,
           newAnnouncement:  notifNewAnnouncement,
         },
-      });
+        features: {
+          rss:           featureRss,
+          articles:      featureArticles,
+          announcements: featureAnnouncements,
+        },
+      } as Partial<Pick<UserProfile, "settings" | "notifications" | "features">>);
       await refreshProfile();
       setMsg("Ayarlar kaydedildi.");
     } catch {
@@ -135,8 +147,27 @@ export default function SettingsPage() {
             </SettingRow>
           </SettingCard>
 
+          {/* ── Özellik Tercihleri ── */}
+          <SettingCard title="Özellik Tercihleri">
+            <SettingRow label="RSS Takibi" desc="RSS akışlarını takip et; yeni yazı bildirimlerini al.">
+              <Toggle value={featureRss} onChange={setFeatureRss} />
+            </SettingRow>
+
+            <Divider />
+
+            <SettingRow label="Makaleler" desc="Yeni makale yayınlandığında bildirim al.">
+              <Toggle value={featureArticles} onChange={setFeatureArticles} />
+            </SettingRow>
+
+            <Divider />
+
+            <SettingRow label="Duyurular" desc="Yeni duyurulardan haberdar ol.">
+              <Toggle value={featureAnnouncements} onChange={setFeatureAnnouncements} />
+            </SettingRow>
+          </SettingCard>
+
           {/* ── Bildirimler ── */}
-          <SettingCard title="Bildirimler">
+          <SettingCard title="Email Bildirimleri">
             <SettingRow label="Email Bildirimleri" desc="Tüm email bildirimlerinin ana anahtarı.">
               <Toggle value={notifEmail} onChange={setNotifEmail} />
             </SettingRow>

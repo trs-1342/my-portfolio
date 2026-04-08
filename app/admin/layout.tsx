@@ -7,9 +7,10 @@ import { useAuth } from "@/context/AuthContext";
 import AmbientGlow from "@/components/AmbientGlow";
 
 const TOP_NAV = [
-  { href: "/admin",          label: "Dashboard",    icon: "⌘"  },
-  { href: "/admin/contacts", label: "Mesajlar",     icon: "✉️" },
-  { href: "/admin/users",    label: "Kullanıcılar", icon: "👥" },
+  { href: "/admin",               label: "Dashboard",    icon: "⌘"  },
+  { href: "/admin/contacts",      label: "Mesajlar",     icon: "✉️" },
+  { href: "/admin/users",         label: "Kullanıcılar", icon: "👥" },
+  { href: "/admin/notifications", label: "Bildirimler",  icon: "🔔" },
 ];
 
 const PAGES_NAV = [

@@ -57,6 +57,14 @@ export async function sendToSubscribers({
   description?: string;
   req: NextRequest;
 }): Promise<number> {
+  /* Global email flag'ini kontrol et */
+  const notifConfigDoc = await adminDb.doc("site_config/notifications").get();
+  const notifConfig = notifConfigDoc.data() ?? {};
+
+  if (type === "article"      && notifConfig.articlesEmailEnabled      === false) return 0;
+  if (type === "rssPost"      && notifConfig.rssEmailEnabled            === false) return 0;
+  if (type === "announcement" && notifConfig.announcementsEmailEnabled  === false) return 0;
+
   /* Tüm kullanıcıları tara, bildirim açık olanları filtrele */
   const usersSnap = await adminDb.collection("users").get();
   const emailList: string[] = [];
@@ -65,6 +73,11 @@ export async function sendToSubscribers({
     const data = doc.data();
     if (!data.email) continue;
     if (data.status === "banned") continue;
+
+    /* Kullanıcı bazlı özellik kontrolü */
+    if (type === "article"      && data.features?.articles      === false) continue;
+    if (type === "rssPost"      && data.features?.rss            === false) continue;
+    if (type === "announcement" && data.features?.announcements  === false) continue;
 
     const notifs = data.notifications ?? {};
 

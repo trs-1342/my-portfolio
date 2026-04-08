@@ -3,13 +3,17 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
-/* Font — public/fonts/Inter.ttf / Inter-Bold.ttf */
+/* Font — Google Fonts CDN üzerinden yükleniyor (edge runtime için güvenli) */
 async function fetchFont(url: string): Promise<ArrayBuffer> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Font fetch failed: ${res.status} ${url}`);
   return res.arrayBuffer();
 }
 
+const INTER_REGULAR_URL =
+  "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff";
+const INTER_BOLD_URL =
+  "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYAZ9hiJ-Ek-_EeA.woff";
 
 /* Tür etiketleri */
 const TYPE_META: Record<string, { label: string; icon: string }> = {
@@ -34,10 +38,9 @@ export async function GET(req: NextRequest) {
 
   const { label, icon } = TYPE_META[type] ?? TYPE_META.page;
 
-  const baseUrl = `${req.nextUrl.protocol}//${req.nextUrl.host}`;
   const [fontRegular, fontBold] = await Promise.all([
-    fetchFont(new URL("/fonts/Inter.ttf", baseUrl).toString()),
-    fetchFont(new URL("/fonts/Inter-Bold.ttf", baseUrl).toString()),
+    fetchFont(INTER_REGULAR_URL),
+    fetchFont(INTER_BOLD_URL),
   ]);
 
   return new ImageResponse(

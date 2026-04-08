@@ -24,6 +24,10 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    /* Global RSS email flag'ini kontrol et */
+    const notifDoc = await adminDb.doc("site_config/notifications").get();
+    const rssEmailEnabled = notifDoc.data()?.rssEmailEnabled ?? true;
+
     /* Feed listesini Firestore'dan çek */
     const feedsDoc = await adminDb.doc("site_config/hsounds_feeds").get();
     if (!feedsDoc.exists) return NextResponse.json({ checked: 0, newPosts: 0 });
@@ -40,7 +44,7 @@ export async function GET(req: NextRequest) {
     if (feeds.length === 0) return NextResponse.json({ checked: 0, newPosts: 0 });
 
     /* Bildirim alacak kullanıcı emaillerini hazırla */
-    const subscriberEmails = await getSubscriberEmails();
+    const subscriberEmails = rssEmailEnabled ? await getSubscriberEmails() : [];
 
     const origin = req.headers.get("origin") ?? req.headers.get("host") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "";
 
@@ -99,6 +103,9 @@ async function getSubscriberEmails(): Promise<string[]> {
     const data = doc.data();
     if (!data.email) continue;
     if (data.status === "banned") continue;
+
+    /* Kullanıcı RSS özelliğini devre dışı bıraktıysa veya admin kapattıysa atla */
+    if (data.features?.rss === false) continue;
 
     const notifs = data.notifications ?? {};
     if (notifs.email === false) continue;

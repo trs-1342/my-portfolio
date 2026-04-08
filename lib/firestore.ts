@@ -17,6 +17,11 @@ export interface UserProfile {
   status: "active" | "banned" | "pending";
   createdAt: unknown; // Firestore Timestamp
   blockedPages?: string[]; // engellenmiş sayfa path'leri
+  features?: {
+    rss?:           boolean; // RSS takibi ve email bildirimleri
+    articles?:      boolean; // makale bildirimleri
+    announcements?: boolean; // duyuru bildirimleri
+  };
   settings: {
     navbarPosition: "top" | "bottom";
     theme: string; // tema ID: "dark-green", "dark-red", "light-blue" vb.
@@ -108,10 +113,19 @@ export async function isUsernameAvailable(username: string): Promise<boolean> {
 /* Profil güncelle */
 export async function updateUserProfile(
   uid: string,
-  data: Partial<Pick<UserProfile, "displayName" | "photoURL" | "settings" | "notifications">>
+  data: Partial<Pick<UserProfile, "displayName" | "photoURL" | "settings" | "notifications" | "features">>
 ) {
   if (!db) return;
   await updateDoc(doc(db, "users", uid), data as Record<string, unknown>);
+}
+
+/* Kullanıcı özellik tercihlerini güncelle (admin veya kullanıcı) */
+export async function updateUserFeatures(
+  uid: string,
+  features: NonNullable<UserProfile["features"]>
+): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, "users", uid), { features });
 }
 
 /* Username güncelle */
@@ -737,4 +751,35 @@ export async function toggleCommentLike(
   await updateDoc(doc(db, "comments", commentId), {
     likes: add ? arrayUnion(uid) : arrayRemove(uid),
   });
+}
+
+/* ── Site Bildirim Konfigürasyonu ── */
+
+export interface SiteNotificationsConfig {
+  rssEmailEnabled:           boolean; // Global RSS email switch
+  articlesEmailEnabled:      boolean; // Global makale email switch
+  announcementsEmailEnabled: boolean; // Global duyuru email switch
+}
+
+const NOTIF_DEFAULTS: SiteNotificationsConfig = {
+  rssEmailEnabled:           true,
+  articlesEmailEnabled:      true,
+  announcementsEmailEnabled: true,
+};
+
+export async function getSiteNotificationsConfig(): Promise<SiteNotificationsConfig> {
+  if (!db) return NOTIF_DEFAULTS;
+  const snap = await getDoc(doc(db, "site_config", "notifications"));
+  if (!snap.exists()) return NOTIF_DEFAULTS;
+  const d = snap.data();
+  return {
+    rssEmailEnabled:           d.rssEmailEnabled           ?? true,
+    articlesEmailEnabled:      d.articlesEmailEnabled       ?? true,
+    announcementsEmailEnabled: d.announcementsEmailEnabled  ?? true,
+  };
+}
+
+export async function setSiteNotificationsConfig(data: Partial<SiteNotificationsConfig>): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "site_config", "notifications"), data, { merge: true });
 }

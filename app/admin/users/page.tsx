@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAllUsers, updateUserStatus, updateUserBlockedPages, approveUser } from "@/lib/firestore";
+import { getAllUsers, updateUserStatus, updateUserBlockedPages, updateUserFeatures, approveUser } from "@/lib/firestore";
 import type { UserProfile } from "@/lib/firestore";
 import { auth } from "@/lib/firebase";
 
@@ -12,6 +12,13 @@ const BLOCKABLE = [
   { path: "/photos",   label: "Fotoğraflar"    },
   { path: "/profile",  label: "Profil"         },
   { path: "/settings", label: "Ayarlar"        },
+];
+
+/* Kullanıcı bazlı özellik kontrolü */
+const FEATURES: { key: keyof NonNullable<UserProfile["features"]>; label: string }[] = [
+  { key: "rss",           label: "RSS Takibi"  },
+  { key: "articles",      label: "Makaleler"   },
+  { key: "announcements", label: "Duyurular"   },
 ];
 
 export default function AdminUsersPage() {
@@ -84,6 +91,17 @@ export default function AdminUsersPage() {
       : [...current, path];
     await updateUserBlockedPages(u.uid, next);
     setUsers((prev) => prev.map((x) => x.uid === u.uid ? { ...x, blockedPages: next } : x));
+    setBusy(null);
+  };
+
+  /* Özellik toggle — false = kısıtlı, true/undefined = aktif */
+  const handleToggleFeature = async (u: UserProfile, key: keyof NonNullable<UserProfile["features"]>) => {
+    setBusy(u.uid);
+    const current = u.features ?? {};
+    const isRestricted = current[key] === false;
+    const next = { ...current, [key]: isRestricted ? true : false };
+    await updateUserFeatures(u.uid, next);
+    setUsers((prev) => prev.map((x) => x.uid === u.uid ? { ...x, features: next } : x));
     setBusy(null);
   };
 
@@ -281,6 +299,33 @@ export default function AdminUsersPage() {
                             }}
                           >
                             {blocked ? "🚫 " : ""}{page.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Özellik kısıtlamaları */}
+                    <p className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>
+                      Özellik Kısıtlamaları
+                    </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "20px" }}>
+                      {FEATURES.map((f) => {
+                        const restricted = u.features?.[f.key] === false;
+                        return (
+                          <button
+                            key={f.key}
+                            onClick={() => handleToggleFeature(u, f.key)}
+                            disabled={isBusy}
+                            style={{
+                              padding: "6px 12px", borderRadius: "8px", border: "1px solid",
+                              borderColor: restricted ? "rgba(239,68,68,0.4)" : "var(--border)",
+                              background:  restricted ? "rgba(239,68,68,0.08)" : "transparent",
+                              color:       restricted ? "#ef4444" : "var(--text-2)",
+                              fontSize: "0.78rem", fontWeight: 500,
+                              cursor: "pointer", fontFamily: "var(--font-sans)", transition: "all 0.15s",
+                            }}
+                          >
+                            {restricted ? "🚫 " : ""}{f.label}
                           </button>
                         );
                       })}
