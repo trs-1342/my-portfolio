@@ -3,23 +3,30 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
-/** Font dosyaları route dizininde — Vercel edge bundler build sırasında bundle eder */
+/* Statik asset'ler — Vercel edge bundler build sırasında bundle eder */
 const regularFontP = fetch(new URL("./Inter.ttf", import.meta.url)).then((r) =>
   r.arrayBuffer()
 );
 const boldFontP = fetch(new URL("./Inter-Bold.ttf", import.meta.url)).then(
   (r) => r.arrayBuffer()
 );
+const photoP = fetch(new URL("./halil.jpg", import.meta.url)).then(
+  async (r) => {
+    const buf = await r.arrayBuffer();
+    const b64 = Buffer.from(buf).toString("base64");
+    return `data:image/jpeg;base64,${b64}`;
+  }
+);
 
-const TYPE_META: Record<string, { label: string; icon: string }> = {
-  article:  { label: "Makale",    icon: "✍" },
-  rss:      { label: "RSS",       icon: "◉" },
-  project:  { label: "Proje",     icon: "⌨" },
-  photos:   { label: "Fotoğraf",  icon: "◻" },
-  about:    { label: "Hakkımda",  icon: "◈" },
-  contact:  { label: "İletişim",  icon: "✉" },
-  hsounds:  { label: "HSounds",   icon: "♫" },
-  page:     { label: "trs.dev",   icon: "◈" },
+const TYPE_META: Record<string, { label: string }> = {
+  article:  { label: "Makale"   },
+  rss:      { label: "RSS"      },
+  project:  { label: "Proje"    },
+  photos:   { label: "Fotoğraf" },
+  about:    { label: "Hakkımda" },
+  contact:  { label: "İletişim" },
+  hsounds:  { label: "HSounds"  },
+  page:     { label: "trs.dev"  },
 };
 
 /** GET /api/og?title=…&desc=…&type=…&meta=… */
@@ -31,11 +38,13 @@ export async function GET(req: NextRequest) {
   const type  = searchParams.get("type")  ?? "page";
   const meta  = searchParams.get("meta")  ?? "";
 
-  const { label, icon } = TYPE_META[type] ?? TYPE_META.page;
+  const { label } = TYPE_META[type] ?? TYPE_META.page;
 
-  const [regular, bold] = await Promise.all([regularFontP, boldFontP]);
-
-  const fontSize = title.length > 50 ? 44 : title.length > 30 ? 54 : 64;
+  const [regular, bold, photo] = await Promise.all([
+    regularFontP,
+    boldFontP,
+    photoP,
+  ]);
 
   return new ImageResponse(
     (
@@ -44,24 +53,41 @@ export async function GET(req: NextRequest) {
           width: 1200,
           height: 630,
           display: "flex",
-          background: "#09090f",
+          background: "#09090b",
           fontFamily: "Inter",
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* Radial glow */}
+        {/* Sağ üst kırmızı glow */}
         <div
           style={{
             position: "absolute",
-            inset: 0,
+            top: -100,
+            right: -100,
+            width: 500,
+            height: 500,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(220,38,38,0.18) 0%, transparent 70%)",
             display: "flex",
-            background:
-              "radial-gradient(ellipse 70% 50% at 50% 110%, rgba(16,185,129,0.15) 0%, transparent 70%)",
           }}
         />
 
-        {/* Sol kenar çizgisi */}
+        {/* Sol alt kırmızı glow */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: -80,
+            left: -80,
+            width: 400,
+            height: 400,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(220,38,38,0.10) 0%, transparent 70%)",
+            display: "flex",
+          }}
+        />
+
+        {/* Sol kenar çizgisi — kırmızı */}
         <div
           style={{
             position: "absolute",
@@ -71,177 +97,222 @@ export async function GET(req: NextRequest) {
             width: 3,
             display: "flex",
             background:
-              "linear-gradient(180deg, transparent 0%, #10B981 25%, #10B981 75%, transparent 100%)",
+              "linear-gradient(180deg, transparent 0%, #dc2626 20%, #dc2626 80%, transparent 100%)",
           }}
         />
 
-        {/* İçerik */}
+        {/* Sol içerik */}
         <div
           style={{
             position: "absolute",
-            inset: 0,
+            left: 72,
+            top: 0,
+            bottom: 0,
+            width: 680,
             display: "flex",
             flexDirection: "column",
-            padding: "56px 80px",
-            justifyContent: "space-between",
+            justifyContent: "center",
+            gap: 0,
           }}
         >
-          {/* Üst satır */}
+          {/* Üst etiket */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
+              gap: 10,
+              marginBottom: 24,
             }}
           >
-            {/* Logo */}
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
-                gap: 14,
+                padding: "4px 12px",
+                borderRadius: 4,
+                border: "1px solid rgba(220,38,38,0.4)",
+                background: "rgba(220,38,38,0.08)",
               }}
             >
               <span
                 style={{
-                  fontSize: 26,
-                  fontWeight: 700,
-                  color: "#10B981",
-                  letterSpacing: "-0.02em",
-                  display: "flex",
-                }}
-              >
-                trs
-              </span>
-              <span
-                style={{
-                  width: 1,
-                  height: 18,
-                  background: "#1e293b",
-                  display: "flex",
-                }}
-              />
-              <span
-                style={{
-                  fontSize: 13,
-                  color: "#475569",
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  display: "flex",
-                }}
-              >
-                hattab.vercel.app
-              </span>
-            </div>
-
-            {/* Tür etiketi */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "7px 16px",
-                borderRadius: 999,
-                border: "1px solid rgba(16,185,129,0.3)",
-                background: "rgba(16,185,129,0.08)",
-              }}
-            >
-              <span style={{ fontSize: 16, display: "flex" }}>{icon}</span>
-              <span
-                style={{
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: 600,
-                  color: "#10B981",
+                  color: "#dc2626",
+                  letterSpacing: "0.10em",
+                  textTransform: "uppercase",
                   display: "flex",
                 }}
               >
                 {label}
               </span>
             </div>
+            <span
+              style={{
+                fontSize: 12,
+                color: "#3f3f46",
+                letterSpacing: "0.06em",
+                display: "flex",
+              }}
+            >
+              hattab.vercel.app
+            </span>
           </div>
 
-          {/* Orta: başlık + açıklama */}
+          {/* Kullanıcı adı — büyük */}
           <div
-            style={{ display: "flex", flexDirection: "column", gap: 18 }}
+            style={{
+              fontSize: 120,
+              fontWeight: 700,
+              color: "#ffffff",
+              letterSpacing: "-0.04em",
+              lineHeight: 1,
+              display: "flex",
+            }}
           >
+            trs
+          </div>
+
+          {/* Başlık / açıklama */}
+          {title !== "trs" && (
             <div
               style={{
-                fontSize,
+                fontSize: 32,
                 fontWeight: 700,
-                color: "#f1f5f9",
-                letterSpacing: "-0.03em",
-                lineHeight: 1.1,
-                maxWidth: 980,
+                color: "#f4f4f5",
+                letterSpacing: "-0.02em",
+                lineHeight: 1.2,
+                marginTop: 16,
+                maxWidth: 620,
                 display: "flex",
               }}
             >
               {title}
             </div>
+          )}
 
-            {desc && (
+          <div
+            style={{
+              fontSize: 20,
+              color: "#71717a",
+              lineHeight: 1.5,
+              marginTop: title !== "trs" ? 10 : 16,
+              maxWidth: 580,
+              display: "flex",
+            }}
+          >
+            {desc.length > 100 ? desc.slice(0, 97) + "…" : desc}
+          </div>
+
+          {meta && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginTop: 20,
+              }}
+            >
               <div
                 style={{
-                  fontSize: 21,
-                  color: "#64748b",
-                  lineHeight: 1.5,
-                  maxWidth: 780,
+                  width: 5,
+                  height: 5,
+                  borderRadius: "50%",
+                  background: "#dc2626",
+                  display: "flex",
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 14,
+                  color: "#52525b",
                   display: "flex",
                 }}
               >
-                {desc.length > 120 ? desc.slice(0, 117) + "…" : desc}
-              </div>
-            )}
-          </div>
+                {meta}
+              </span>
+            </div>
+          )}
 
-          {/* Alt satır */}
+          {/* Alıntı */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
+              gap: 12,
+              marginTop: 40,
             }}
           >
-            {meta ? (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <div
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: "#10B981",
-                    display: "flex",
-                  }}
-                />
-                <span
-                  style={{
-                    fontSize: 15,
-                    color: "#64748b",
-                    display: "flex",
-                  }}
-                >
-                  {meta}
-                </span>
-              </div>
-            ) : (
-              <div style={{ display: "flex" }} />
-            )}
-
+            <div
+              style={{
+                width: 28,
+                height: 2,
+                background: "#dc2626",
+                display: "flex",
+              }}
+            />
             <span
               style={{
-                fontSize: 13,
-                color: "#1e293b",
-                letterSpacing: "0.04em",
+                fontSize: 15,
+                color: "#52525b",
+                fontStyle: "italic",
+                letterSpacing: "0.01em",
                 display: "flex",
               }}
             >
-              © trs {new Date().getFullYear()}
+              "I defend the moral concept in software."
             </span>
+          </div>
+        </div>
+
+        {/* Sağ — fotoğraf */}
+        <div
+          style={{
+            position: "absolute",
+            right: 80,
+            top: "50%",
+            transform: "translateY(-50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          {/* Dış halka — kırmızı */}
+          <div
+            style={{
+              width: 260,
+              height: 260,
+              borderRadius: "50%",
+              padding: 3,
+              background: "linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {/* İç halka — koyu */}
+            <div
+              style={{
+                width: 254,
+                height: 254,
+                borderRadius: "50%",
+                padding: 2,
+                background: "#09090b",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <img
+                src={photo}
+                width={250}
+                height={250}
+                style={{
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  display: "flex",
+                }}
+              />
+            </div>
           </div>
         </div>
 
@@ -255,7 +326,7 @@ export async function GET(req: NextRequest) {
             height: 2,
             display: "flex",
             background:
-              "linear-gradient(90deg, #10B981 0%, rgba(16,185,129,0.3) 50%, transparent 100%)",
+              "linear-gradient(90deg, #dc2626 0%, rgba(220,38,38,0.3) 50%, transparent 100%)",
           }}
         />
       </div>
