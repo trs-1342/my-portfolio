@@ -149,21 +149,30 @@ export default function SettingsPage() {
 
           {/* ── Özellik Tercihleri ── */}
           <SettingCard title="Özellik Tercihleri">
-            <SettingRow label="RSS Takibi" desc="RSS akışlarını takip et; yeni yazı bildirimlerini al.">
-              <Toggle value={featureRss} onChange={setFeatureRss} />
-            </SettingRow>
-
-            <Divider />
-
-            <SettingRow label="Makaleler" desc="Yeni makale yayınlandığında bildirim al.">
-              <Toggle value={featureArticles} onChange={setFeatureArticles} />
-            </SettingRow>
-
-            <Divider />
-
-            <SettingRow label="Duyurular" desc="Yeni duyurulardan haberdar ol.">
-              <Toggle value={featureAnnouncements} onChange={setFeatureAnnouncements} />
-            </SettingRow>
+            {([
+              { key: "rss",           label: "RSS Takibi",   desc: "RSS akışlarını takip et; yeni yazı bildirimlerini al.", value: featureRss,           setter: setFeatureRss           },
+              { key: "articles",      label: "Makaleler",    desc: "Yeni makale yayınlandığında bildirim al.",               value: featureArticles,      setter: setFeatureArticles      },
+              { key: "announcements", label: "Duyurular",    desc: "Yeni duyurulardan haberdar ol.",                         value: featureAnnouncements, setter: setFeatureAnnouncements },
+            ] as const).map(({ key, label, desc, value, setter }, i) => {
+              const adminDisabled = profile.features?.[key] === false;
+              return (
+                <div key={key}>
+                  {i > 0 && <Divider />}
+                  <SettingRow
+                    label={label}
+                    desc={adminDisabled ? "Admin tarafından kısıtlandı — bu özellik şu an kullanılamaz." : desc}
+                  >
+                    {adminDisabled ? (
+                      <span style={{ fontSize: "0.72rem", color: "#ef4444", fontWeight: 500, padding: "4px 10px", borderRadius: "8px", border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.06)" }}>
+                        Kısıtlı
+                      </span>
+                    ) : (
+                      <Toggle value={value} onChange={setter} />
+                    )}
+                  </SettingRow>
+                </div>
+              );
+            })}
           </SettingCard>
 
           {/* ── Bildirimler ── */}

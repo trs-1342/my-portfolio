@@ -100,10 +100,6 @@ export default async function HSoundsPage() {
               { label: "Makale", value: articles.length },
               { label: "RSS Kaynağı", value: rssFeeds.length },
               { label: "Duyuru", value: announcements.length },
-              {
-                label: "Toplam Okuma (Makaleler)",
-                value: `${articles.reduce((s, a) => s + a.read_time, 0)} dk`,
-              },
             ].map((s) => (
               <div
                 key={s.label}

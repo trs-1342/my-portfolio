@@ -303,28 +303,49 @@ export default function ContentToggle({
     { key: "announcements", label: "📣 Duyurular" },
   ];
 
+  /* Seçili sekmeye göre okuma süresi bilgisi */
+  const tabStat = useMemo(() => {
+    if (tab === "articles") {
+      const totalMin = articles.reduce((s, a) => s + (a.read_time ?? 0), 0);
+      return `${totalMin} dk toplam okuma`;
+    }
+    if (tab === "rss") {
+      return `${rssFeeds.length} kaynak takip ediliyor`;
+    }
+    return `${announcements.length} duyuru`;
+  }, [tab, articles, rssFeeds, announcements]);
+
   return (
     <div>
-      {/* ── Pill toggle ── */}
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
-        <div className="glass" style={{ display: "inline-flex", padding: "5px", borderRadius: "999px", gap: "4px", flexWrap: "wrap" }}>
-          {tabs.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => { setTab(key); setSearch(""); }}
-              style={{
-                padding: "8px 22px", borderRadius: "999px", border: "none", cursor: "pointer",
-                fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 600,
-                transition: "all 0.25s var(--spring)",
-                background: tab === key ? "var(--accent)" : "transparent",
-                color:      tab === key ? "#fff" : "var(--text-2)",
-                boxShadow:  tab === key ? "0 2px 12px var(--accent-glow)" : "none",
-              }}
-            >
-              {label}
-            </button>
-          ))}
+      {/* ── Tab + stat satırı ── */}
+      <div style={{ marginBottom: "20px" }}>
+        {/* Sekmeler — yatay kaydırılabilir */}
+        <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", marginBottom: "12px" }}>
+          <div className="glass" style={{ display: "inline-flex", padding: "5px", borderRadius: "999px", gap: "4px", minWidth: "max-content" }}>
+            {tabs.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => { setTab(key); setSearch(""); }}
+                style={{
+                  padding: "8px 20px", borderRadius: "999px", border: "none", cursor: "pointer",
+                  fontFamily: "var(--font-sans)", fontSize: "0.84rem", fontWeight: 600,
+                  transition: "all 0.25s var(--spring)",
+                  background: tab === key ? "var(--accent)" : "transparent",
+                  color:      tab === key ? "#fff" : "var(--text-2)",
+                  boxShadow:  tab === key ? "0 2px 12px var(--accent-glow)" : "none",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Dinamik stat */}
+        <p className="mono" style={{ fontSize: "0.72rem", color: "var(--text-3)", letterSpacing: "0.06em" }}>
+          {tabStat}
+        </p>
       </div>
 
       {/* ── Araç çubuğu: arama + sıralama ── */}

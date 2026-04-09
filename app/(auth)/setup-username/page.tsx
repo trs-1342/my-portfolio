@@ -64,6 +64,25 @@ export default function SetupUsernamePage() {
       sessionStorage.removeItem("pending_display_name");
       await refreshProfile();
 
+      /* Admin'e yeni kayıt bildirimi gönder (hata durumunda kayıt engellenmez) */
+      try {
+        const idToken = await user.getIdToken();
+        await fetch("/api/admin/notify-new-user", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            username,
+            email:       user.email ?? "",
+            displayName: resolvedDisplayName,
+          }),
+        });
+      } catch {
+        /* sessizce geç */
+      }
+
       if (user.emailVerified) {
         router.push("/awaiting-approval");
       } else {

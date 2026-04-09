@@ -277,8 +277,33 @@ export default function AdminUsersPage() {
                 {isExpanded && !isAdmin && (
                   <div style={{ padding: "0 20px 20px 70px", borderTop: "1px solid var(--border)" }}>
 
-                    {/* Sayfa engelleri */}
+                    {/* Kullanıcı tercihleri — salt okunur */}
                     <p className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "16px 0 10px" }}>
+                      Kullanıcı Tercihleri
+                    </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "20px" }}>
+                      {/* Tema */}
+                      <span style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid var(--border)", background: "var(--bg-2)", fontSize: "0.72rem", color: "var(--text-2)" }}>
+                        🎨 {u.settings?.theme ?? "dark"}
+                      </span>
+                      {/* Email bildirimleri (kullanıcının kendi tercihi) */}
+                      {([
+                        { key: "email",           label: "Email Ana" },
+                        { key: "newArticle",      label: "Makale"    },
+                        { key: "newRssPost",      label: "RSS"       },
+                        { key: "newAnnouncement", label: "Duyuru"    },
+                      ] as const).map(({ key, label }) => {
+                        const off = u.notifications?.[key] === false;
+                        return (
+                          <span key={key} style={{ padding: "4px 10px", borderRadius: "6px", border: `1px solid ${off ? "rgba(239,68,68,0.3)" : "var(--border)"}`, background: off ? "rgba(239,68,68,0.06)" : "transparent", fontSize: "0.72rem", color: off ? "#ef4444" : "var(--text-3)" }}>
+                            🔔 {label}: {off ? "kapalı" : "açık"}
+                          </span>
+                        );
+                      })}
+                    </div>
+
+                    {/* Sayfa engelleri */}
+                    <p className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>
                       Sayfa Erişim Kısıtlamaları
                     </p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "20px" }}>

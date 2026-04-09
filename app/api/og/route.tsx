@@ -252,7 +252,7 @@ export async function GET(req: NextRequest) {
                 display: "flex",
               }}
             >
-              "I defend the moral concept in software."
+              &quot;I defend the moral concept in software.&quot;
             </span>
           </div>
         </div>
@@ -281,8 +281,10 @@ export async function GET(req: NextRequest) {
               justifyContent: "center",
             }}
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={photo}
+              alt=""
               width={258}
               height={258}
               style={{
