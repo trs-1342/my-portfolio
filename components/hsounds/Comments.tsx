@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import {
   getComments, addComment, deleteComment, toggleCommentLike,
 } from "@/lib/firestore";
 import type { Comment } from "@/lib/firestore";
+import LikesCard from "./LikesCard";
 
 /* ── Yardımcılar ── */
 
@@ -49,6 +50,7 @@ function Avatar({ name, photoURL }: { name: string; photoURL?: string | null }) 
 interface CommentItemProps {
   comment: Comment;
   currentUid: string | null;
+  currentUsername: string;
   isAdmin: boolean;
   isReply?: boolean;
   onDelete: (id: string) => void;
@@ -56,20 +58,22 @@ interface CommentItemProps {
   onReply?: (id: string) => void;
 }
 
-function CommentItem({ comment, currentUid, isAdmin, isReply, onDelete, onLike, onReply }: CommentItemProps) {
-  const liked   = currentUid ? comment.likes.includes(currentUid) : false;
+function CommentItem({ comment, currentUid, currentUsername, isAdmin, isReply, onDelete, onLike, onReply }: CommentItemProps) {
+  const [showCard, setShowCard] = useState(false);
+  const likeRef = useRef<HTMLButtonElement>(null);
+
+  /* Geriye dönük uyumluluk: hem UID hem username kontrol */
+  const liked = currentUid
+    ? comment.likes.includes(currentUid) || (currentUsername ? comment.likes.includes(currentUsername) : false)
+    : false;
   const canDelete = currentUid && (comment.authorUid === currentUid || isAdmin);
 
   return (
-    <div style={{
-      display: "flex",
-      gap: "10px",
-      padding: isReply ? "10px 0" : "12px 0",
-    }}>
+    <div style={{ display: "flex", gap: "10px", padding: isReply ? "10px 0" : "12px 0" }}>
       <Avatar name={comment.authorName} photoURL={comment.authorPhotoURL} />
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Üst satır: isim + zaman */}
+        {/* Üst satır */}
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px", flexWrap: "wrap" }}>
           <span style={{ fontWeight: 600, fontSize: "0.82rem", color: "var(--text)" }}>
             {comment.authorName}
@@ -89,23 +93,45 @@ function CommentItem({ comment, currentUid, isAdmin, isReply, onDelete, onLike, 
 
         {/* Aksiyonlar */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          {/* Beğeni */}
-          <button
-            onClick={() => currentUid && onLike(comment.id)}
-            disabled={!currentUid}
-            style={{
-              display: "flex", alignItems: "center", gap: "4px",
-              background: "none", border: "none", cursor: currentUid ? "pointer" : "default",
-              color: liked ? "#ef4444" : "var(--text-3)", fontSize: "0.78rem",
-              padding: 0, fontFamily: "var(--font-sans)", transition: "color 0.15s",
-            }}
-            title={currentUid ? undefined : "Beğenmek için giriş yap"}
-          >
-            <span style={{ fontSize: "0.9rem" }}>{liked ? "♥" : "♡"}</span>
-            {comment.likes.length > 0 && <span>{comment.likes.length}</span>}
-          </button>
+          {/* Beğeni + popup */}
+          <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "3px" }}>
+            <button
+              ref={likeRef}
+              onClick={() => currentUid && onLike(comment.id)}
+              disabled={!currentUid}
+              style={{
+                display: "flex", alignItems: "center", gap: "3px",
+                background: "none", border: "none", cursor: currentUid ? "pointer" : "default",
+                color: liked ? "#ef4444" : "var(--text-3)", fontSize: "0.78rem",
+                padding: 0, fontFamily: "var(--font-sans)", transition: "color 0.15s",
+              }}
+              title={currentUid ? undefined : "Beğenmek için giriş yap"}
+            >
+              <span style={{ fontSize: "0.9rem" }}>{liked ? "♥" : "♡"}</span>
+            </button>
+            {comment.likes.length > 0 && (
+              <button
+                onClick={() => setShowCard((p) => !p)}
+                className="mono"
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  fontSize: "0.72rem", color: liked ? "#ef4444" : "var(--text-3)",
+                  padding: 0, fontFamily: "var(--font-mono)",
+                }}
+              >
+                {comment.likes.length}
+              </button>
+            )}
+            {showCard && (
+              <LikesCard
+                likes={comment.likes}
+                onClose={() => setShowCard(false)}
+                anchorRef={likeRef}
+              />
+            )}
+          </div>
 
-          {/* Yanıtla — sadece üst seviye yorumlarda */}
+          {/* Yanıtla */}
           {!isReply && onReply && currentUid && (
             <button
               onClick={() => onReply(comment.id)}
@@ -256,15 +282,18 @@ export default function Comments({ articleId }: { articleId: string }) {
   };
 
   const handleLike = async (id: string) => {
-    if (!user) return;
+    if (!user || !profile) return;
     const c = comments.find(x => x.id === id);
     if (!c) return;
-    const liked = c.likes.includes(user.uid);
-    setComments(prev => prev.map(x => x.id !== id ? x : {
+    const identifier = profile.username || user.uid;
+    const liked = c.likes.includes(user.uid) || c.likes.includes(identifier);
+    setComments(prev => prev.map(x => x.id !== id ? x : ({
       ...x,
-      likes: liked ? x.likes.filter(u => u !== user.uid) : [...x.likes, user.uid],
-    }));
-    await toggleCommentLike(id, user.uid, !liked);
+      likes: liked
+        ? x.likes.filter(l => l !== user.uid && l !== identifier)
+        : [...x.likes, identifier],
+    })));
+    await toggleCommentLike(id, user.uid, profile.username, !liked);
   };
 
   const topLevel = comments.filter(c => c.parentId === null);
@@ -333,6 +362,7 @@ export default function Comments({ articleId }: { articleId: string }) {
                   <CommentItem
                     comment={c}
                     currentUid={user?.uid ?? null}
+                    currentUsername={profile?.username ?? ""}
                     isAdmin={isAdmin}
                     onDelete={handleDelete}
                     onLike={handleLike}
@@ -356,6 +386,7 @@ export default function Comments({ articleId }: { articleId: string }) {
                         <CommentItem
                           comment={r}
                           currentUid={user?.uid ?? null}
+                          currentUsername={profile?.username ?? ""}
                           isAdmin={isAdmin}
                           isReply
                           onDelete={handleDelete}

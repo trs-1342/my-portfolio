@@ -4,6 +4,7 @@ import {
   collection, addDoc,
   getDocs, query, orderBy, where,
   arrayUnion, arrayRemove,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -128,15 +129,29 @@ export async function updateUserFeatures(
   await updateDoc(doc(db, "users", uid), { features });
 }
 
-/* Username güncelle */
+/* Username güncelle — yorumlardaki authorUsername alanını da günceller */
 export async function updateUsername(uid: string, oldUsername: string, newUsername: string) {
   if (!db) return;
 
-  if (!(await isUsernameAvailable(newUsername))) throw new Error("Bu username zaten alınmış.");
+  const newLower = newUsername.toLowerCase();
+  if (!(await isUsernameAvailable(newLower))) throw new Error("Bu username zaten alınmış.");
 
-  await updateDoc(doc(db, "users", uid), { username: newUsername.toLowerCase() });
-  await setDoc(doc(db, "usernames", newUsername.toLowerCase()), { uid });
+  /* Kullanıcı dokümanı + usernames collection */
+  await updateDoc(doc(db, "users", uid), { username: newLower });
+  await setDoc(doc(db, "usernames", newLower), { uid });
   await deleteDoc(doc(db, "usernames", oldUsername.toLowerCase()));
+
+  /* Yorumlardaki authorUsername'i toplu güncelle */
+  const commentsSnap = await getDocs(
+    query(collection(db, "comments"), where("authorUid", "==", uid))
+  );
+  if (!commentsSnap.empty) {
+    const batch = writeBatch(db);
+    for (const d of commentsSnap.docs) {
+      batch.update(d.ref, { authorUsername: newLower });
+    }
+    await batch.commit();
+  }
 }
 
 /* Hesap sil */
@@ -564,12 +579,23 @@ export async function deletePhoto(id: string): Promise<void> {
   await deleteDoc(doc(db, "photos", id));
 }
 
-/* Makale beğeni ekle/çıkar */
-export async function toggleArticleLike(articleId: string, uid: string, add: boolean): Promise<void> {
+/* Makale beğeni ekle/çıkar — yeni kayıtlar username ile saklanır */
+export async function toggleArticleLike(
+  articleId: string,
+  uid: string,
+  username: string,
+  add: boolean,
+): Promise<void> {
   if (!db) return;
-  await updateDoc(doc(db, "hsounds_articles", articleId), {
-    likes: add ? arrayUnion(uid) : arrayRemove(uid),
-  });
+  const identifier = username || uid;
+  const ref = doc(db, "hsounds_articles", articleId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  let likes: string[] = snap.data().likes ?? [];
+  /* Eski UID girişini temizle (geriye dönük uyumluluk) */
+  likes = likes.filter((l) => l !== uid && l !== identifier);
+  if (add) likes.push(identifier);
+  await updateDoc(ref, { likes });
 }
 
 /* Favori ekle/çıkar */
@@ -737,20 +763,34 @@ export async function addComment(
   return ref.id;
 }
 
+/* Yorum sil — alt yanıtları da cascade siler */
 export async function deleteComment(commentId: string): Promise<void> {
   if (!db) return;
-  await deleteDoc(doc(db, "comments", commentId));
+  const repliesSnap = await getDocs(
+    query(collection(db, "comments"), where("parentId", "==", commentId))
+  );
+  const batch = writeBatch(db);
+  batch.delete(doc(db, "comments", commentId));
+  for (const r of repliesSnap.docs) batch.delete(r.ref);
+  await batch.commit();
 }
 
+/* Yorum beğeni ekle/çıkar — yeni kayıtlar username ile saklanır */
 export async function toggleCommentLike(
   commentId: string,
   uid: string,
+  username: string,
   add: boolean,
 ): Promise<void> {
   if (!db) return;
-  await updateDoc(doc(db, "comments", commentId), {
-    likes: add ? arrayUnion(uid) : arrayRemove(uid),
-  });
+  const identifier = username || uid;
+  const ref = doc(db, "comments", commentId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  let likes: string[] = snap.data().likes ?? [];
+  likes = likes.filter((l) => l !== uid && l !== identifier);
+  if (add) likes.push(identifier);
+  await updateDoc(ref, { likes });
 }
 
 /* ── Site Bildirim Konfigürasyonu ── */

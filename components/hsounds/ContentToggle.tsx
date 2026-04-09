@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toggleArticleLike } from "@/lib/firestore";
 import type { Article, RssFeed, Announcement } from "@/lib/hsounds";
+import LikesCard from "./LikesCard";
 
 type Tab      = "articles" | "rss" | "announcements";
 type ArtSort  = "date-desc" | "date-asc" | "time-asc" | "time-desc" | "az";
@@ -17,53 +18,80 @@ function readTimeLabel(min: number): string {
   return `${String(min).padStart(2, "0")}:00 dk`;
 }
 
-/* ── Like butonu ─────────────────────────────────────────── */
+/* ── Like butonu (ContentToggle içinde) ─────────────────── */
 function LikeButton({
   articleId,
   likes,
   uid,
+  username,
   onToggle,
 }: {
   articleId: string;
   likes: string[];
   uid: string | null;
+  username: string;
   onToggle: (id: string, liked: boolean) => void;
 }) {
-  const liked = uid ? likes.includes(uid) : false;
+  const identifier = username || uid || "";
+  const liked = uid
+    ? likes.includes(uid) || (username ? likes.includes(username) : false)
+    : false;
+
+  const [showCard, setShowCard] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!uid) return;
     onToggle(articleId, liked);
-    await toggleArticleLike(articleId, uid, !liked);
+    await toggleArticleLike(articleId, uid, username, !liked);
   };
 
   return (
-    <button
-      onClick={handleClick}
-      title={uid ? (liked ? "Beğeniyi kaldır" : "Beğen") : "Beğenmek için giriş yap"}
-      style={{
-        background: "none",
-        border: "none",
-        cursor: uid ? "pointer" : "default",
-        padding: "4px 6px",
-        display: "flex",
-        alignItems: "center",
-        gap: "4px",
-        borderRadius: "6px",
-        transition: "background 0.15s",
-        color: liked ? "#ef4444" : "var(--text-3)",
-        flexShrink: 0,
-      }}
-      onMouseEnter={(e) => { if (uid) (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-2)"; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }}
-    >
-      <svg width="15" height="15" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-      </svg>
-      <span className="mono" style={{ fontSize: "0.68rem" }}>{likes.length}</span>
-    </button>
+    <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "0", flexShrink: 0 }}>
+      <button
+        ref={btnRef}
+        onClick={handleClick}
+        title={uid ? (liked ? "Beğeniyi kaldır" : "Beğen") : "Beğenmek için giriş yap"}
+        style={{
+          background: "none", border: "none",
+          cursor: uid ? "pointer" : "default",
+          padding: "4px 4px",
+          display: "flex", alignItems: "center", gap: "3px",
+          borderRadius: "6px", transition: "background 0.15s",
+          color: liked ? "#ef4444" : "var(--text-3)",
+        }}
+        onMouseEnter={(e) => { if (uid) (e.currentTarget as HTMLButtonElement).style.background = "var(--bg-2)"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+        </svg>
+      </button>
+      {likes.length > 0 && (
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowCard((p) => !p); }}
+          className="mono"
+          style={{
+            background: "none", border: "none", cursor: "pointer",
+            padding: "4px 4px", fontSize: "0.68rem",
+            color: liked ? "#ef4444" : "var(--text-3)",
+          }}
+        >
+          {likes.length}
+        </button>
+      )}
+      {showCard && (
+        <LikesCard
+          likes={likes}
+          onClose={() => setShowCard(false)}
+          anchorRef={btnRef}
+        />
+      )}
+      {/* identifier kullanımını suppress et */}
+      {identifier && null}
+    </div>
   );
 }
 
@@ -72,12 +100,14 @@ function ArticleRow({
   article,
   index,
   uid,
+  username,
   localLikes,
   onLikeToggle,
 }: {
   article: Article;
   index: number;
   uid: string | null;
+  username: string;
   localLikes: string[];
   onLikeToggle: (id: string, liked: boolean) => void;
 }) {
@@ -118,6 +148,7 @@ function ArticleRow({
         articleId={article.id}
         likes={localLikes}
         uid={uid}
+        username={username}
         onToggle={onLikeToggle}
       />
     </div>
@@ -233,8 +264,9 @@ export default function ContentToggle({
   rssFeeds: RssFeed[];
   announcements: Announcement[];
 }) {
-  const { user } = useAuth();
-  const uid = user?.uid ?? null;
+  const { user, profile } = useAuth();
+  const uid      = user?.uid ?? null;
+  const username = profile?.username ?? "";
 
   const [tab,        setTab]        = useState<Tab>("articles");
   const [search,     setSearch]     = useState("");
@@ -250,11 +282,13 @@ export default function ContentToggle({
 
   const handleLikeToggle = (id: string, wasLiked: boolean) => {
     if (!uid) return;
+    const identifier = username || uid;
     setLikesMap((prev) => {
       const cur = prev[id] ?? [];
+      const cleaned = cur.filter((l) => l !== uid && l !== identifier);
       return {
         ...prev,
-        [id]: wasLiked ? cur.filter((u) => u !== uid) : [...cur, uid],
+        [id]: wasLiked ? cleaned : [...cleaned, identifier],
       };
     });
   };
@@ -418,6 +452,7 @@ export default function ContentToggle({
                   article={a}
                   index={i}
                   uid={uid}
+                  username={username}
                   localLikes={likesMap[a.id] ?? []}
                   onLikeToggle={handleLikeToggle}
                 />
