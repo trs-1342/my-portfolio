@@ -6,17 +6,31 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { getUserProfile } from "@/lib/firestore";
 
+// Firebase hata kodlarını Türkçeye çevirir
+function translateAuthError(code: string): string {
+  switch (code) {
+    case "auth/missing-email":         return "Email adresi girilmedi.";
+    case "auth/invalid-email":         return "Geçerli bir email adresi gir.";
+    case "auth/user-not-found":        return "Bu emaile kayıtlı hesap bulunamadı.";
+    case "auth/too-many-requests":     return "Çok fazla deneme yapıldı. Bir süre bekle.";
+    case "auth/network-request-failed":return "Ağ hatası. İnternet bağlantını kontrol et.";
+    default:                           return "Bir hata oluştu. Tekrar dene.";
+  }
+}
+
 // Giriş formunun asıl mantığını bu bileşene taşıyoruz
 function LoginForm() {
-  const { loginEmail, loginGoogle } = useAuth();
+  const { loginEmail, loginGoogle, resetPassword } = useAuth();
   const router       = useRouter();
   const searchParams = useSearchParams();
   const redirect     = searchParams.get("redirect") ?? "/";
 
+  const [mode,     setMode]     = useState<"login" | "forgot">("login");
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
   const [error,    setError]    = useState("");
   const [loading,  setLoading]  = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +63,74 @@ function LoginForm() {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(""); setLoading(true);
+    try {
+      await resetPassword(email);
+      setResetSent(true);
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code ?? "";
+      setError(translateAuthError(code));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const backToLogin = () => {
+    setMode("login");
+    setResetSent(false);
+    setError("");
+  };
+
+  // Şifremi unuttum — başarı ekranı
+  if (mode === "forgot" && resetSent) {
+    return (
+      <div className="glass" style={{ borderRadius: "20px", padding: "36px 32px", textAlign: "center" }}>
+        <div style={{ fontSize: "2.2rem", marginBottom: "16px" }}>📬</div>
+        <h2 style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--text)", marginBottom: "10px" }}>
+          Email gönderildi
+        </h2>
+        <p style={{ fontSize: "0.85rem", color: "var(--text-2)", lineHeight: 1.65, marginBottom: "24px" }}>
+          <strong style={{ color: "var(--text)" }}>{email}</strong> adresine sıfırlama bağlantısı gönderildi.
+          Spam / gereksiz klasörünü de kontrol et.
+        </p>
+        <button onClick={backToLogin} className="btn btn-ghost" style={{ margin: "0 auto" }}>
+          ← Girişe dön
+        </button>
+      </div>
+    );
+  }
+
+  // Şifremi unuttum — email formu
+  if (mode === "forgot") {
+    return (
+      <div className="glass" style={{ borderRadius: "20px", padding: "36px 32px" }}>
+        <h1 style={{ fontSize: "1.3rem", fontWeight: 700, color: "var(--text)", marginBottom: "6px" }}>
+          Şifremi Unuttum
+        </h1>
+        <p style={{ fontSize: "0.85rem", color: "var(--text-3)", marginBottom: "28px" }}>
+          Email adresini gir, sıfırlama bağlantısı gönderelim.
+        </p>
+
+        <form onSubmit={handleResetPassword} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <AuthInput label="Email" type="email" value={email} onChange={setEmail} placeholder="ornek@mail.com" disabled={loading} />
+
+          {error && <p style={{ fontSize: "0.8rem", color: "#ef4444", marginTop: "-4px" }}>{error}</p>}
+
+          <button type="submit" disabled={loading} className="btn btn-accent" style={{ justifyContent: "center", padding: "12px", fontSize: "0.9rem", marginTop: "4px" }}>
+            {loading ? "Gönderiliyor..." : "Sıfırlama Bağlantısı Gönder"}
+          </button>
+        </form>
+
+        <button onClick={backToLogin} className="mono" style={{ marginTop: "18px", fontSize: "0.78rem", color: "var(--text-3)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+          ← Girişe dön
+        </button>
+      </div>
+    );
+  }
+
+  // Normal giriş ekranı
   return (
     <div className="glass" style={{ borderRadius: "20px", padding: "36px 32px" }}>
       <h1 style={{ fontSize: "1.3rem", fontWeight: 700, color: "var(--text)", marginBottom: "6px" }}>
@@ -83,13 +165,36 @@ function LoginForm() {
 
       <form onSubmit={handleEmailLogin} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
         <AuthInput label="Email" type="email" value={email} onChange={setEmail} placeholder="ornek@mail.com" disabled={loading} />
-        <AuthInput label="Şifre" type="password" value={password} onChange={setPassword} placeholder="••••••••" disabled={loading} />
+
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+            <label className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Şifre
+            </label>
+            <button
+              type="button"
+              onClick={() => { setMode("forgot"); setError(""); }}
+              className="mono"
+              style={{ fontSize: "0.68rem", color: "var(--text-3)", background: "none", border: "none", cursor: "pointer", padding: 0, textDecoration: "underline", textUnderlineOffset: "2px" }}
+            >
+              Şifremi unuttum
+            </button>
+          </div>
+          <input
+            type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••" required disabled={loading}
+            style={{
+              width: "100%", padding: "10px 14px", borderRadius: "10px",
+              border: "1px solid var(--border)", background: "var(--bg)",
+              color: "var(--text)", fontFamily: "var(--font-sans)", fontSize: "0.9rem",
+              outline: "none", transition: "border-color 0.15s",
+            }}
+            onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+            onBlur={(e)  => (e.target.style.borderColor = "var(--border)")}
+          />
+        </div>
 
         {error && <p style={{ fontSize: "0.8rem", color: "#ef4444", marginTop: "-4px" }}>{error}</p>}
-
-        <Link href="/forgot-password" hidden className="mono" style={{ fontSize: "0.72rem", color: "var(--text-3)", textDecoration: "none", textAlign: "right", marginTop: "-4px" }}>
-          Şifremi unuttum →
-        </Link>
 
         <button type="submit" disabled={loading} className="btn btn-accent" style={{ justifyContent: "center", padding: "12px", fontSize: "0.9rem", marginTop: "4px" }}>
           {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
