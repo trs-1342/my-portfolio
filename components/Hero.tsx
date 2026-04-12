@@ -1,5 +1,6 @@
 import { readdirSync } from "fs";
 import { join } from "path";
+import { getTranslations } from "next-intl/server";
 import PhotoSlider from "./PhotoSlider";
 import { getHomepageConfigServer } from "@/lib/site-server";
 
@@ -22,7 +23,10 @@ const LEVEL_LABELS: Record<string, string> = {
 
 export default async function Hero() {
   const photos = getPhotos();
-  const cfg    = await getHomepageConfigServer();
+  const [cfg, t] = await Promise.all([
+    getHomepageConfigServer(),
+    getTranslations("Hero"),
+  ]);
 
   /* Markdown ve \n → HTML dönüşümü */
   const aboutHtml = cfg.aboutText
@@ -70,7 +74,7 @@ export default async function Hero() {
               background: "var(--accent)", display: "inline-block",
             }}
           />
-          çalışmaya müsait
+          {t("availableForWork")}
         </div>
 
         {/* İsim */}

@@ -1,26 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 type Category = "bug" | "feedback" | "collab" | "hi" | "rec";
 type Status = "idle" | "sending" | "success";
-
-const CATEGORIES: { id: Category; label: string }[] = [
-  { id: "hi",       label: "💬 Sadece Selam"         },
-  { id: "feedback", label: "💡 Geri Bildirim"        },
-  { id: "rec",      label: "💡 Öneri"      },
-  { id: "collab",   label: "🤝 İşbirliği / Proje"   },
-  { id: "bug",      label: "🐛 Hata Bildirimi"      },
-];
-
-const TERMINAL_LINES = [
-  "> Bağlantı başlatılıyor...",
-  "> Uçtan uca şifreleniyor... [OK]",
-  "> trs ana makinesine iletiliyor...",
-  "> Mesaj teslim edildi. [BAŞARILI]",
-];
 
 const QUICK_LINKS = [
   { icon: "✉️", label: "Email",     href: "mailto:hattab1342@gmail.com",             color: "#10B981" },
@@ -30,6 +16,7 @@ const QUICK_LINKS = [
 ];
 
 export default function ContactForm() {
+  const t = useTranslations("Contact");
   const { user, profile } = useAuth();
   const router = useRouter();
 
@@ -42,17 +29,32 @@ export default function ContactForm() {
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const TERMINAL_LINES = [
+    t("terminal.line1"),
+    t("terminal.line2"),
+    t("terminal.line3"),
+    t("terminal.line4"),
+  ];
+
+  const CATEGORIES: { id: Category; label: string }[] = [
+    { id: "hi",       label: t("categories.hi")       },
+    { id: "feedback", label: t("categories.feedback")  },
+    { id: "rec",      label: t("categories.rec")       },
+    { id: "collab",   label: t("categories.collab")    },
+    { id: "bug",      label: t("categories.bug")       },
+  ];
+
   /* Ban / sayfa engeli kontrolü */
   useEffect(() => {
     if (!profile) return;
     if (profile.status === "banned") {
       const pages = (profile.blockedPages ?? []).join(",");
-      router.replace(`/blocked?banned=1&pages=${encodeURIComponent(pages)}`);
+      router.replace(`/blocked?banned=1&pages=${encodeURIComponent(pages)}` as Parameters<typeof router.replace>[0]);
       return;
     }
     if (profile.blockedPages?.includes("/contact")) {
       const pages = (profile.blockedPages ?? []).join(",");
-      router.replace(`/blocked?path=/contact&pages=${encodeURIComponent(pages)}`);
+      router.replace(`/blocked?path=/contact&pages=${encodeURIComponent(pages)}` as Parameters<typeof router.replace>[0]);
     }
   }, [profile, router]);
 
@@ -123,13 +125,13 @@ export default function ContactForm() {
           <div style={{ textAlign: "center", padding: "40px 0" }}>
             <div style={{ fontSize: "3.5rem", marginBottom: "16px" }}>✅</div>
             <h2 style={{ fontWeight: 700, fontSize: "1.3rem", color: "var(--text)", marginBottom: "8px" }}>
-              Mesaj iletildi!
+              {t("successTitle")}
             </h2>
             <p style={{ color: "var(--text-2)", fontSize: "0.9rem", marginBottom: "28px" }}>
-              En kısa sürede geri dönmeye çalışacağım.
+              {t("successBody")}
             </p>
             <button onClick={reset} className="btn btn-ghost" style={{ margin: "0 auto" }}>
-              ← Yeni Mesaj
+              {t("newMessage")}
             </button>
           </div>
         ) : (
@@ -140,11 +142,11 @@ export default function ContactForm() {
               {/* Ad */}
               <div>
                 <label className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "6px" }}>
-                  Ad / Username
+                  {t("nameLabel")}
                 </label>
                 <input
                   type="text" value={name} onChange={(e) => setName(e.target.value)}
-                  placeholder="trs" autoComplete="name" required
+                  placeholder={t("namePlaceholder")} autoComplete="name" required
                   disabled={status === "sending"}
                   style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-sans)", fontSize: "0.9rem", outline: "none", transition: "border-color 0.15s" }}
                   onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
@@ -155,10 +157,10 @@ export default function ContactForm() {
               {/* Email — oturum açıksa readonly */}
               <div>
                 <label className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "6px" }}>
-                  Email Adresi
+                  {t("emailLabel")}
                   {user?.email && (
                     <span style={{ marginLeft: "6px", color: "var(--accent)", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>
-                      · oturumdan alındı
+                      {t("emailFromSession")}
                     </span>
                   )}
                 </label>
@@ -184,11 +186,8 @@ export default function ContactForm() {
 
             {/* Kategori pill butonları */}
             <div>
-              <p
-                className="mono"
-                style={{ fontSize: "0.7rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}
-              >
-                Konu
+              <p className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>
+                {t("categoryLabel")}
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {CATEGORIES.map((c) => (
@@ -220,17 +219,14 @@ export default function ContactForm() {
 
             {/* Mesaj textarea */}
             <div>
-              <label
-                className="mono"
-                style={{ fontSize: "0.7rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "6px" }}
-              >
-                Mesaj
+              <label className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "6px" }}>
+                {t("messageLabel")}
               </label>
               <textarea
                 ref={textareaRef}
                 value={message}
                 onChange={(e) => { setMessage(e.target.value); autoResize(); }}
-                placeholder="> Mesajınızı buraya yazın..."
+                placeholder={t("messagePlaceholder")}
                 required
                 disabled={status === "sending"}
                 rows={4}
@@ -273,7 +269,6 @@ export default function ContactForm() {
                     {line}
                   </p>
                 ))}
-                {/* Yanıp sönen imleç */}
                 <span style={{ width: 7, height: 13, background: "var(--accent)", display: "inline-block", animation: "statusPulse 0.7s step-end infinite", marginTop: 2 }} />
               </div>
             )}
@@ -298,7 +293,7 @@ export default function ContactForm() {
                 (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 0 var(--accent-glow)";
               }}
             >
-              {status === "sending" ? "İletiliyor..." : "⚡ Sisteme İlet"}
+              {status === "sending" ? t("sending") : t("send")}
             </button>
 
           </form>
@@ -310,11 +305,8 @@ export default function ContactForm() {
         className="anim-fade-up d3"
         style={{ display: "flex", flexDirection: "column", gap: "12px" }}
       >
-        <p
-          className="mono"
-          style={{ fontSize: "0.7rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "4px" }}
-        >
-          Hızlı Erişim
+        <p className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "4px" }}>
+          {t("quickAccess")}
         </p>
 
         {QUICK_LINKS.map((l) => (
@@ -364,17 +356,15 @@ export default function ContactForm() {
         ))}
 
         {/* Yanıt süresi */}
-        <div
-          className="glass"
-          style={{ padding: "14px 16px", borderRadius: "12px", marginTop: "4px" }}
-        >
+        <div className="glass" style={{ padding: "14px 16px", borderRadius: "12px", marginTop: "4px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
             <span className="pulse-dot" />
-            <span className="mono" style={{ fontSize: "0.7rem", color: "var(--accent)" }}>Çevrimiçi</span>
+            <span className="mono" style={{ fontSize: "0.7rem", color: "var(--accent)" }}>{t("online")}</span>
           </div>
-          <p style={{ fontSize: "0.78rem", color: "var(--text-2)", lineHeight: 1.6 }}>
-            Genellikle <strong style={{ color: "var(--text)" }}>42 saat</strong> içinde yanıt veririm.
-          </p>
+          <p
+            style={{ fontSize: "0.78rem", color: "var(--text-2)", lineHeight: 1.6 }}
+            dangerouslySetInnerHTML={{ __html: t("replyTime") }}
+          />
         </div>
       </div>
 

@@ -1,0 +1,176 @@
+{
+  "Nav": {
+    "about": "Hakkımda",
+    "projects": "Projeler",
+    "photos": "Fotoğraflar",
+    "hsounds": "Hsounds",
+    "thanks": "Teşekkürler",
+    "contact": "İletişim",
+    "solarSystem": "Güneş Sistemi",
+    "login": "Giriş",
+    "profile": "Profil",
+    "openMenu": "Menüyü aç",
+    "closeMenu": "Menüyü kapat"
+  },
+  "Footer": {
+    "pages": "Sayfalar",
+    "contact": "İletişim",
+    "allRightsReserved": "Tüm hakları saklıdır."
+  },
+  "Hero": {
+    "availableForWork": "çalışmaya müsait"
+  },
+  "Skills": {
+    "title": "Yetenekler"
+  },
+  "Auth": {
+    "login": {
+      "title": "Giriş Yap",
+      "subtitle": "Hesabına hoş geldin.",
+      "google": "Google ile devam et",
+      "or": "veya",
+      "email": "Email",
+      "password": "Şifre",
+      "forgotPassword": "Şifremi unuttum",
+      "submit": "Giriş Yap",
+      "submitting": "Giriş yapılıyor...",
+      "noAccount": "Hesabın yok mu?",
+      "signUp": "Kayıt ol",
+      "errorEmail": "Email veya şifre hatalı.",
+      "errorGoogle": "Google ile giriş başarısız.",
+      "backToLogin": "← Girişe dön",
+      "loading": "Yükleniyor..."
+    },
+    "forgot": {
+      "title": "Şifremi Unuttum",
+      "subtitle": "Email adresini gir, sıfırlama bağlantısı gönderelim.",
+      "submit": "Sıfırlama Bağlantısı Gönder",
+      "submitting": "Gönderiliyor...",
+      "sentTitle": "Email gönderildi",
+      "sentBody": "{email} adresine sıfırlama bağlantısı gönderildi. Spam / gereksiz klasörünü de kontrol et.",
+      "backToLogin": "← Girişe dön"
+    },
+    "register": {
+      "title": "Hesap Oluştur",
+      "subtitle": "Birkaç saniye içinde hazır olursun.",
+      "google": "Google ile devam et",
+      "or": "veya",
+      "fullName": "Ad Soyad",
+      "email": "Email",
+      "password": "Şifre",
+      "passwordPlaceholder": "en az 6 karakter",
+      "passwordRepeat": "Şifre Tekrar",
+      "submit": "Hesap Oluştur",
+      "submitting": "Oluşturuluyor...",
+      "hasAccount": "Zaten hesabın var mı?",
+      "loginLink": "Giriş yap",
+      "errorMismatch": "Şifreler eşleşmiyor.",
+      "errorShort": "Şifre en az 6 karakter olmalı.",
+      "errorExists": "Bu email zaten kayıtlı.",
+      "errorGeneric": "Kayıt başarısız. Tekrar dene.",
+      "errorGoogle": "Google ile kayıt başarısız.",
+      "sentTitle": "Email Gönderildi!",
+      "sentBody": "{email} adresine doğrulama bağlantısı gönderildi. Gelen kutunu kontrol et ve bağlantıya tıkla. Email gelmezse spam klasörüne de bak.",
+      "continue": "Devam et →",
+      "noEmail": "Email gelmedi mi?",
+      "retry": "Tekrar dene"
+    },
+    "setup": {
+      "title": "Kullanıcı Adı Seç",
+      "subtitle": "Bu, sitedeki benzersiz kimliğin olacak.",
+      "placeholder": "örn. trs_1342",
+      "hint": "3-20 karakter, sadece a-z, 0-9 ve _",
+      "available": "Kullanılabilir",
+      "taken": "Zaten alınmış",
+      "checking": "Kontrol ediliyor...",
+      "submit": "Kaydet & Devam Et",
+      "submitting": "Kaydediliyor...",
+      "verify": "Önce Emailini Doğrula",
+      "verifyBody": "Adresine bir doğrulama emaili gönderildi. Devam etmeden önce lütfen doğrula.",
+      "resend": "Emaili tekrar gönder",
+      "resent": "Email gönderildi!"
+    },
+    "awaiting": {
+      "title": "Hesabınız Onay Bekliyor",
+      "body": "Kayıt işleminiz tamamlandı. Hesabınız yönetici tarafından onaylandığında otomatik olarak yönlendirileceksiniz.",
+      "logout": "Çıkış Yap",
+      "pollNote": "Durum her 10 saniyede bir kontrol edilir."
+    }
+  },
+  "Contact": {
+    "title": "İletişim",
+    "description": "Hata bildirimi, geri bildirim, işbirliği teklifi ya da sadece selam vermek için — mesajın doğrudan ulaşır.",
+    "categoryLabel": "Konu",
+    "nameLabel": "Ad / Username",
+    "namePlaceholder": "trs",
+    "emailLabel": "Email Adresi",
+    "emailFromSession": "· oturumdan alındı",
+    "messageLabel": "Mesaj",
+    "messagePlaceholder": "> Mesajınızı buraya yazın...",
+    "send": "⚡ Sisteme İlet",
+    "sending": "İletiliyor...",
+    "quickAccess": "Hızlı Erişim",
+    "online": "Çevrimiçi",
+    "replyTime": "Genellikle <b>42 saat</b> içinde yanıt veririm.",
+    "successTitle": "Mesaj iletildi!",
+    "successBody": "En kısa sürede geri dönmeye çalışacağım.",
+    "newMessage": "← Yeni Mesaj",
+    "categories": {
+      "hi": "💬 Sadece Selam",
+      "feedback": "💡 Geri Bildirim",
+      "rec": "💡 Öneri",
+      "collab": "🤝 İşbirliği / Proje",
+      "bug": "🐛 Hata Bildirimi"
+    },
+    "terminal": {
+      "line1": "> Bağlantı başlatılıyor...",
+      "line2": "> Uçtan uca şifreleniyor... [OK]",
+      "line3": "> trs ana makinesine iletiliyor...",
+      "line4": "> Mesaj teslim edildi. [BAŞARILI]"
+    }
+  },
+  "Projects": {
+    "title": "Projelerim",
+    "active": "Aktif Geliştirilen Projeler",
+    "other": "Diğer Projeler",
+    "terminal": "Terminal"
+  },
+  "About": {
+    "title": "Hakkımda",
+    "description": "Halil Hattab — Mid-level Software Developer"
+  },
+  "Profile": {
+    "title": "Profilim",
+    "photo": "Fotoğraf",
+    "uploadPhoto": "Fotoğraf Yükle",
+    "removePhoto": "Kaldır",
+    "profileInfo": "Profil Bilgileri",
+    "fullName": "Ad Soyad",
+    "username": "Kullanıcı Adı",
+    "accountType": "Hesap Türü",
+    "registeredAt": "Kayıt Tarihi",
+    "settings": "Ayarlar",
+    "logout": "Oturumu Kapat",
+    "changePassword": "Şifre Değiştir",
+    "currentPassword": "Mevcut Şifre",
+    "newPassword": "Yeni Şifre",
+    "savePassword": "Kaydet",
+    "savingPassword": "Kaydediliyor...",
+    "dangerZone": "Tehlikeli Bölge",
+    "deleteAccount": "Hesabımı Sil",
+    "deleteConfirm": "Emin misin? Bu işlem geri alınamaz.",
+    "deleting": "Siliniyor...",
+    "loading": "Yükleniyor...",
+    "roles": {
+      "admin": "Admin",
+      "user": "Kullanıcı"
+    }
+  },
+  "Common": {
+    "loading": "Yükleniyor...",
+    "back": "← Geri",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "cancel": "İptal"
+  }
+}

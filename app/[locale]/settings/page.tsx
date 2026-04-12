@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useAccessGuard } from "@/hooks/useAccessGuard";
 import { updateUserProfile } from "@/lib/firestore";

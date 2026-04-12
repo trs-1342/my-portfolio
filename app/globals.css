@@ -599,3 +599,28 @@ body {
 .footer-social:hover {
   color: var(--accent);
 }
+
+/* ── Arapça font (RTL) ── */
+[lang="ar"] body,
+[dir="rtl"] body {
+  font-family: var(--font-arabic, var(--font-sans)), sans-serif;
+}
+
+/* RTL — mantıksal yönler */
+[dir="rtl"] .mob-menu__arrow {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .nav-desktop-links {
+  direction: rtl;
+}
+
+[dir="rtl"] .contact-grid {
+  direction: rtl;
+}
+
+/* Arapça'da ok işaretlerini ters çevir */
+[dir="rtl"] .btn-ghost::before,
+[dir="rtl"] .btn-ghost::after {
+  display: none;
+}

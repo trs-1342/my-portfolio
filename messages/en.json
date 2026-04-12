@@ -1,0 +1,176 @@
+{
+  "Nav": {
+    "about": "About",
+    "projects": "Projects",
+    "photos": "Photos",
+    "hsounds": "Hsounds",
+    "thanks": "Thanks",
+    "contact": "Contact",
+    "solarSystem": "Solar System",
+    "login": "Log in",
+    "profile": "Profile",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "Footer": {
+    "pages": "Pages",
+    "contact": "Contact",
+    "allRightsReserved": "All rights reserved."
+  },
+  "Hero": {
+    "availableForWork": "available for work"
+  },
+  "Skills": {
+    "title": "Skills"
+  },
+  "Auth": {
+    "login": {
+      "title": "Log In",
+      "subtitle": "Welcome back.",
+      "google": "Continue with Google",
+      "or": "or",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password",
+      "submit": "Log In",
+      "submitting": "Logging in...",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "errorEmail": "Incorrect email or password.",
+      "errorGoogle": "Google sign-in failed.",
+      "backToLogin": "← Back to login",
+      "loading": "Loading..."
+    },
+    "forgot": {
+      "title": "Forgot Password",
+      "subtitle": "Enter your email and we'll send a reset link.",
+      "submit": "Send Reset Link",
+      "submitting": "Sending...",
+      "sentTitle": "Email sent",
+      "sentBody": "A password reset link was sent to {email}. Also check your spam folder.",
+      "backToLogin": "← Back to login"
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "You'll be ready in a few seconds.",
+      "google": "Continue with Google",
+      "or": "or",
+      "fullName": "Full Name",
+      "email": "Email",
+      "password": "Password",
+      "passwordPlaceholder": "at least 6 characters",
+      "passwordRepeat": "Repeat Password",
+      "submit": "Create Account",
+      "submitting": "Creating...",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Log in",
+      "errorMismatch": "Passwords don't match.",
+      "errorShort": "Password must be at least 6 characters.",
+      "errorExists": "This email is already registered.",
+      "errorGeneric": "Registration failed. Please try again.",
+      "errorGoogle": "Google sign-up failed.",
+      "sentTitle": "Email Sent!",
+      "sentBody": "A verification link was sent to {email}. Check your inbox and click the link. Also check spam.",
+      "continue": "Continue →",
+      "noEmail": "Didn't receive the email?",
+      "retry": "Try again"
+    },
+    "setup": {
+      "title": "Choose a Username",
+      "subtitle": "This will be your unique identifier on the site.",
+      "placeholder": "e.g. trs_1342",
+      "hint": "3-20 chars, only a-z, 0-9 and _",
+      "available": "Available",
+      "taken": "Already taken",
+      "checking": "Checking...",
+      "submit": "Save & Continue",
+      "submitting": "Saving...",
+      "verify": "Verify Email First",
+      "verifyBody": "A verification email was sent to your address. Please verify before continuing.",
+      "resend": "Resend email",
+      "resent": "Email resent!"
+    },
+    "awaiting": {
+      "title": "Account Pending Approval",
+      "body": "Your registration is complete. You will be redirected automatically once your account is approved by an admin.",
+      "logout": "Log Out",
+      "pollNote": "Status is checked every 10 seconds."
+    }
+  },
+  "Contact": {
+    "title": "Contact",
+    "description": "For bug reports, feedback, collaboration offers, or just to say hi — your message arrives directly.",
+    "categoryLabel": "Subject",
+    "nameLabel": "Name / Username",
+    "namePlaceholder": "trs",
+    "emailLabel": "Email Address",
+    "emailFromSession": "· from session",
+    "messageLabel": "Message",
+    "messagePlaceholder": "> Type your message here...",
+    "send": "⚡ Send",
+    "sending": "Sending...",
+    "quickAccess": "Quick Access",
+    "online": "Online",
+    "replyTime": "I usually reply within <b>42 hours</b>.",
+    "successTitle": "Message sent!",
+    "successBody": "I'll get back to you as soon as possible.",
+    "newMessage": "← New Message",
+    "categories": {
+      "hi": "💬 Just Saying Hi",
+      "feedback": "💡 Feedback",
+      "rec": "💡 Suggestion",
+      "collab": "🤝 Collaboration / Project",
+      "bug": "🐛 Bug Report"
+    },
+    "terminal": {
+      "line1": "> Initiating connection...",
+      "line2": "> End-to-end encryption... [OK]",
+      "line3": "> Routing to trs main host...",
+      "line4": "> Message delivered. [SUCCESS]"
+    }
+  },
+  "Projects": {
+    "title": "My Projects",
+    "active": "Active Projects",
+    "other": "Other Projects",
+    "terminal": "Terminal"
+  },
+  "About": {
+    "title": "About",
+    "description": "Halil Hattab — Mid-level Software Developer"
+  },
+  "Profile": {
+    "title": "My Profile",
+    "photo": "Photo",
+    "uploadPhoto": "Upload Photo",
+    "removePhoto": "Remove",
+    "profileInfo": "Profile Info",
+    "fullName": "Full Name",
+    "username": "Username",
+    "accountType": "Account Type",
+    "registeredAt": "Registered",
+    "settings": "Settings",
+    "logout": "Log Out",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "savePassword": "Save",
+    "savingPassword": "Saving...",
+    "dangerZone": "Danger Zone",
+    "deleteAccount": "Delete My Account",
+    "deleteConfirm": "Are you sure? This action cannot be undone.",
+    "deleting": "Deleting...",
+    "loading": "Loading...",
+    "roles": {
+      "admin": "Admin",
+      "user": "User"
+    }
+  },
+  "Common": {
+    "loading": "Loading...",
+    "back": "← Back",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel"
+  }
+}

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useRouter, Link } from "@/i18n/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useAccessGuard } from "@/hooks/useAccessGuard";
 import { updateUserProfile, updateUsername, deleteUserData } from "@/lib/firestore";

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -7,14 +8,23 @@ import CVSection from "@/components/about/CVSection";
 import { getAboutConfigServer, getLifeEventsServer } from "@/lib/site-server";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hattab.vercel.app";
-const _ogUrl   = `${BASE_URL}/api/og?` + new URLSearchParams({ title: "Hakkımda", desc: "Halil Hattab — Mid-level Software Developer", type: "about" }).toString();
 
-export const metadata = {
-  title: "Hakkımda — trs",
-  description: "Halil Hattab — Mid-level Software Developer",
-  openGraph: { title: "Hakkımda — trs", description: "Halil Hattab — Mid-level Software Developer", url: `${BASE_URL}/about`, images: [{ url: _ogUrl, width: 1200, height: 630 }] },
-  twitter:    { card: "summary_large_image" as const, title: "Hakkımda — trs", images: [_ogUrl] },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "About" });
+  const ogUrl = `${BASE_URL}/api/og?` + new URLSearchParams({ title: t("title"), desc: t("description"), type: "about" }).toString();
+
+  return {
+    title: `${t("title")} — trs`,
+    description: t("description"),
+    openGraph: { title: `${t("title")} — trs`, description: t("description"), url: `${BASE_URL}/${locale}/about`, images: [{ url: ogUrl, width: 1200, height: 630 }] },
+    twitter: { card: "summary_large_image" as const, title: `${t("title")} — trs`, images: [ogUrl] },
+  };
+}
 
 export default async function AboutPage() {
   const [config, lifeEvents] = await Promise.all([
@@ -28,15 +38,9 @@ export default async function AboutPage() {
       <Navbar />
 
       <div className="page-content">
-        {/* Profil: 50/50 split */}
         <ProfileSection config={config} />
-
-        {/* CV */}
         <CVSection cvFiles={config.cvFiles} />
-
-        {/* Yıldız Haritası Zaman Çizelgesi */}
         <ConstellationTimeline events={lifeEvents} />
-
         <Footer />
       </div>
     </>

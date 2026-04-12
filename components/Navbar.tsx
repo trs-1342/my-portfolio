@@ -1,30 +1,22 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 import ThemeToggle from "./ThemeToggle";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "@/context/AuthContext";
 import { getMenuItems } from "@/lib/firestore";
 import type { MenuItem } from "@/lib/firestore";
 
-const DEFAULT_LINKS: MenuItem[] = [
-  { id: "m1", href: "/about",        label: "Hakkımda",      icon: "🪪", order: 0 },
-  { id: "m2", href: "/my-projects",  label: "Projeler",      icon: "⚡", order: 1 },
-  { id: "m3", href: "/photos",       label: "Fotoğraflar",   icon: "📷", order: 2 },
-  { id: "m4", href: "/hsounds",      label: "Hsounds",       icon: "🎵", order: 3 },
-  { id: "m5", href: "/thanks",       label: "Teşekkürler",   icon: "💫", order: 4 },
-  { id: "m6", href: "/contact",      label: "İletişim",      icon: "✉️", order: 5 },
-  { id: "m7", href: "/solar-system", label: "Güneş Sistemi", icon: "🌍", order: 6 },
-];
-
 export default function Navbar() {
+  const t = useTranslations("Nav");
   const pathname = usePathname();
   const { user, profile } = useAuth();
   const hideProgress = useRef(0);
-  const lastY        = useRef(0);
+  const lastY = useRef(0);
   const [navStyle, setNavStyle] = useState<React.CSSProperties>({});
-  const [links,    setLinks]    = useState<MenuItem[]>(DEFAULT_LINKS);
+  const [links, setLinks] = useState<MenuItem[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
 
   /* Menü öğelerini Firestore'dan yükle */
@@ -32,8 +24,21 @@ export default function Navbar() {
     getMenuItems().then((items) => {
       if (items && items.length > 0) {
         setLinks([...items].sort((a, b) => a.order - b.order));
+      } else {
+        // Firestore boşsa çevrilmiş varsayılanları kullan
+        setLinks([
+          { id: "m1", href: "/about",        label: t("about"),       icon: "🪪", order: 0 },
+          { id: "m2", href: "/my-projects",  label: t("projects"),    icon: "⚡", order: 1 },
+          { id: "m3", href: "/photos",       label: t("photos"),      icon: "📷", order: 2 },
+          { id: "m4", href: "/hsounds",      label: t("hsounds"),     icon: "🎵", order: 3 },
+          { id: "m5", href: "/thanks",       label: t("thanks"),      icon: "💫", order: 4 },
+          { id: "m6", href: "/contact",      label: t("contact"),     icon: "✉️", order: 5 },
+          { id: "m7", href: "/solar-system", label: t("solarSystem"), icon: "🌍", order: 6 },
+        ]);
       }
     });
+  // t'yi dependency'e eklemiyoruz — locale değişince component zaten yeniden mount olur
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* Route değişince mobil menüyü kapat */
@@ -49,7 +54,7 @@ export default function Navbar() {
   /* Scroll hide animasyonu */
   useEffect(() => {
     const onScroll = () => {
-      const y     = window.scrollY;
+      const y = window.scrollY;
       const delta = y - lastY.current;
       lastY.current = y;
 
@@ -86,7 +91,7 @@ export default function Navbar() {
           <button
             className="mob-menu__close"
             onClick={() => setMenuOpen(false)}
-            aria-label="Menüyü kapat"
+            aria-label={t("closeMenu")}
           >
             ✕
           </button>
@@ -99,7 +104,7 @@ export default function Navbar() {
             return (
               <Link
                 key={l.id}
-                href={l.href}
+                href={l.href as Parameters<typeof Link>[0]["href"]}
                 className={`mob-menu__item${isActive ? " mob-menu__item--active" : ""}`}
                 style={{ animationDelay: menuOpen ? `${i * 0.04}s` : "0s" }}
               >
@@ -111,7 +116,7 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Alt: profil + tema */}
+        {/* Alt: profil + tema + dil */}
         <div className="mob-menu__footer">
           {user ? (
             <Link
@@ -120,7 +125,7 @@ export default function Navbar() {
               onClick={() => setMenuOpen(false)}
             >
               <span style={{ fontSize: "1rem" }}>👤</span>
-              <span>{profile?.username ?? "Profil"}</span>
+              <span>{profile?.username ?? t("profile")}</span>
             </Link>
           ) : (
             <Link
@@ -129,10 +134,13 @@ export default function Navbar() {
               onClick={() => setMenuOpen(false)}
             >
               <span style={{ fontSize: "1rem" }}>🔑</span>
-              <span>Giriş Yap</span>
+              <span>{t("login")}</span>
             </Link>
           )}
-          <ThemeToggle />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <LanguageSwitcher />
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 
@@ -150,30 +158,33 @@ export default function Navbar() {
             {filteredLinks.map((l) => {
               const isActive = pathname === l.href || pathname.startsWith(l.href + "/");
               return (
-                <a
+                <Link
                   key={l.id}
-                  href={l.href}
+                  href={l.href as Parameters<typeof Link>[0]["href"]}
                   title={l.label}
                   className={`nav-link${isActive ? " nav-link--active" : ""}`}
                 >
                   {l.label}
-                </a>
+                </Link>
               );
             })}
           </div>
 
           <div className="nav-divider nav-divider--desktop" />
 
+          {/* Dil seçici */}
+          <LanguageSwitcher />
+
           <ThemeToggle />
 
           {/* Auth */}
           {user ? (
             <Link href="/profile" className="nav-profile-pill mono">
-              {profile?.username ?? "profil"}
+              {profile?.username ?? t("profile")}
             </Link>
           ) : (
             <Link href="/login" className="mono nav-link" style={{ fontSize: "0.78rem" }}>
-              Giriş
+              {t("login")}
             </Link>
           )}
 
@@ -181,7 +192,7 @@ export default function Navbar() {
           <button
             className="nav-hamburger"
             onClick={() => setMenuOpen(true)}
-            aria-label="Menüyü aç"
+            aria-label={t("openMenu")}
             aria-expanded={menuOpen}
           >
             <span /><span /><span />
@@ -372,18 +383,14 @@ export default function Navbar() {
 
         /* ── Responsive ── */
         @media (max-width: 640px) {
-          /* Masaüstü linkler gizli, hamburger görünür */
           .nav-desktop-links   { display: none; }
           .nav-divider--desktop { display: none; }
           .nav-hamburger       { display: flex; }
-          /* Profil pill navbar'da gizli (menü içinde var) */
           .nav-profile-pill    { display: none; }
-          /* Giriş linki de gizli */
           .navbar-pill .nav-link[href="/login"] { display: none; }
         }
 
         @media (min-width: 641px) {
-          /* Masaüstünde mobil menü hiç render edilmez */
           .mob-menu { display: none !important; }
           .nav-hamburger { display: none !important; }
         }

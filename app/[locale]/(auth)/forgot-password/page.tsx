@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("Auth.forgot");
   const { resetPassword } = useAuth();
   const [email,   setEmail]   = useState("");
   const [status,  setStatus]  = useState<"idle" | "sent" | "error">("idle");
@@ -34,22 +36,22 @@ export default function ForgotPasswordPage() {
           <div style={{ textAlign: "center", padding: "20px 0" }}>
             <div style={{ fontSize: "2.5rem", marginBottom: "16px" }}>📬</div>
             <h2 style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--text)", marginBottom: "10px" }}>
-              Email gönderildi
+              {t("sentTitle")}
             </h2>
             <p style={{ fontSize: "0.85rem", color: "var(--text-2)", lineHeight: 1.65, marginBottom: "24px" }}>
-              <strong style={{ color: "var(--text)" }}>{email}</strong> adresine şifre sıfırlama bağlantısı gönderildi. Spam klasörünü de kontrol et.
+              {t("sentBody", { email })}
             </p>
             <Link href="/login" className="btn btn-ghost" style={{ margin: "0 auto" }}>
-              ← Giriş sayfasına dön
+              {t("backToLogin")}
             </Link>
           </div>
         ) : (
           <>
             <h1 style={{ fontSize: "1.3rem", fontWeight: 700, color: "var(--text)", marginBottom: "6px" }}>
-              Şifremi Unuttum
+              {t("title")}
             </h1>
             <p style={{ fontSize: "0.85rem", color: "var(--text-3)", marginBottom: "28px" }}>
-              Email adresini gir, sıfırlama bağlantısı gönderelim.
+              {t("subtitle")}
             </p>
 
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -60,12 +62,7 @@ export default function ForgotPasswordPage() {
                 <input
                   type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                   placeholder="ornek@mail.com" required disabled={loading}
-                  style={{
-                    width: "100%", padding: "10px 14px", borderRadius: "10px",
-                    border: "1px solid var(--border)", background: "var(--bg)",
-                    color: "var(--text)", fontFamily: "var(--font-sans)", fontSize: "0.9rem",
-                    outline: "none", transition: "border-color 0.15s",
-                  }}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-sans)", fontSize: "0.9rem", outline: "none", transition: "border-color 0.15s" }}
                   onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
                   onBlur={(e)  => (e.target.style.borderColor = "var(--border)")}
                 />
@@ -73,12 +70,12 @@ export default function ForgotPasswordPage() {
 
               {status === "error" && (
                 <p style={{ fontSize: "0.8rem", color: "#ef4444" }}>
-                  Bu email kayıtlı değil veya bir hata oluştu.
+                  {t("sentBody", { email: "" }).split(".")[1]?.trim() ?? t("title")}
                 </p>
               )}
 
               <button type="submit" disabled={loading} className="btn btn-accent" style={{ justifyContent: "center", padding: "12px", fontSize: "0.9rem" }}>
-                {loading ? "Gönderiliyor..." : "Sıfırlama Bağlantısı Gönder"}
+                {loading ? t("submitting") : t("submit")}
               </button>
             </form>
           </>
@@ -86,7 +83,7 @@ export default function ForgotPasswordPage() {
       </div>
 
       <p style={{ textAlign: "center", marginTop: "20px", fontSize: "0.83rem", color: "var(--text-3)" }}>
-        <Link href="/login" style={{ color: "var(--accent)", textDecoration: "none" }}>← Giriş sayfasına dön</Link>
+        <Link href="/login" style={{ color: "var(--accent)", textDecoration: "none" }}>{t("backToLogin")}</Link>
       </p>
     </div>
   );
