@@ -118,29 +118,31 @@ export default function Navbar() {
 
         {/* Alt: profil + tema + dil */}
         <div className="mob-menu__footer">
-          {user ? (
-            <Link
-              href="/profile"
-              className="mob-menu__profile"
-              onClick={() => setMenuOpen(false)}
-            >
-              <span style={{ fontSize: "1rem" }}>👤</span>
-              <span>{profile?.username ?? t("profile")}</span>
-            </Link>
-          ) : (
-            <Link
-              href="/login"
-              className="mob-menu__profile"
-              onClick={() => setMenuOpen(false)}
-            >
-              <span style={{ fontSize: "1rem" }}>🔑</span>
-              <span>{t("login")}</span>
-            </Link>
-          )}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <LanguageSwitcher />
+          {/* Üst satır: profil linki + tema toggle */}
+          <div className="mob-menu__footer-top">
+            {user ? (
+              <Link
+                href="/profile"
+                className="mob-menu__profile"
+                onClick={() => setMenuOpen(false)}
+              >
+                <span style={{ fontSize: "1rem" }}>👤</span>
+                <span>{profile?.username ?? t("profile")}</span>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="mob-menu__profile"
+                onClick={() => setMenuOpen(false)}
+              >
+                <span style={{ fontSize: "1rem" }}>🔑</span>
+                <span>{t("login")}</span>
+              </Link>
+            )}
             <ThemeToggle />
           </div>
+          {/* Alt satır: dil seçici — 3 buton tam genişlik */}
+          <LanguageSwitcher mode="inline" />
         </div>
       </div>
 
@@ -362,10 +364,15 @@ export default function Navbar() {
 
         .mob-menu__footer {
           display: flex;
-          align-items: center;
-          justify-content: space-between;
+          flex-direction: column;
+          gap: 12px;
           padding: 16px 24px 32px;
           border-top: 1px solid var(--border);
+        }
+        .mob-menu__footer-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
         }
         .mob-menu__profile {
           display: flex;
