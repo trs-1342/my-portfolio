@@ -383,7 +383,10 @@ function PhotoUploadRow({ photo, idx, total, onMove, onDelete, onUploaded }: {
       const path = `about/photos/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
       const url = await uploadFile(path, file);
       onUploaded(url);
-    } catch { alert("Yükleme hatası."); }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      alert(`Fotoğraf yükleme hatası:\n${msg}`);
+    }
     finally { setUploading(false); }
   };
 
@@ -420,7 +423,10 @@ function CvUploadRow({ cv, idx, total, onLabelChange, onMove, onDelete, onUpload
       const path = `about/cv/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
       const url = await uploadFile(path, file);
       onUploaded(url);
-    } catch { alert("Yükleme hatası."); }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      alert(`CV yükleme hatası:\n${msg}`);
+    }
     finally { setUploading(false); }
   };
 
@@ -456,7 +462,10 @@ function AddFileButton({ label, accept, storagePath, onUploaded }: {
     try {
       const url = await uploadFile(storagePath(file), file);
       onUploaded(url, file.name);
-    } catch { alert("Yükleme hatası. Firebase Storage kurallarını kontrol et."); }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      alert(`Yükleme hatası:\n${msg}`);
+    }
     finally { setUploading(false); if (fileRef.current) fileRef.current.value = ""; }
   };
 

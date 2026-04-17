@@ -270,8 +270,9 @@ function ProjectForm({ initial, onSave, onCancel }: {
       const path = `projects/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
       const url = await uploadFile(path, file);
       setV(prev => ({ ...prev, imageUrl: url }));
-    } catch {
-      alert("Yükleme hatası. Firebase Storage kurallarını kontrol et.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      alert(`Yükleme hatası:\n${msg}`);
     } finally {
       setUploading(false);
     }
