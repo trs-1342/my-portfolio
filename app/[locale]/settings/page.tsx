@@ -5,12 +5,15 @@ import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useAccessGuard } from "@/hooks/useAccessGuard";
 import { updateUserProfile } from "@/lib/firestore";
+import { RSS_CATEGORIES } from "@/lib/rss-categories";
 import type { UserProfile } from "@/lib/firestore";
 import { normalizeThemeId } from "@/lib/themes";
 import ThemePicker from "@/components/ThemePicker";
 import AmbientGlow from "@/components/AmbientGlow";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+
+const CAT_GROUPS = ["Teknoloji", "Havacılık"] as const;
 
 export default function SettingsPage() {
   const { refreshProfile } = useAuth();
@@ -27,10 +30,15 @@ export default function SettingsPage() {
   const [featureRss,           setFeatureRss]           = useState(true);
   const [featureArticles,      setFeatureArticles]      = useState(true);
   const [featureAnnouncements, setFeatureAnnouncements] = useState(true);
+
+  /* RSS tercihleri */
+  const [rssFrequency,   setRssFrequency]   = useState<"daily" | "weekly">("weekly");
+  const [rssCategories,  setRssCategories]  = useState<Record<string, boolean>>({});
+  const [rssExpanded,    setRssExpanded]    = useState(false);
+
   const [saving, setSaving] = useState(false);
   const [msg,    setMsg]    = useState("");
 
-  /* Profil yüklenince state'leri doldur */
   useEffect(() => {
     if (!profile) return;
     setNavPos(profile.settings.navbarPosition);
@@ -44,14 +52,25 @@ export default function SettingsPage() {
     setFeatureRss(profile.features?.rss           ?? true);
     setFeatureArticles(profile.features?.articles ?? true);
     setFeatureAnnouncements(profile.features?.announcements ?? true);
+    setRssFrequency(profile.rssPreferences?.frequency   ?? "weekly");
+    setRssCategories(profile.rssPreferences?.categories ?? {});
   }, [profile]);
 
-  /* ThemePicker zaten applyTheme + Firestore'a kaydeder — burada sadece state güncelle */
-  const handleThemeChange = (id: string) => {
-    setTheme(id);
+  const handleThemeChange = (id: string) => setTheme(id);
+
+  const toggleCategory = (catId: string) => {
+    setRssCategories((prev) => ({ ...prev, [catId]: prev[catId] === false ? true : false }));
   };
 
-  /* Yükleniyor */
+  const isCatEnabled = (catId: string) => rssCategories[catId] !== false;
+
+  const enableAllCats  = () => setRssCategories({});
+  const disableAllCats = () => {
+    const all: Record<string, boolean> = {};
+    RSS_CATEGORIES.forEach((c) => { all[c.id] = false; });
+    setRssCategories(all);
+  };
+
   if (loading || !ready || !user || !profile) {
     return (
       <>
@@ -67,7 +86,6 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true); setMsg("");
     try {
-      /* Tema ThemePicker tarafından zaten kaydedildi; sadece navbar + bildirimler */
       await updateUserProfile(user.uid, {
         settings: { navbarPosition: navPos, theme },
         notifications: {
@@ -83,7 +101,15 @@ export default function SettingsPage() {
           articles:      featureArticles,
           announcements: featureAnnouncements,
         },
-      } as Partial<Pick<UserProfile, "settings" | "notifications" | "features">>);
+        rssPreferences: {
+          frequency:       rssFrequency,
+          categories:      rssCategories,
+          // Mevcut lastDigestSent korunur — sıfırlanmamalı
+          ...(profile.rssPreferences?.lastDigestSent
+            ? { lastDigestSent: profile.rssPreferences.lastDigestSent }
+            : {}),
+        },
+      } as Partial<Pick<UserProfile, "settings" | "notifications" | "features" | "rssPreferences">>);
       await refreshProfile();
       setMsg("Ayarlar kaydedildi.");
     } catch {
@@ -92,6 +118,8 @@ export default function SettingsPage() {
       setSaving(false);
     }
   };
+
+  const enabledCatCount = RSS_CATEGORIES.filter((c) => isCatEnabled(c.id)).length;
 
   return (
     <>
@@ -122,7 +150,7 @@ export default function SettingsPage() {
           </Link>
         </header>
 
-        <div style={{ maxWidth: "540px", display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ maxWidth: "580px", display: "flex", flexDirection: "column", gap: "20px" }}>
 
           {/* ── Görünüm ── */}
           <SettingCard title="Görünüm">
@@ -134,9 +162,7 @@ export default function SettingsPage() {
                 onThemeChange={handleThemeChange}
               />
             </div>
-
             <Divider />
-
             <SettingRow label="Navbar Konumu" desc="Navigasyon çubuğunun konumu. (Yakında aktif)">
               <ToggleGroup
                 options={[{ value: "top", label: "⬆ Üst" }, { value: "bottom", label: "⬇ Alt" }]}
@@ -175,38 +201,133 @@ export default function SettingsPage() {
             })}
           </SettingCard>
 
-          {/* ── Bildirimler ── */}
+          {/* ── RSS Digest Tercihleri ── */}
+          <SettingCard title="RSS Digest Tercihleri">
+            <SettingRow
+              label="Email Sıklığı"
+              desc="RSS özetinin ne sıklıkta gönderileceği. Varsayılan: haftalık."
+            >
+              <ToggleGroup
+                options={[
+                  { value: "daily",  label: "Günlük"   },
+                  { value: "weekly", label: "Haftalık" },
+                ]}
+                value={rssFrequency}
+                onChange={(v) => setRssFrequency(v as "daily" | "weekly")}
+              />
+            </SettingRow>
+
+            <Divider />
+
+            {/* Kategori açma/kapama */}
+            <div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text)", marginBottom: "2px" }}>
+                    Kategoriler
+                    <span className="mono" style={{ marginLeft: "8px", fontSize: "0.72rem", color: "var(--accent)", fontWeight: 400 }}>
+                      {enabledCatCount}/{RSS_CATEGORIES.length} aktif
+                    </span>
+                  </p>
+                  <p style={{ fontSize: "0.74rem", color: "var(--text-3)" }}>
+                    Kapalı kategorilerden email gelmez.
+                  </p>
+                </div>
+                <div style={{ display: "flex", gap: "6px" }}>
+                  <button
+                    onClick={enableAllCats}
+                    style={{ padding: "5px 10px", borderRadius: "8px", border: "1px solid var(--border)", background: "transparent", color: "var(--accent)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "var(--font-sans)" }}
+                  >
+                    Tümünü Aç
+                  </button>
+                  <button
+                    onClick={disableAllCats}
+                    style={{ padding: "5px 10px", borderRadius: "8px", border: "1px solid var(--border)", background: "transparent", color: "var(--text-3)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "var(--font-sans)" }}
+                  >
+                    Tümünü Kapat
+                  </button>
+                </div>
+              </div>
+
+              {/* Aç/kapat chevron */}
+              <button
+                onClick={() => setRssExpanded((p) => !p)}
+                style={{
+                  width: "100%", padding: "10px 14px", borderRadius: "10px",
+                  border: "1px solid var(--border)", background: "var(--bg-2)",
+                  color: "var(--text-2)", fontSize: "0.82rem", fontWeight: 500,
+                  cursor: "pointer", fontFamily: "var(--font-sans)",
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  transition: "background 0.15s",
+                }}
+              >
+                <span>Kategorileri {rssExpanded ? "Gizle" : "Göster"}</span>
+                <span style={{ transition: "transform 0.2s", transform: rssExpanded ? "rotate(180deg)" : "none", fontSize: "0.75rem" }}>▼</span>
+              </button>
+
+              {rssExpanded && (
+                <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "20px" }}>
+                  {CAT_GROUPS.map((group) => {
+                    const cats = RSS_CATEGORIES.filter((c) => c.group === group);
+                    return (
+                      <div key={group}>
+                        <p className="mono" style={{ fontSize: "0.64rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>
+                          {group}
+                        </p>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "6px" }}>
+                          {cats.map((cat) => {
+                            const enabled = isCatEnabled(cat.id);
+                            return (
+                              <button
+                                key={cat.id}
+                                onClick={() => toggleCategory(cat.id)}
+                                style={{
+                                  display: "flex", alignItems: "center", gap: "8px",
+                                  padding: "8px 10px", borderRadius: "9px",
+                                  border: `1px solid ${enabled ? "rgba(16,185,129,0.3)" : "var(--border)"}`,
+                                  background: enabled ? "rgba(16,185,129,0.06)" : "transparent",
+                                  color: enabled ? "var(--accent)" : "var(--text-3)",
+                                  fontSize: "0.78rem", fontWeight: 500,
+                                  cursor: "pointer", fontFamily: "var(--font-sans)",
+                                  textAlign: "left", transition: "all 0.15s",
+                                }}
+                              >
+                                <span style={{ width: 14, height: 14, borderRadius: "50%", border: `2px solid ${enabled ? "var(--accent)" : "var(--text-3)"}`, background: enabled ? "var(--accent)" : "transparent", flexShrink: 0, display: "inline-block", transition: "all 0.15s" }} />
+                                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cat.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </SettingCard>
+
+          {/* ── Email Bildirimleri ── */}
           <SettingCard title="Email Bildirimleri">
             <SettingRow label="Email Bildirimleri" desc="Tüm email bildirimlerinin ana anahtarı.">
               <Toggle value={notifEmail} onChange={setNotifEmail} />
             </SettingRow>
-
             <Divider />
-
             <SettingRow label="Yeni Makale" desc="HSounds'a yeni bir makale eklendiğinde.">
               <Toggle value={notifNewArticle} onChange={setNotifNewArticle} />
             </SettingRow>
-
             <Divider />
-
-            <SettingRow label="Yeni RSS Yazısı" desc="Takip edilen RSS akışlarında yeni yazı çıktığında.">
+            <SettingRow label="RSS Digest" desc="Takip edilen RSS akışlarından özet email.">
               <Toggle value={notifNewRssPost} onChange={setNotifNewRssPost} />
             </SettingRow>
-
             <Divider />
-
             <SettingRow label="Duyurular" desc="HSounds'ta yeni bir duyuru yayınlandığında.">
               <Toggle value={notifNewAnnouncement} onChange={setNotifNewAnnouncement} />
             </SettingRow>
-
             <Divider />
-
             <SettingRow label="Yeni Mesaj" desc="İletişim formundan yeni mesaj geldiğinde.">
               <Toggle value={notifMessage} onChange={setNotifMessage} />
             </SettingRow>
-
             <Divider />
-
             <SettingRow label="Sistem Bildirimleri" desc="Bakım, güncelleme ve önemli duyurular.">
               <Toggle value={notifSystem} onChange={setNotifSystem} />
             </SettingRow>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAllUsers, updateUserStatus, updateUserBlockedPages, updateUserFeatures, approveUser } from "@/lib/firestore";
+import { getAllUsers, updateUserStatus, updateUserBlockedPages, updateUserFeatures, approveUser, updateUserRssFrequency } from "@/lib/firestore";
 import type { UserProfile } from "@/lib/firestore";
+import { RSS_CATEGORIES } from "@/lib/rss-categories";
 import { auth } from "@/lib/firebase";
 
 /* Engellenebilir sayfalar */
@@ -102,6 +103,17 @@ export default function AdminUsersPage() {
     const next = { ...current, [key]: isRestricted ? true : false };
     await updateUserFeatures(u.uid, next);
     setUsers((prev) => prev.map((x) => x.uid === u.uid ? { ...x, features: next } : x));
+    setBusy(null);
+  };
+
+  /* RSS sıklığını değiştir */
+  const handleSetRssFrequency = async (u: UserProfile, frequency: "daily" | "weekly") => {
+    setBusy(u.uid);
+    await updateUserRssFrequency(u.uid, frequency);
+    setUsers((prev) => prev.map((x) => x.uid === u.uid ? {
+      ...x,
+      rssPreferences: { ...x.rssPreferences, frequency, categories: x.rssPreferences?.categories ?? {} },
+    } : x));
     setBusy(null);
   };
 
@@ -354,6 +366,50 @@ export default function AdminUsersPage() {
                           </button>
                         );
                       })}
+                    </div>
+
+                    {/* RSS Digest Ayarları */}
+                    <p className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>
+                      RSS Digest
+                    </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
+                      <span style={{ fontSize: "0.8rem", color: "var(--text-2)" }}>Sıklık:</span>
+                      {(["daily", "weekly"] as const).map((freq) => {
+                        const active = (u.rssPreferences?.frequency ?? "weekly") === freq;
+                        return (
+                          <button
+                            key={freq}
+                            onClick={() => handleSetRssFrequency(u, freq)}
+                            disabled={isBusy || active}
+                            style={{
+                              padding: "5px 12px", borderRadius: "8px", border: "1px solid",
+                              borderColor: active ? "var(--accent)" : "var(--border)",
+                              background:  active ? "var(--accent-dim)" : "transparent",
+                              color:       active ? "var(--accent)" : "var(--text-3)",
+                              fontSize: "0.78rem", fontWeight: active ? 600 : 400,
+                              cursor: active ? "default" : "pointer",
+                              fontFamily: "var(--font-sans)", transition: "all 0.15s",
+                            }}
+                          >
+                            {freq === "daily" ? "Günlük" : "Haftalık"}
+                          </button>
+                        );
+                      })}
+                      {u.rssPreferences?.lastDigestSent && (
+                        <span className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)" }}>
+                          Son: {new Date(u.rssPreferences.lastDigestSent).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" })}
+                        </span>
+                      )}
+                      {(() => {
+                        const total = RSS_CATEGORIES.length;
+                        const disabled = Object.values(u.rssPreferences?.categories ?? {}).filter((v) => v === false).length;
+                        const enabled = total - disabled;
+                        return (
+                          <span style={{ fontSize: "0.72rem", color: "var(--text-3)", padding: "3px 8px", borderRadius: "6px", background: "var(--bg-2)", border: "1px solid var(--border)" }}>
+                            {enabled}/{total} kategori aktif
+                          </span>
+                        );
+                      })()}
                     </div>
 
                     {/* Aksiyonlar */}

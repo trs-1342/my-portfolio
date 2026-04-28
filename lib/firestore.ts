@@ -7,6 +7,17 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { db } from "./firebase";
+export { RSS_CATEGORIES, RSS_CATEGORY_MAP } from "./rss-categories";
+export type { RssCategoryId } from "./rss-categories";
+
+export interface PendingRssPost {
+  title: string;
+  link: string;
+  description: string;
+  pubDate: string;
+  guid: string;
+  foundAt: string; // ISO — check-rss cron'un bulduğu zaman
+}
 
 export interface UserProfile {
   uid: string;
@@ -35,6 +46,11 @@ export interface UserProfile {
     newRssFeed?:        boolean; // (eski) yeni RSS kaynağı eklendiğinde — artık kullanılmıyor
     newRssPost?:        boolean; // RSS akışında yeni yazı çıktığında
     newAnnouncement?:   boolean; // yeni duyuru yayınlandığında
+  };
+  rssPreferences?: {
+    frequency: "daily" | "weekly";          // varsayılan: "weekly"
+    categories: Record<string, boolean>;    // categoryId → enabled (eksik = true = aktif)
+    lastDigestSent?: string;                // ISO — son digest gönderim zamanı
   };
 }
 
@@ -97,10 +113,15 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   if (!data.notifications) {
     data.notifications = { email: true, newMessage: true, system: true, newArticle: true, newRssPost: true, newAnnouncement: true };
   } else {
-    // Eski profillerde eksik olabilecek alanlar için varsayılan
     data.notifications.newRssPost       ??= true;
     data.notifications.newAnnouncement  ??= true;
   }
+
+  // RSS tercihlerini varsayılanla normalize et
+  data.rssPreferences ??= { frequency: "weekly", categories: {} };
+  data.rssPreferences.frequency  ??= "weekly";
+  data.rssPreferences.categories ??= {};
+
   return data;
 }
 
@@ -114,7 +135,7 @@ export async function isUsernameAvailable(username: string): Promise<boolean> {
 /* Profil güncelle */
 export async function updateUserProfile(
   uid: string,
-  data: Partial<Pick<UserProfile, "displayName" | "photoURL" | "settings" | "notifications" | "features">>
+  data: Partial<Pick<UserProfile, "displayName" | "photoURL" | "settings" | "notifications" | "features" | "rssPreferences">>
 ) {
   if (!db) return;
   await updateDoc(doc(db, "users", uid), data as Record<string, unknown>);
@@ -127,6 +148,24 @@ export async function updateUserFeatures(
 ): Promise<void> {
   if (!db) return;
   await updateDoc(doc(db, "users", uid), { features });
+}
+
+/* Kullanıcının RSS tercihlerini güncelle */
+export async function updateUserRssPreferences(
+  uid: string,
+  prefs: NonNullable<UserProfile["rssPreferences"]>
+): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, "users", uid), { rssPreferences: prefs });
+}
+
+/* Admin: kullanıcının RSS sıklığını değiştir */
+export async function updateUserRssFrequency(
+  uid: string,
+  frequency: "daily" | "weekly"
+): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, "users", uid), { "rssPreferences.frequency": frequency });
 }
 
 /* Username güncelle — yorumlardaki authorUsername alanını da günceller */
@@ -623,10 +662,13 @@ export interface HsArticle {
 export interface HsRssFeed {
   id: string;
   source_name: string;
-  source_icon: string;   // emoji, varsayılan '🌐'
-  feed_url: string;      // RSS feed URL'si
+  source_icon: string;        // emoji, varsayılan '🌐'
+  feed_url: string;           // RSS feed URL'si
+  category?: string;          // RSS_CATEGORIES[x].id
+  sendSeparately?: boolean;   // true → kendi email'inde ayrı digest
   lastChecked?: string;       // ISO — son kontrol zamanı (cron)
   lastKnownGuids?: string[];  // bilinen son post GUID'leri (cron)
+  pendingPosts?: PendingRssPost[]; // digest bekleyen postlar
 }
 
 export interface HsAnnouncement {
@@ -674,6 +716,19 @@ export async function getHsFeeds(): Promise<HsRssFeed[]> {
   const snap = await getDoc(doc(db, "site_config", "hsounds_feeds"));
   if (!snap.exists()) return [];
   return (snap.data()?.feeds ?? []) as HsRssFeed[];
+}
+
+/* Digest kuyruğundaki toplam bekleyen post sayısı (admin için) */
+export async function getRssDigestQueueCount(): Promise<{ total: number; byFeed: Array<{ name: string; count: number }> }> {
+  if (!db) return { total: 0, byFeed: [] };
+  const snap = await getDoc(doc(db, "site_config", "hsounds_feeds"));
+  if (!snap.exists()) return { total: 0, byFeed: [] };
+  const feeds = (snap.data()?.feeds ?? []) as HsRssFeed[];
+  const byFeed = feeds
+    .filter((f) => (f.pendingPosts?.length ?? 0) > 0)
+    .map((f) => ({ name: f.source_name, count: f.pendingPosts!.length }));
+  const total = byFeed.reduce((s, f) => s + f.count, 0);
+  return { total, byFeed };
 }
 
 export async function setHsFeeds(feeds: HsRssFeed[]): Promise<void> {

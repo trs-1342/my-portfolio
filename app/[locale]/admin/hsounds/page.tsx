@@ -8,6 +8,8 @@ import {
   getHsFeeds, setHsFeeds,
   getHsAnnouncements, deleteHsAnnouncement,
 } from "@/lib/firestore";
+import { RSS_CATEGORIES } from "@/lib/rss-categories";
+
 function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
@@ -22,8 +24,13 @@ interface FeedForm {
   source_name: string;
   source_icon: string;
   feed_url: string;
+  category: string;
+  sendSeparately: boolean;
 }
-const emptyFeed = (): FeedForm => ({ source_name: "", source_icon: "", feed_url: "" });
+const emptyFeed = (): FeedForm => ({
+  source_name: "", source_icon: "", feed_url: "",
+  category: "", sendSeparately: false,
+});
 
 /* ══════════════════════════════════════════════════════ */
 export default function AdminHsoundsPage() {
@@ -84,16 +91,20 @@ export default function AdminHsoundsPage() {
     const { source_name, source_icon, feed_url } = feedModal.form;
     if (!source_name.trim() || !feed_url.trim()) return;
 
-    const data: Omit<HsRssFeed, "id"> = {
-      source_name: source_name.trim(),
-      source_icon: source_icon.trim() || "🌐",
-      feed_url: feed_url.trim(),
+    const { category, sendSeparately } = feedModal.form;
+    const data: Omit<HsRssFeed, "id" | "lastChecked" | "lastKnownGuids" | "pendingPosts"> = {
+      source_name:    source_name.trim(),
+      source_icon:    source_icon.trim() || "🌐",
+      feed_url:       feed_url.trim(),
+      category:       category.trim() || undefined,
+      sendSeparately: sendSeparately,
     };
 
     let next: HsRssFeed[];
     if (feedModal.mode === "add") {
       next = [...feeds, { id: genId(), ...data }];
     } else {
+      /* pendingPosts korunur, sadece görüntü alanları güncellenir */
       next = feeds.map((f) => f.id === feedModal.id ? { ...f, ...data } : f);
     }
     setFeedModal(null);
@@ -230,9 +241,26 @@ export default function AdminHsoundsPage() {
                     <div key={f.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "10px", background: "var(--bg-2)" }}>
                       <span style={{ fontSize: "1.3rem", flexShrink: 0 }}>{f.source_icon}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text)", marginBottom: "2px" }}>
-                          {f.source_name}
-                        </p>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px", flexWrap: "wrap" }}>
+                          <p style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text)", margin: 0 }}>
+                            {f.source_name}
+                          </p>
+                          {f.sendSeparately && (
+                            <span style={{ fontSize: "0.65rem", padding: "1px 7px", borderRadius: "999px", background: "rgba(16,185,129,0.12)", color: "var(--accent)", border: "1px solid rgba(16,185,129,0.25)" }}>
+                              ayrı email
+                            </span>
+                          )}
+                          {f.category && (
+                            <span style={{ fontSize: "0.65rem", padding: "1px 7px", borderRadius: "999px", background: "var(--bg-2)", color: "var(--text-3)", border: "1px solid var(--border)" }}>
+                              {RSS_CATEGORIES.find((c) => c.id === f.category)?.label ?? f.category}
+                            </span>
+                          )}
+                          {(f.pendingPosts?.length ?? 0) > 0 && (
+                            <span style={{ fontSize: "0.65rem", padding: "1px 7px", borderRadius: "999px", background: "rgba(245,158,11,0.1)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
+                              {f.pendingPosts!.length} bekliyor
+                            </span>
+                          )}
+                        </div>
                         <p className="mono" style={{ fontSize: "0.7rem", color: "var(--text-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {f.feed_url}
                         </p>
@@ -240,7 +268,13 @@ export default function AdminHsoundsPage() {
                       <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
                         <IBtn title="Düzenle" onClick={() => setFeedModal({
                           mode: "edit", id: f.id,
-                          form: { source_name: f.source_name, source_icon: f.source_icon, feed_url: f.feed_url },
+                          form: {
+                            source_name:    f.source_name,
+                            source_icon:    f.source_icon,
+                            feed_url:       f.feed_url,
+                            category:       f.category ?? "",
+                            sendSeparately: f.sendSeparately ?? false,
+                          },
                         })}>✎</IBtn>
                         <IBtn title="Sil" danger onClick={() => setFeedDelete(f)}>🗑</IBtn>
                       </div>
@@ -348,6 +382,44 @@ export default function AdminHsoundsPage() {
                 style={inputStyle}
               />
             </Field>
+
+            <Field label="Kategori">
+              <select
+                value={feedModal.form.category}
+                onChange={(e) => setFeedModal((p) => p ? { ...p, form: { ...p.form, category: e.target.value } } : null)}
+                style={{ ...inputStyle, cursor: "pointer" }}
+              >
+                <option value="">— Kategori seç —</option>
+                {["Teknoloji", "Havacılık"].map((group) => (
+                  <optgroup key={group} label={group}>
+                    {RSS_CATEGORIES.filter((c) => c.group === group).map((c) => (
+                      <option key={c.id} value={c.id}>{c.label}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </Field>
+
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 0", cursor: "pointer" }}
+              onClick={() => setFeedModal((p) => p ? { ...p, form: { ...p.form, sendSeparately: !p.form.sendSeparately } } : null)}
+            >
+              <div style={{
+                width: 18, height: 18, borderRadius: "5px",
+                border: `2px solid ${feedModal.form.sendSeparately ? "var(--accent)" : "var(--border)"}`,
+                background: feedModal.form.sendSeparately ? "var(--accent)" : "transparent",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "all 0.15s", flexShrink: 0,
+              }}>
+                {feedModal.form.sendSeparately && <span style={{ color: "#fff", fontSize: "0.65rem", lineHeight: 1 }}>✓</span>}
+              </div>
+              <div>
+                <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)", margin: 0 }}>Ayrı Email Gönder</p>
+                <p style={{ fontSize: "0.72rem", color: "var(--text-3)", margin: 0 }}>
+                  Bu kaynak diğer digest&apos;ten bağımsız, kendi emailinde gönderilir. (Yusuf İpek vb.)
+                </p>
+              </div>
+            </div>
 
             <div style={{ display: "flex", gap: "10px", paddingTop: "4px" }}>
               <button type="submit" disabled={saving} className="btn btn-accent" style={{ flex: 1, padding: "10px", fontSize: "0.85rem", justifyContent: "center" }}>

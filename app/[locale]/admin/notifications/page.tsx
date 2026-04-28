@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   getSiteNotificationsConfig,
   setSiteNotificationsConfig,
+  getRssDigestQueueCount,
   type SiteNotificationsConfig,
 } from "@/lib/firestore";
 
@@ -13,10 +14,19 @@ export default function AdminNotificationsPage() {
   const [saving,  setSaving]  = useState(false);
   const [msg,     setMsg]     = useState("");
 
+  const [queueTotal,  setQueueTotal]  = useState(0);
+  const [queueByFeed, setQueueByFeed] = useState<Array<{ name: string; count: number }>>([]);
+  const [queueLoading, setQueueLoading] = useState(true);
+
   useEffect(() => {
     getSiteNotificationsConfig().then((c) => {
       setConfig(c);
       setLoading(false);
+    });
+    getRssDigestQueueCount().then(({ total, byFeed }) => {
+      setQueueTotal(total);
+      setQueueByFeed(byFeed);
+      setQueueLoading(false);
     });
   }, []);
 
@@ -35,7 +45,7 @@ export default function AdminNotificationsPage() {
   };
 
   return (
-    <div style={{ maxWidth: "580px" }}>
+    <div style={{ maxWidth: "600px" }}>
       <header style={{ marginBottom: "32px" }}>
         <p className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "8px" }}>
           /admin/notifications
@@ -48,6 +58,41 @@ export default function AdminNotificationsPage() {
         </p>
       </header>
 
+      {/* ── RSS Digest Kuyruğu ── */}
+      <div className="glass" style={{ borderRadius: "16px", padding: "22px 28px", marginBottom: "20px", border: queueTotal > 0 ? "1px solid rgba(245,158,11,0.3)" : "1px solid var(--border)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", flexWrap: "wrap", gap: "8px" }}>
+          <p className="mono" style={{ fontSize: "0.68rem", color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>
+            📡 Digest Kuyruğu
+          </p>
+          {queueTotal > 0 && (
+            <span style={{ fontSize: "0.72rem", padding: "3px 10px", borderRadius: "999px", background: "rgba(245,158,11,0.1)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
+              {queueTotal} post bekliyor
+            </span>
+          )}
+        </div>
+
+        {queueLoading ? (
+          <p className="mono" style={{ fontSize: "0.78rem", color: "var(--text-3)" }}>Yükleniyor...</p>
+        ) : queueTotal === 0 ? (
+          <p style={{ fontSize: "0.84rem", color: "var(--text-3)" }}>Kuyrukte bekleyen post yok.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {queueByFeed.map((f) => (
+              <div key={f.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", borderRadius: "8px", background: "var(--bg-2)" }}>
+                <span style={{ fontSize: "0.84rem", color: "var(--text-2)" }}>{f.name}</span>
+                <span className="mono" style={{ fontSize: "0.72rem", color: "#f59e0b" }}>{f.count} post</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p style={{ fontSize: "0.74rem", color: "var(--text-3)", marginTop: "14px", lineHeight: 1.5 }}>
+          Digest her gün 08:00 UTC&apos;de çalışır. Kullanıcının sıklık tercihine (günlük/haftalık) göre gönderilir.
+          Postlar 30 günden sonra otomatik temizlenir.
+        </p>
+      </div>
+
+      {/* ── Global Email Switchler ── */}
       {loading ? (
         <p className="mono" style={{ fontSize: "0.82rem", color: "var(--text-3)" }}>Yükleniyor...</p>
       ) : config && (
@@ -57,8 +102,8 @@ export default function AdminNotificationsPage() {
           </p>
 
           <NotifRow
-            label="RSS Email Bildirimleri"
-            desc="Yeni RSS yazısı çıktığında abone kullanıcılara gönderilir."
+            label="RSS Digest Bildirimleri"
+            desc="Haftalık/günlük RSS özetini abone kullanıcılara gönderir."
             enabled={config.rssEmailEnabled}
             onToggle={() => toggle("rssEmailEnabled")}
           />
@@ -101,15 +146,9 @@ export default function AdminNotificationsPage() {
 }
 
 function NotifRow({
-  label,
-  desc,
-  enabled,
-  onToggle,
+  label, desc, enabled, onToggle,
 }: {
-  label: string;
-  desc: string;
-  enabled: boolean;
-  onToggle: () => void;
+  label: string; desc: string; enabled: boolean; onToggle: () => void;
 }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", padding: "4px 0", flexWrap: "wrap" }}>

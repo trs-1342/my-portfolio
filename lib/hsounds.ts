@@ -19,8 +19,20 @@ export interface Article {
 export interface RssFeed {
   id: string;
   source_name: string;
-  source_icon: string;  // emoji, varsayılan '🌐'
-  feed_url: string;     // RSS feed URL'si
+  source_icon: string;
+  feed_url: string;
+  category?: string;
+  sendSeparately?: boolean;
+  lastChecked?: string;
+  lastKnownGuids?: string[];
+  pendingPosts?: Array<{
+    title: string;
+    link: string;
+    description: string;
+    pubDate: string;
+    guid: string;
+    foundAt: string;
+  }>;
 }
 
 export interface RssPost {
