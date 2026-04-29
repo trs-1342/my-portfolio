@@ -81,31 +81,54 @@ export default function AdminHsoundsPage() {
   /* ── Feed CRUD ── */
   const persistFeeds = async (next: HsRssFeed[]) => {
     setSaving(true);
-    try { await setHsFeeds(next); setFeeds(next); flash("Kaydedildi."); }
-    catch { flash("Hata oluştu."); }
-    finally { setSaving(false); }
+    try {
+      await setHsFeeds(next);
+      setFeeds(next);
+      flash("Kaydedildi.");
+    } catch (err) {
+      console.error("Feed kaydedilemedi:", err);
+      flash(err instanceof Error ? `Hata: ${err.message}` : "Hata oluştu.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const saveFeed = async () => {
     if (!feedModal) return;
-    const { source_name, source_icon, feed_url } = feedModal.form;
+    const { source_name, source_icon, feed_url, category, sendSeparately } = feedModal.form;
     if (!source_name.trim() || !feed_url.trim()) return;
 
-    const { category, sendSeparately } = feedModal.form;
-    const data: Omit<HsRssFeed, "id" | "lastChecked" | "lastKnownGuids" | "pendingPosts"> = {
-      source_name:    source_name.trim(),
-      source_icon:    source_icon.trim() || "🌐",
-      feed_url:       feed_url.trim(),
-      category:       category.trim() || undefined,
-      sendSeparately: sendSeparately,
-    };
+    const catTrimmed = category.trim();
 
     let next: HsRssFeed[];
     if (feedModal.mode === "add") {
-      next = [...feeds, { id: genId(), ...data }];
+      const newFeed: HsRssFeed = {
+        id:             genId(),
+        source_name:    source_name.trim(),
+        source_icon:    source_icon.trim() || "🌐",
+        feed_url:       feed_url.trim(),
+        sendSeparately: sendSeparately,
+      };
+      if (catTrimmed) newFeed.category = catTrimmed;
+      next = [...feeds, newFeed];
     } else {
-      /* pendingPosts korunur, sadece görüntü alanları güncellenir */
-      next = feeds.map((f) => f.id === feedModal.id ? { ...f, ...data } : f);
+      next = feeds.map((f) => {
+        if (f.id !== feedModal.id) return f;
+        // pendingPosts + cron alanları korunur, sadece görüntü alanları değişir
+        const updated: HsRssFeed = {
+          ...f,
+          source_name:    source_name.trim(),
+          source_icon:    source_icon.trim() || "🌐",
+          feed_url:       feed_url.trim(),
+          sendSeparately: sendSeparately,
+        };
+        if (catTrimmed) {
+          updated.category = catTrimmed;
+        } else {
+          delete updated.category; // boş bırakıldıysa field'ı kaldır
+        }
+        return updated;
+      });
     }
     setFeedModal(null);
     await persistFeeds(next);

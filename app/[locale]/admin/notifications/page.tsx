@@ -19,15 +19,13 @@ export default function AdminNotificationsPage() {
   const [queueLoading, setQueueLoading] = useState(true);
 
   useEffect(() => {
-    getSiteNotificationsConfig().then((c) => {
-      setConfig(c);
-      setLoading(false);
-    });
-    getRssDigestQueueCount().then(({ total, byFeed }) => {
-      setQueueTotal(total);
-      setQueueByFeed(byFeed);
-      setQueueLoading(false);
-    });
+    getSiteNotificationsConfig()
+      .then((c) => { setConfig(c); setLoading(false); })
+      .catch((err) => { console.error("Bildirim config yüklenemedi:", err); setLoading(false); });
+
+    getRssDigestQueueCount()
+      .then(({ total, byFeed }) => { setQueueTotal(total); setQueueByFeed(byFeed); setQueueLoading(false); })
+      .catch((err) => { console.error("Digest kuyruğu yüklenemedi:", err); setQueueLoading(false); });
   }, []);
 
   const toggle = (key: keyof SiteNotificationsConfig) => {

@@ -121,6 +121,7 @@ export default function ProfilePage() {
       await refreshProfile();
       setMsg("Profil güncellendi.");
     } catch (err: unknown) {
+      console.error("Profil kaydedilemedi:", err);
       setMsg((err as Error).message ?? "Hata oluştu.");
     } finally {
       setSaving(false);

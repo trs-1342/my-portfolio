@@ -86,6 +86,20 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true); setMsg("");
     try {
+      // boolean olmayan değerlerin Firestore'a gitmemesi için kategoriyi temizle
+      const cleanCategories: Record<string, boolean> = {};
+      Object.entries(rssCategories).forEach(([k, v]) => {
+        if (typeof v === "boolean") cleanCategories[k] = v;
+      });
+
+      const rssPrefs: NonNullable<UserProfile["rssPreferences"]> = {
+        frequency:  rssFrequency,
+        categories: cleanCategories,
+      };
+      if (profile.rssPreferences?.lastDigestSent) {
+        rssPrefs.lastDigestSent = profile.rssPreferences.lastDigestSent;
+      }
+
       await updateUserProfile(user.uid, {
         settings: { navbarPosition: navPos, theme },
         notifications: {
@@ -101,19 +115,14 @@ export default function SettingsPage() {
           articles:      featureArticles,
           announcements: featureAnnouncements,
         },
-        rssPreferences: {
-          frequency:       rssFrequency,
-          categories:      rssCategories,
-          // Mevcut lastDigestSent korunur — sıfırlanmamalı
-          ...(profile.rssPreferences?.lastDigestSent
-            ? { lastDigestSent: profile.rssPreferences.lastDigestSent }
-            : {}),
-        },
-      } as Partial<Pick<UserProfile, "settings" | "notifications" | "features" | "rssPreferences">>);
+        rssPreferences: rssPrefs,
+      });
       await refreshProfile();
       setMsg("Ayarlar kaydedildi.");
-    } catch {
-      setMsg("Hata oluştu.");
+    } catch (err) {
+      console.error("Ayarlar kaydedilemedi:", err);
+      const msg = err instanceof Error ? err.message : "Bilinmeyen hata.";
+      setMsg(`Hata: ${msg}`);
     } finally {
       setSaving(false);
     }

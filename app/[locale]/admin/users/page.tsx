@@ -109,12 +109,17 @@ export default function AdminUsersPage() {
   /* RSS sıklığını değiştir */
   const handleSetRssFrequency = async (u: UserProfile, frequency: "daily" | "weekly") => {
     setBusy(u.uid);
-    await updateUserRssFrequency(u.uid, frequency);
-    setUsers((prev) => prev.map((x) => x.uid === u.uid ? {
-      ...x,
-      rssPreferences: { ...x.rssPreferences, frequency, categories: x.rssPreferences?.categories ?? {} },
-    } : x));
-    setBusy(null);
+    try {
+      await updateUserRssFrequency(u.uid, frequency);
+      setUsers((prev) => prev.map((x) => x.uid === u.uid ? {
+        ...x,
+        rssPreferences: { frequency, categories: x.rssPreferences?.categories ?? {} },
+      } : x));
+    } catch (err) {
+      console.error("RSS sıklığı güncellenemedi:", err);
+    } finally {
+      setBusy(null);
+    }
   };
 
   /* Kullanıcı sil */
