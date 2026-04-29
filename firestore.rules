@@ -2,95 +2,116 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Kullanıcı profilleri
+    // ── Yardımcı fonksiyonlar ──────────────────────────────────────────
+
+    // Giriş yapılmış mı?
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // İstek yapan kullanıcı belgenin sahibi mi?
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Admin mi? — Yalnızca tekli yazma işlemlerinde kullan.
+    // Koleksiyon okumalarında her belge için get() çağrılır; kota sınırını
+    // (istek başına maks. 10 get/exists) aşmamak için read kurallarında kullanılmaz.
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    // ── Kullanıcı profilleri ───────────────────────────────────────────
     match /users/{uid} {
-      allow read:   if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == uid;
-      allow update: if request.auth != null && (
-        request.auth.uid == uid ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
-      );
-      allow delete: if request.auth != null && (
-        request.auth.uid == uid ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
-      );
+      // Tüm giriş yapmış kullanıcılar okuyabilir.
+      // (Admin paneli tüm kullanıcıları listeler; get() kota sınırını aşmamak
+      //  için isAdmin() yerine isSignedIn() tercih edilmiştir.)
+      allow read: if isSignedIn();
+
+      // Yalnızca kendi hesabını oluşturabilir
+      allow create: if isOwner(uid);
+
+      // Kendi profilini veya admin herhangi bir profili güncelleyebilir.
+      // (settings, notifications, features, rssPreferences alanları dahil)
+      allow update: if isOwner(uid) || isAdmin();
+
+      // Kendi hesabını veya admin herhangi bir hesabı silebilir
+      allow delete: if isOwner(uid) || isAdmin();
     }
 
-    // Username → uid haritası
+    // ── Username → uid haritası ────────────────────────────────────────
     match /usernames/{username} {
-      allow read:  if true;
-      allow write: if request.auth != null;
+      allow read:  if true;          // username müsaitlik kontrolü için herkese açık
+      allow write: if isSignedIn();  // kayıt/güncelleme için giriş zorunlu
     }
 
-    // İletişim formu mesajları
+    // ── İletişim formu mesajları ───────────────────────────────────────
     match /contacts/{docId} {
-      allow create: if true;
-      allow read, update, delete: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+      allow create: if true;   // anonim ziyaretçi de form gönderebilir
+      allow read, update, delete: if isAdmin();
     }
 
-    // Site konfigürasyonu (hero, skills, menu vb.)
+    // ── Site konfigürasyonu ────────────────────────────────────────────
+    // hero, skills, menu, footer, RSS feed'ler, digest pending postlar vb.
     match /site_config/{doc} {
-      allow read: if true;
-      allow write: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+      allow read:  if true;      // herkese açık (homepage, about, hsounds vb. için)
+      allow write: if isAdmin();
     }
 
-    // Projeler
+    // ── Projeler ──────────────────────────────────────────────────────
     match /projects/{docId} {
-      allow read: if true;
-      allow write: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+      allow read:  if true;
+      allow write: if isAdmin();
     }
 
-    // HSounds makaleleri
+    // ── HSounds makaleleri ─────────────────────────────────────────────
     match /hsounds_articles/{docId} {
       allow read: if true;
-      // Admin tam yazma hakkı
-      allow create, delete: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
-      // Admin her alanı güncelleyebilir; giriş yapan kullanıcılar sadece likes alanını güncelleyebilir
-      allow update: if request.auth != null && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin" ||
+      allow create, delete: if isAdmin();
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        // Normal kullanıcı yalnızca beğeni listesini güncelleyebilir
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(["likes"])
       );
     }
 
-    // Yorumlar
+    // ── Yorumlar ──────────────────────────────────────────────────────
     match /comments/{commentId} {
       allow read: if true;
-      // Sadece giriş yapan kullanıcılar yorum yazabilir, kendi UID'leriyle
-      allow create: if request.auth != null
+
+      // Kendi UID'iyle yorum oluşturabilir
+      allow create: if isSignedIn()
         && request.resource.data.authorUid == request.auth.uid;
-      // Giriş yapanlar sadece likes alanını güncelleyebilir
-      allow update: if request.auth != null
+
+      // Yalnızca beğeni alanını güncelleyebilir
+      allow update: if isSignedIn()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["likes"]);
+
       // Kendi yorumunu veya admin her yorumu silebilir
-      allow delete: if request.auth != null && (
-        resource.data.authorUid == request.auth.uid ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
+      allow delete: if isSignedIn() && (
+        resource.data.authorUid == request.auth.uid || isAdmin()
       );
     }
 
-    // HSounds duyurular
+    // ── HSounds duyurular ──────────────────────────────────────────────
     match /announcements/{docId} {
       allow read: if true;
-      allow create, update, delete: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+      allow create, update, delete: if isAdmin();
     }
 
-    // Fotoğraf galerisi
+    // ── Fotoğraf galerisi ──────────────────────────────────────────────
     match /photos/{docId} {
-      // Sadece giriş yapanlar okuyabilir
-      allow read: if request.auth != null;
-      // Favori güncellemesi: giriş yapan herkes kendi UID'ini favorites array'ine ekleyip çıkarabilir
-      allow update: if request.auth != null && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin" ||
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(["favorites"]))
+      // Giriş yapan kullanıcılar görebilir
+      allow read: if isSignedIn();
+
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        // Normal kullanıcı yalnızca favori listesini güncelleyebilir
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["favorites"])
       );
-      // Oluşturma ve silme sadece admin
-      allow create, delete: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+
+      allow create, delete: if isAdmin();
     }
   }
 }

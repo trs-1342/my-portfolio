@@ -41,8 +41,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (!profile) return;
-    setNavPos(profile.settings.navbarPosition);
-    setTheme(normalizeThemeId(profile.settings.theme));
+    setNavPos(profile.settings?.navbarPosition   ?? "top");
+    setTheme(normalizeThemeId(profile.settings?.theme ?? "dark"));
     setNotifEmail(profile.notifications?.email              ?? true);
     setNotifMessage(profile.notifications?.newMessage        ?? true);
     setNotifSystem(profile.notifications?.system             ?? true);
@@ -101,7 +101,7 @@ export default function SettingsPage() {
       }
 
       await updateUserProfile(user.uid, {
-        settings: { navbarPosition: navPos, theme },
+        settings: { navbarPosition: navPos ?? "top", theme: theme ?? "dark" },
         notifications: {
           email:            notifEmail,
           newMessage:       notifMessage,

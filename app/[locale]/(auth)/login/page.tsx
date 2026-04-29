@@ -13,7 +13,10 @@ function LoginForm() {
   const { loginEmail, loginGoogle, resetPassword } = useAuth();
   const router       = useRouter();
   const searchParams = useSearchParams();
-  const redirect     = searchParams.get("redirect") ?? "/";
+  // middleware ?redirect=/en/profile gibi locale'li path koyabilir;
+  // i18n router yeniden locale ekleyeceği için önce prefix'i soyuyoruz
+  const rawRedirect  = searchParams.get("redirect") ?? "/";
+  const redirect     = rawRedirect.replace(/^\/(tr|en|ar)(?=\/|$)/, "") || "/";
 
   const [mode,      setMode]      = useState<"login" | "forgot">("login");
   const [email,     setEmail]     = useState("");
